@@ -18,16 +18,6 @@ import fstopo.problems.kona_opt as kona_opt
 # Import Kona Optimization Library
 import kona
 
-# outdir = 'test5'
-# print outdir
-# if os.path.exists(outdir):
-#     output = outdir + 'new'
-#     os.makedirs(output)
-# else:
-# #     shutil.rmtree(args.output)
-# # create fresh output directory
-#     os.makedirs(outdir)
-
 
 def create_multi_problem(rho, Cmats, qval, qxval, h, G, epsilon,
                          Lx, Ly, nxg, nyg, nlevels,
@@ -492,7 +482,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'skipCorrec_temp'
+    prefix = 'skip_corrector'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -534,7 +524,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stiny_WIA0_.025cor_.0115WA'%(os.path.sep)
+prefix += '%stiny_corrector4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -599,8 +589,6 @@ optns = {
     },
 
 }
-
-
 
 algorithm = kona.algorithms.PredictorCorrectorCnstrINEQ
 optimizer = kona.Optimizer(solver, algorithm, optns)

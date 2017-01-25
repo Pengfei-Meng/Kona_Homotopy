@@ -1,5 +1,12 @@
 from kona.algorithms.base_algorithm import OptimizationAlgorithm
 import pdb, pickle
+
+# Trying to solve Graeme's problem, this SAVE2 version works great for thickness 'tiny' case
+# to 1e-7 precision. But, for 'small' case, homotopy iteration cannot find a low enough 
+# opt and feas at mu = 0, then further diverges. 
+# As the iteration wastes lots of computation before reaching mu = 0, I'm looking to skipping
+# the correction step before mu = 0, and only turn it on after a small enough mu
+
 class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
 
     def __init__(self, primal_factory, state_factory,
@@ -205,10 +212,11 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         # tiny: 0.0115
         # small: 0.0115198
         if hasattr(self, 'approx_precond'):
-            if self.mu > 0.0115:
-                out_vec.equals(in_vec)
-            else:
-                self.approx_precond(in_vec, out_vec)
+            self.approx_precond(in_vec, out_vec)
+            # if self.mu > 0.012:         # 0.0115:
+            #     out_vec.equals(in_vec)
+            # else:
+            #     self.approx_precond(in_vec, out_vec)
 
         else:            
             out_vec.equals(in_vec)
@@ -355,8 +363,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
 
         # print '5. cost after first krylov solve: ', self.primal_factory._memory.cost
 
-        # 384 + 6 = 390 
-
         # unpeal the S^-1 layer for the slack term
         # t.primal.slack.times(self.current_x.primal.slack)
 
@@ -399,15 +405,10 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             mu_save = self.mu
             
             # take a predictor step
-            # x.equals_ax_p_by(1.0, x, self.step, t)
             dmu_step = dmu * self.step
             dmu_step = max(self.dmu_min, dmu_step)
             dmu_step = min(self.dmu_max, dmu_step)
-            # self.mu += dmu_step
-            # if self.mu < 0.0:
-            #     self.mu = 0.0
 
-            # self.step = dmu_step/dmu
             tent_mu = self.mu + dmu_step
             if tent_mu < 0.0:
                 tent_mu = 0.0
@@ -415,13 +416,13 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             self.step = (tent_mu - self.mu)/dmu
 
             x.equals_ax_p_by(1.0, x, self.step, t)
+
             self.mu += self.step*dmu
+            # mu_old = self.mu
 
             self.info_file.write('\nmu after pred  = %f\n'%self.mu)
 
-            # print self.mu
             # solve states
-            # enforce bounds on the design first
             if self.ineq_factory is not None:
                 x.primal.design.enforce_bounds()
             else:
@@ -443,8 +444,8 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             # START CORRECTOR (Newton) ITERATIONS
             #####################################
             max_newton = self.inner_maxiter
-            if self.mu == 0.0:
-                max_newton = 50
+            # if self.mu == 0.0:
+            #     max_newton = 50
                 # self.krylov.rel_tol=1e-5
                 # if self.approx_adj is not None:
                 #     self.precond = self.approx_precond
@@ -481,7 +482,7 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                     # self.krylov.rel_tol= min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
                     self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
                     print 'self.inner_tol at mu = 0.0', self.inner_tol
-                    self.krylov.rel_tol=1e-5
+                    self.krylov.rel_tol = 1e-5
 
 
                 dJdX_hom.equals(dJdX)
@@ -518,6 +519,8 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 else:
                     hom_opt_norm = dJdX_hom.primal.norm2
                     hom_feas_norm = dJdX_hom.dual.norm2
+
+
                 self.info_file.write(
                     '   hom_opt_norm : hom_opt_tol = %e : %e\n'%(
                         hom_opt_norm, hom_opt_tol) +
@@ -532,27 +535,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
                 opt_norm = dJdX.primal.norm2
                 feas_norm = dJdX.dual.norm2
-
-                # if self.ineq_factory is not None:
-                #     min_slack = min(x.primal.slack.base.data) 
-                #     max_lamda = max(x.dual.ineq.base.data)
-                #     min_cnstr = min(dJdX.dual.ineq.base.data)
-                # else:
-                #     min_slack = 0.0 
-                #     max_lamda = max(x.dual.base.data)
-                #     min_cnstr = dJdX.dual.ineq.norm2
-
-                # ------ writing constraints, slack, dual to pickle files for analysis ------
-                # dual_work2.equals_constraints(x.primal, state)
-
-                # if self.ineq_factory is not None:
-                #     file_name = self.outdir + '/con_%d_%d.pkl'%(outer_iters, inner_iters)
-                #     output = open(file_name,'w')
-                #     pickle.dump([x.primal.design.base.data, x.primal.slack.base.data, \
-                #         x.dual.eq.base.data, x.dual.ineq.base.data, \
-                #         dual_work2.eq.base.data, dual_work2.ineq.base.data], output)
-                #     output.close()   
-
 
                 self._write_inner(
                     outer_iters, inner_iters,
@@ -569,7 +551,11 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 self.hessian.linearize(
                     x, state, adj,
                     obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
                 if self.approx_adj is not None:
+                    if self.mu < 0.0115:                              
+                        self.approx_adj.update_mat = True  
+
                     self.approx_adj.linearize(x, state, adj, self.mu)
 
                 # define the RHS vector for the homotopy system
@@ -577,21 +563,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
 
                 # solve the system
                 dx.equals(0.0)
-                
-                # if self.mu == 0:
-                    # self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.approx_precond)
-                # else:
-
-                # print 'norm( v )', dJdX_hom.norm2
-
-                # self._mat_vec(dJdX_hom, dJdX_save)
-                # self._precond(dJdX_save, x_save)
-
-                # print 'norm( M^-1 * K * v )', x_save.norm2
-
-                # dJdX_hom.minus(x_save)
-                # print 'norm( v - M^-1 * K * v )', dJdX_hom.norm2
-
                 
                 self.krylov.solve(self._mat_vec, dJdX_hom, dx, self._precond)
                 # dx.primal.slack.times(self.current_x.primal.slack)
@@ -661,6 +632,8 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
             if self.approx_adj is not None:
+                # if self.mu < 0.008:                              
+                #     self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
