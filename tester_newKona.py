@@ -18,15 +18,15 @@ import fstopo.problems.kona_opt as kona_opt
 # Import Kona Optimization Library
 import kona
 
-outdir = 'test1'
-print outdir
-if os.path.exists(outdir):
-    output = outdir + 'new'
-    os.makedirs(output)
-else:
-#     shutil.rmtree(args.output)
-# create fresh output directory
-    os.makedirs(outdir)
+# outdir = 'test5'
+# print outdir
+# if os.path.exists(outdir):
+#     output = outdir + 'new'
+#     os.makedirs(output)
+# else:
+# #     shutil.rmtree(args.output)
+# # create fresh output directory
+#     os.makedirs(outdir)
 
 
 def create_multi_problem(rho, Cmats, qval, qxval, h, G, epsilon,
@@ -492,7 +492,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'kona_thickness'
+    prefix = 'skipCorrec_temp'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -533,87 +533,36 @@ linalg.fgmres_solve(kmat, force, u, print_flag=1, rtol=1e-16, atol=1e-8)
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
-prefix += '%s%dx%d'%(os.path.sep, nx, ny)
+# prefix += '%s%dx%d'%(os.path.sep, nx, ny)
+prefix += '%stiny_WIA0_.025cor_.0115WA'%(os.path.sep)
+
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
-
-# pdb.set_trace()
 
 # initialize the FSTOPO solver wrapper
 solver = kona_opt.FSTopoSolver(
     prob, force, x, lower=lb.x, upper=ub.x,
     num_aggr=0, ks_rho=35., cnstr_scale=False, prefix=prefix)
 
-"""
-optns = {
-    'matrix_explicit'    : True,
-    'verify' : {
-        'primal_vec'     : True,
-        'state_vec'      : True,
-        'dual_vec_eq'    : True,
-        'dual_vec_in'    : True,
-        'gradients'      : True,
-        'pde_jac'        : True,
-        'cnstr_jac_eq'   : False,
-        'cnstr_jac_in'   : True,
-        'red_grad'       : True,
-        'lin_solve'      : True,
-        'out_file'       : 'kona_verify.dat',
-    },
-}
-
-algorithm = kona.algorithms.Verifier
-optimizer = kona.Optimizer(solver, algorithm, optns)
-optimizer.solve()
-
-
-optns = {
-    'info_file' : 'kona_info.dat',
-    'hist_file' : 'kona_hist.dat',
-    'max_iter' : 100,
-    'opt_tol' : 1e-6,
-
-    'homotopy' : {
-        'lambda' : 0.0,
-        'inner_tol' : 0.1,
-        'inner_maxiter' : 50,
-        'nominal_dist' : 1.0,
-        'nominal_angle' : 5.0*np.pi/180.,
-        'max_factor' : 5.0,
-        'min_factor' : 0.5,
-        'dmu_max' : -0.0001,
-        'dmu_min' : -0.9,
-    },
-
-    'rsnk' : {
-        'precond'       : None,
-        # krylov solver settings
-        'krylov_file'   : 'kona_krylov.dat',
-        'subspace_size' : 10,
-        'check_res'     : True,
-        'rel_tol'       : 1e-2,
-    },
-}
-"""
 
 # Optimizer
 optns = {
     'max_iter' : 100,
     'opt_tol' : 1e-4,
     'feas_tol' : 1e-4,        
-    'info_file' : outdir+'/kona_info.dat',
-    'hist_file' : outdir+'/kona_hist.dat',
+    'info_file' : prefix+'/kona_info.dat',
+    'hist_file' : prefix+'/kona_hist.dat',
 
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 20,
-        'init_step' : 0.05, 
+        'inner_maxiter' : 10,
+        'init_step' : 0.05,        
         'nominal_dist' : 1.0,          
         'nominal_angle' : 5.0*np.pi/180., 
         'max_factor' : 20.0,                  
         'min_factor' : 0.5,               
-        'dmu_max' : -0.0001,       
+        'dmu_max' : -0.0005,       
         'dmu_min' : -0.9,        
     },
 
@@ -629,10 +578,10 @@ optns = {
         'grad_scale'    : 1.0,
         'feas_scale'    : 1.0,
         # FLECS solver settings
-        'krylov_file'   : outdir+'/kona_krylov.dat',
+        'krylov_file'   : prefix+'/kona_krylov.dat',
         'subspace_size' : 20,                                    
         'check_res'     : False,
-        'rel_tol'       : 1e-2,        
+        'rel_tol'       : 1e-4,        
     },
 
     'verify' : {
@@ -646,7 +595,7 @@ optns = {
         'cnstr_jac_in'   : True,
         'red_grad'       : True,
         'lin_solve'      : True,
-        'out_file'       : outdir+'/kona_verify.dat',
+        'out_file'       : prefix+'/kona_verify.dat',
     },
 
 }
