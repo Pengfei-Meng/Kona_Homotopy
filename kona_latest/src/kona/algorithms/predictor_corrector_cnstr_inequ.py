@@ -416,9 +416,7 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             self.step = (tent_mu - self.mu)/dmu
 
             x.equals_ax_p_by(1.0, x, self.step, t)
-
             self.mu += self.step*dmu
-            # mu_old = self.mu
 
             self.info_file.write('\nmu after pred  = %f\n'%self.mu)
 
@@ -555,7 +553,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 if self.approx_adj is not None:
                     if self.mu < 0.0115:                              
                         self.approx_adj.update_mat = True  
-
                     self.approx_adj.linearize(x, state, adj, self.mu)
 
                 # define the RHS vector for the homotopy system
@@ -631,9 +628,7 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
-            if self.approx_adj is not None:
-                # if self.mu < 0.008:                              
-                #     self.approx_adj.update_mat = True  
+            if self.approx_adj is not None: 
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)

@@ -7,6 +7,5 @@ from composite_step_rsnk import CompositeStepRSNK
 # from predictor_corrector_cnstr import PredictorCorrectorCnstr
 from predictor_corrector_cnstr_inequ import PredictorCorrectorCnstrINEQ
 from predictor_corrector_conditional import PredictorCorrectorCnstrCond
-# from predictor_corrector_reduced import PredictorCorrectorReduced
 from verifier import Verifier
 import util

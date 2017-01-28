@@ -482,7 +482,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'skip_corrector'
+    prefix = 'test'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -524,7 +524,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stiny_corrector4'%(os.path.sep)
+prefix += '%ssmall_.03corr_.01WA_mu0_.2dx50'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -546,13 +546,13 @@ optns = {
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 10,
-        'init_step' : 0.05,        
+        'inner_maxiter' : 50,
+        'init_step' : 0.5,        
         'nominal_dist' : 1.0,          
         'nominal_angle' : 5.0*np.pi/180., 
         'max_factor' : 20.0,                  
         'min_factor' : 0.5,               
-        'dmu_max' : -0.0005,       
+        'dmu_max' : -0.001,       
         'dmu_min' : -0.9,        
     },
 
@@ -590,7 +590,8 @@ optns = {
 
 }
 
-algorithm = kona.algorithms.PredictorCorrectorCnstrINEQ
+# algorithm = kona.algorithms.PredictorCorrectorCnstrINEQ
+algorithm = kona.algorithms.PredictorCorrectorCnstrCond
 optimizer = kona.Optimizer(solver, algorithm, optns)
 optimizer.solve()
 
