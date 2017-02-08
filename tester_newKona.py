@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 import pickle
-import pdb
+import pdb, time
 # Import the material routines
 from fstopo.material import *
 
@@ -519,12 +519,13 @@ kmat.factor()
 # Solve the system of equations
 linalg.fgmres_solve(kmat, force, u, print_flag=1, rtol=1e-16, atol=1e-8)
 
+# pdb.set_trace()
 # Create the directory if it does not exist
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssmall_.03corr_.01WA_mu0_.2dx50'%(os.path.sep)
+prefix += '%stiny_3'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -546,13 +547,13 @@ optns = {
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 50,
-        'init_step' : 0.5,        
-        'nominal_dist' : 1.0,          
-        'nominal_angle' : 5.0*np.pi/180., 
-        'max_factor' : 20.0,                  
-        'min_factor' : 0.5,               
-        'dmu_max' : -0.001,       
+        'inner_maxiter' : 5,
+        'init_step' : 0.05,        
+        'nominal_dist' : 1.0,            
+        'nominal_angle' : 8.0*np.pi/180., 
+        'max_factor' : 10.0,                  
+        'min_factor' : 0.5,                   
+        'dmu_max' : -0.0005,       
         'dmu_min' : -0.9,        
     },
 

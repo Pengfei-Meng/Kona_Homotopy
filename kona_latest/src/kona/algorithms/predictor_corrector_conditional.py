@@ -1,18 +1,11 @@
 from kona.algorithms.base_algorithm import OptimizationAlgorithm
 import pdb, pickle
-
-# Trying to solve Graeme's problem, this SAVE2 version works great for thickness 'tiny' case
-# to 1e-7 precision. But, for 'small' case, homotopy iteration cannot find a low enough 
-# opt and feas at mu = 0, then further diverges. 
-# As the iteration wastes lots of computation before reaching mu = 0, I'm looking to skipping
-# the correction step before mu = 0, and only turn it on after a small enough mu
-
-class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
+class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
     def __init__(self, primal_factory, state_factory,
                  eq_factory, ineq_factory, optns=None):
         # trigger base class initialization
-        super(PredictorCorrectorCnstrINEQ, self).__init__(
+        super(PredictorCorrectorCnstrCond, self).__init__(
             primal_factory, state_factory, eq_factory, ineq_factory, optns
         )
 
@@ -48,7 +41,7 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
 
         if self.precond is 'approx_adjoint':
             print 'approx_adjoint is used! '
-            self.approx_adj = APPROXADJOINT2(
+            self.approx_adj = APPROXADJOINT(
                 [primal_factory, state_factory, eq_factory, ineq_factory])
             self.approx_precond = self.approx_adj.solve 
             # self.precond = self.approx_precond
@@ -209,8 +202,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
 
     def _precond(self, in_vec, out_vec):
 
-        # tiny: 0.0115
-        # small: 0.0115198
         if hasattr(self, 'approx_precond'):
             self.approx_precond(in_vec, out_vec)
             # if self.mu > 0.012:         # 0.0115:
@@ -285,16 +276,11 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x.equals(x0)
-        self.current_x.equals(x0)
-
-        # print '1. cost after init_guess: ', self.primal_factory._memory.cost
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
         if self.factor_matrices:
             factor_linear_system(x.primal, state)
-
-        # print '2. cost after equals_primal_solution: ', self.primal_factory._memory.cost
 
         obj_fac = 1.
         cnstr_fac = 1.
@@ -303,8 +289,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         adj.equals_lagrangian_adjoint(
             x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
         
-        # print '3. cost after equals_lagrangian_adjoint: ', self.primal_factory._memory.cost
-
         # compute initial KKT conditions
         dJdX.equals_KKT_conditions(
             x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
@@ -322,8 +306,8 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         feas_norm00 = dJdX.dual.norm2
 
         opt_tol = self.primal_tol*opt_norm00
-        feas_tol = self.cnstr_tol*feas_norm00
-        # self._write_header(opt_tol, feas_tol)
+        feas_tol = max(self.cnstr_tol*feas_norm00, 1e-6)
+        self._write_header(opt_tol, feas_tol)
 
         # write the initial point
         obj00 = objective_value(x.primal, state)
@@ -333,11 +317,9 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         
         cost00 = self.primal_factory._memory.cost
 
-        # print '4. cost at outer iter: ', self.primal_factory._memory.cost
-
         mu00 = self.mu
-        # self._write_outer(0, obj0, lag0, opt_norm0, feas_norm0)
-        # self.hist_file.write('\n')
+        self._write_outer(0, cost00, obj00, lag00, opt_norm00, feas_norm00, mu00)
+        self.hist_file.write('\n')
 
         # compute the rhs vector for the predictor problem
         rhs_vec.equals(dJdX)
@@ -361,11 +343,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             self.approx_adj.linearize(x, state, adj, self.mu)
         self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
 
-        # print '5. cost after first krylov solve: ', self.primal_factory._memory.cost
-
-        # unpeal the S^-1 layer for the slack term
-        # t.primal.slack.times(self.current_x.primal.slack)
-
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
         t.times(1./tnorm)
@@ -375,6 +352,7 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         #########################
         outer_iters = 1
         total_iters = 0
+        corrector = False
 
         while self.mu > 0.0 and outer_iters <= self.max_iter:
 
@@ -426,8 +404,6 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
 
-            self.current_x.equals(x)
-
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
                     'Invalid predictor point! State-solve failed.')
@@ -438,168 +414,150 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             adj.equals_lagrangian_adjoint(
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-            # print '6. cost after adjoint: ', self.primal_factory._memory.cost
-            # START CORRECTOR (Newton) ITERATIONS
-            #####################################
-            max_newton = self.inner_maxiter
-            # if self.mu == 0.0:
-            #     max_newton = 50
-                # self.krylov.rel_tol=1e-5
-                # if self.approx_adj is not None:
-                #     self.precond = self.approx_precond
 
-            inner_iters = 0
-            dx_newt.equals(0.0)
-            for i in xrange(max_newton):
-
-                self.info_file.write('\n')
-                self.info_file.write('   Inner Newton iteration %i\n'%(i+1))
-                self.info_file.write('   -------------------------------\n')
-
-                # compute the KKT conditions
-                dJdX.equals_KKT_conditions(
-                    x, state, adj,
-                    obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+            if self.mu < 0.1:           #0.1:        #0.03:
+                corrector = True
+                # START CORRECTOR (Newton) ITERATIONS
+                #####################################
+                max_newton = self.inner_maxiter
+                if self.mu == 0.0:
+                    max_newton = 50
 
 
-                if outer_iters == 1 and inner_iters == 0:
-                    # compute convergence metrics
-                    opt_norm0 = dJdX.primal.norm2
-                    feas_norm0 = dJdX.dual.norm2
+                inner_iters = 0
+                dx_newt.equals(0.0)
+                for i in xrange(max_newton):
 
-                    opt_tol = self.primal_tol*opt_norm0
-                    feas_tol = self.cnstr_tol*feas_norm0
-                    self._write_header(opt_tol, feas_tol)
+                    self.info_file.write('\n')
+                    self.info_file.write('   Inner Newton iteration %i\n'%(i+1))
+                    self.info_file.write('   -------------------------------\n')
 
-                    self._write_outer(0, cost00, obj00, lag00, opt_norm00, feas_norm00, mu00)
-                    self.hist_file.write('\n')
+                    # compute the KKT conditions
+                    dJdX.equals_KKT_conditions(
+                        x, state, adj,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                if self.mu == 0.0 and inner_iters == 0:
-                    opt_norm_cur = dJdX.primal.norm2
-                    feas_norm_cur = dJdX.dual.norm2
-                    # self.krylov.rel_tol= min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
-                    self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
-                    print 'self.inner_tol at mu = 0.0', self.inner_tol
-                    self.krylov.rel_tol = 1e-5
-
-
-                dJdX_hom.equals(dJdX)
-                dJdX_hom.times(1. - self.mu)
-
-                # add the primal homotopy term
-                primal_work.equals(x.primal)
-                primal_work.minus(x0.primal)
-                xTx = primal_work.inner(primal_work)
-
-                primal_work.times(self.mu)
-                dJdX_hom.primal.plus(primal_work)
-
-                # add the dual homotopy term
-                dual_work.equals(x.dual)
-                dual_work.minus(x0.dual)
-                mTm = dual_work.inner(dual_work)
-                dual_work.times(self.mu)
-                dJdX_hom.dual.minus(dual_work)
-                # get convergence norms
-                if inner_iters == 0:
-                    # compute optimality norms
-                    hom_opt_norm0 = dJdX_hom.primal.norm2
-                    hom_opt_norm = hom_opt_norm0
-                    hom_opt_tol = self.inner_tol * hom_opt_norm0
-                    if hom_opt_tol < opt_tol or self.mu == 0.0:
-                        hom_opt_tol = opt_tol
-                    # compute feasibility norms
-                    hom_feas_norm0 = dJdX_hom.dual.norm2
-                    hom_feas_norm = hom_feas_norm0
-                    hom_feas_tol = self.inner_tol * hom_feas_norm0
-                    if hom_feas_tol < feas_tol or self.mu == 0.0:
-                        hom_feas_tol = feas_tol
-                else:
-                    hom_opt_norm = dJdX_hom.primal.norm2
-                    hom_feas_norm = dJdX_hom.dual.norm2
+                    if self.mu == 0.0 and inner_iters == 0:
+                        opt_norm_cur = dJdX.primal.norm2
+                        feas_norm_cur = dJdX.dual.norm2
+                        self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
+                        print 'self.inner_tol at mu = 0.0', self.inner_tol
+                        self.krylov.rel_tol = 1e-5
 
 
-                self.info_file.write(
-                    '   hom_opt_norm : hom_opt_tol = %e : %e\n'%(
-                        hom_opt_norm, hom_opt_tol) +
-                    '   hom_feas_norm : hom_feas_tol = %e : %e\n'%(
-                        hom_feas_norm, hom_feas_tol))
+                    dJdX_hom.equals(dJdX)
+                    dJdX_hom.times(1. - self.mu)
 
-                # write inner history
-                obj = objective_value(x.primal, state)
-                # --------- change here ------------
-                lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
+                    # add the primal homotopy term
+                    primal_work.equals(x.primal)
+                    primal_work.minus(x0.primal)
+                    xTx = primal_work.inner(primal_work)
 
-                hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
-                opt_norm = dJdX.primal.norm2
-                feas_norm = dJdX.dual.norm2
+                    primal_work.times(self.mu)
+                    dJdX_hom.primal.plus(primal_work)
 
-                self._write_inner(
-                    outer_iters, inner_iters,
-                    obj, lag, opt_norm, feas_norm,
-                    hom, hom_opt_norm, hom_feas_norm)
-                    # min_slack, max_lamda, min_cnstr)
+                    # add the dual homotopy term
+                    dual_work.equals(x.dual)
+                    dual_work.minus(x0.dual)
+                    mTm = dual_work.inner(dual_work)
+                    dual_work.times(self.mu)
+                    dJdX_hom.dual.minus(dual_work)
+                    # get convergence norms
+                    if inner_iters == 0:
+                        # compute optimality norms
+                        hom_opt_norm0 = dJdX_hom.primal.norm2
+                        hom_opt_norm = hom_opt_norm0
+                        hom_opt_tol = self.inner_tol * hom_opt_norm0
+                        if hom_opt_tol < opt_tol or self.mu == 0.0:
+                            hom_opt_tol = opt_tol
+                        # compute feasibility norms
+                        hom_feas_norm0 = dJdX_hom.dual.norm2
+                        hom_feas_norm = hom_feas_norm0
+                        hom_feas_tol = self.inner_tol * hom_feas_norm0
+                        if hom_feas_tol < feas_tol or self.mu == 0.0:
+                            hom_feas_tol = feas_tol
+                    else:
+                        hom_opt_norm = dJdX_hom.primal.norm2
+                        hom_feas_norm = dJdX_hom.dual.norm2
 
-                # check convergence
-                if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
-                    self.info_file.write('\n   Corrector step converged!\n')
-                    break
+                    self.info_file.write(
+                        '   hom_opt_norm : hom_opt_tol = %e : %e\n'%(
+                            hom_opt_norm, hom_opt_tol) +
+                        '   hom_feas_norm : hom_feas_tol = %e : %e\n'%(
+                            hom_feas_norm, hom_feas_tol))
 
-                # linearize the hessian at the new point
-                self.hessian.linearize(
-                    x, state, adj,
-                    obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    obj = objective_value(x.primal, state)
+                    lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
 
-                if self.approx_adj is not None:
-                    if self.mu < 0.0115:                              
-                        self.approx_adj.update_mat = True  
-                    self.approx_adj.linearize(x, state, adj, self.mu)
+                    hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
+                    opt_norm = dJdX.primal.norm2
+                    feas_norm = dJdX.dual.norm2 
 
-                # define the RHS vector for the homotopy system
-                dJdX_hom.times(-1.)
+                    self._write_inner(
+                        outer_iters, inner_iters,
+                        obj, lag, opt_norm, feas_norm,
+                        hom, hom_opt_norm, hom_feas_norm)
 
-                # solve the system
-                dx.equals(0.0)
-                
-                self.krylov.solve(self._mat_vec, dJdX_hom, dx, self._precond)
-                # dx.primal.slack.times(self.current_x.primal.slack)
-                # print '7. cost after corrector krylov solve: ', self.primal_factory._memory.cost
+                    # check convergence
+                    if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
+                        self.info_file.write('\n   Corrector step converged!\n')
+                        break
 
-                dx_newt.plus(dx)
+                    # linearize the hessian at the new point
+                    self.hessian.linearize(
+                        x, state, adj,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                # update the design
-                x.plus(dx)
-                if self.ineq_factory is not None:
-                    x.primal.design.enforce_bounds()
-                else:
-                    x.primal.enforce_bounds()
+                    if self.approx_adj is not None:
+                        if self.mu < 0.01:                           
+                            self.approx_adj.update_mat = True  
+                        self.approx_adj.linearize(x, state, adj, self.mu)
 
-                self.current_x.equals(x)
+                    # define the RHS vector for the homotopy system
+                    dJdX_hom.times(-1.)
 
-                if not state.equals_primal_solution(x.primal):
-                    raise RuntimeError('Newton step failed!')
-                if self.factor_matrices:
-                    factor_linear_system(x.primal, state)
+                    # solve the system
+                    dx.equals(0.0)
+                    
+                    self.krylov.solve(self._mat_vec, dJdX_hom, dx, self._precond)
+                    
+                    if self.mu < 0.0005:
+                        dx.times(0.4)
 
-                # compute the adjoint
-                adj.equals_lagrangian_adjoint(
-                    x, state, state_work,
-                    obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    dx_newt.plus(dx)
+                    # update the design
+                    x.plus(dx)
 
-                # advance iter counter
-                inner_iters += 1
-                total_iters += 1
 
-            # if we finished the corrector step at mu=0, we're done!
-            if self.mu == 0.0:
-                self.info_file.write('\n>> Optimization DONE! <<\n')
-                # send solution to solver
-                solver_info = current_solution(
-                    num_iter=outer_iters, curr_primal=x.primal,
-                    curr_state=state, curr_adj=adj, curr_dual=x.dual)
-                if isinstance(solver_info, str) and solver_info != '':
-                    self.info_file.write('\n' + solver_info + '\n')
-                return
+                    if self.ineq_factory is not None:
+                        x.primal.design.enforce_bounds()
+                    else:
+                        x.primal.enforce_bounds()
+
+                    if not state.equals_primal_solution(x.primal):
+                        raise RuntimeError('Newton step failed!')
+                    if self.factor_matrices:
+                        factor_linear_system(x.primal, state)
+
+                    # compute the adjoint
+                    adj.equals_lagrangian_adjoint(
+                        x, state, state_work,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                    # advance iter counter
+                    inner_iters += 1
+                    total_iters += 1
+
+                # if we finished the corrector step at mu=0, we're done!
+                if self.mu == 0.0:
+                    self.info_file.write('\n>> Optimization DONE! <<\n')
+                    # send solution to solver
+                    solver_info = current_solution(
+                        num_iter=outer_iters, curr_primal=x.primal,
+                        curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    if isinstance(solver_info, str) and solver_info != '':
+                        self.info_file.write('\n' + solver_info + '\n')
+                    return
 
             # COMPUTE NEW TANGENT VECTOR
             ############################
@@ -622,17 +580,49 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             dual_work.minus(x0.dual)
             rhs_vec.dual.minus(dual_work)
 
+            if corrector is False:
+                # ------------------------------------------------
+                # --------- write inner for predictor step -------
+
+                dJdX_hom.equals(dJdX)
+                dJdX_hom.times(1. - self.mu)
+
+                xTx = primal_work.inner(primal_work)
+
+                primal_work.times(self.mu)
+                dJdX_hom.primal.plus(primal_work)
+
+                mTm = dual_work.inner(dual_work)
+                dual_work.times(self.mu)
+                dJdX_hom.dual.minus(dual_work)
+
+                hom_opt_norm = dJdX_hom.primal.norm2
+                hom_feas_norm = dJdX_hom.dual.norm2
+
+                obj = objective_value(x.primal, state)
+                lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
+                hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
+                opt_norm = dJdX.primal.norm2
+                feas_norm = dJdX.dual.norm2  
+
+                self._write_inner(
+                    outer_iters, 0,
+                    obj, lag, opt_norm, feas_norm,
+                    hom, hom_opt_norm, hom_feas_norm)
+                # --------------------------------------------------
+
             # compute the new tangent vector and predictor step
             t.equals(0.0)
             self.hessian.linearize(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
-            if self.approx_adj is not None: 
+            if self.approx_adj is not None:
+                # if self.mu < 0.001:                        
+                #     self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
-            # t.primal.slack.times(self.current_x.primal.slack)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -698,7 +688,7 @@ from kona.linalg.common import current_solution, factor_linear_system, objective
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.matrices.hessian import ReducedKKTMatrix
-from kona.linalg.matrices.preconds import APPROXADJOINT2
+from kona.linalg.matrices.preconds import APPROXADJOINT
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector

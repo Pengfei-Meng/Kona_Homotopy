@@ -91,13 +91,26 @@ class ReducedKKTMatrix(BaseHessian):
         self.dCdU = dCdU()
         self.dCINdX = dCINdX()
 
+        self._approx = False
+
+    @property
+    def approx(self):
+        self._approx = True
+        return self
+
     def _linear_solve(self, rhs_vec, solution, rel_tol=1e-8):
         self.dRdU.linearize(self.at_design, self.at_state)
-        self.dRdU.solve(rhs_vec, solution, rel_tol=rel_tol)
+        if self._approx:
+            self.dRdU.precond(rhs_vec, solution)
+        else:
+            self.dRdU.solve(rhs_vec, solution, rel_tol=rel_tol)
 
     def _adjoint_solve(self, rhs_vec, solution, rel_tol=1e-8):
         self.dRdU.linearize(self.at_design, self.at_state)
-        self.dRdU.T.solve(rhs_vec, solution, rel_tol=rel_tol)
+        if self._approx:
+            self.dRdU.T.precond(rhs_vec, solution)
+        else:
+            self.dRdU.T.solve(rhs_vec, solution, rel_tol=rel_tol)
 
     def set_krylov_solver(self, krylov_solver):
         if isinstance(krylov_solver, KrylovSolver):
@@ -391,6 +404,9 @@ class ReducedKKTMatrix(BaseHessian):
             # add the slack contribution to dual component
             # out_dual_ineq -= in_slack
             out_dual_ineq.minus(in_slack)
+
+        # reset the approx and transpose flags at the end
+        self._approx = False
 
         # testing on scaled Slack block KKT product. If not work, just use the above commented block
         # if in_slack is not None:
