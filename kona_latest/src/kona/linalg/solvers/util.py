@@ -241,7 +241,8 @@ def lanczos_bidiag(fwd_mat_vec, Q, q_work,
 
     # size up the problem
     subspace_size = len(P)
-    B = np.zeros((subspace_size, subspace_size+1))
+    # B = np.zeros((subspace_size, subspace_size+1))
+    B = np.zeros((subspace_size, subspace_size))
 
     if not Q_init:
         Q[0].equals(1.0)
@@ -258,10 +259,19 @@ def lanczos_bidiag(fwd_mat_vec, Q, q_work,
         B[j, j] = P[j].norm2 # alpha
         P[j].divide_by(B[j, j])
 
+        ## Previous Version
+        # rev_mat_vec(P[j], Q[j+1])
+        # H = np.zeros((j+2, j+1))
+        # mod_GS_normalize(j, H, Q)
+        # B[j, j+1] = H[-1, -1] # beta
+
         rev_mat_vec(P[j], Q[j+1])
-        H = np.zeros((j+2, j+1))
-        mod_GS_normalize(j, H, Q)
-        B[j, j+1] = H[-1, -1] # beta
+        q_work.equals(Q[j])
+        q_work.times(B[j,j])
+        Q[j+1].minus(q_work)
+        if j < subspace_size - 1:
+            B[j,j+1] = Q[j+1].norm2
+        Q[j+1].divide_by(Q[j+1].norm2)
 
     return B
 
