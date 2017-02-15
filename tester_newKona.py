@@ -525,7 +525,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stiny_3'%(os.path.sep)
+prefix += '%stiny_6'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)

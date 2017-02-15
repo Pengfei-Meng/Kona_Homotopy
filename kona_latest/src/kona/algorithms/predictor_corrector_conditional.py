@@ -33,20 +33,28 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         ############################################################
         self.precond = get_opt(self.optns, None, 'rsnk', 'precond')
         
-        self.idf_schur = None
         self.approx_adj = None
-
-        self.eye = IdentityMatrix()
-        self.eye_precond = self.eye.product
+        self.svd_pc = None
 
         if self.precond is 'approx_adjoint':
             print 'approx_adjoint is used! '
             self.approx_adj = APPROXADJOINT(
                 [primal_factory, state_factory, eq_factory, ineq_factory])
-            self.approx_precond = self.approx_adj.solve 
-            # self.precond = self.approx_precond
-            # self.precond = self.eye_precond
-        self.precond = self.eye_precond
+            # self.approx_precond = self.approx_adj.solve 
+            self.precond = self.approx_adj.solve
+
+        elif self.precond is 'svd_pc':
+            print 'svd_pc is used! '
+            self.svd_pc = SVDPC(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            # self.svd_precond = self.svd_pc.solve
+            self.precond = self.svd_pc.solve
+
+        else:
+            self.eye = IdentityMatrix()
+            # self.eye_precond = self.eye.product
+            self.precond = self.eye.product
+
 
         # krylov solver settings
         ############################################################
@@ -200,31 +208,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         out_vec.dual.minus(self.prod_work.dual)
 
 
-    def _precond(self, in_vec, out_vec):
-
-        if hasattr(self, 'approx_precond'):
-            self.approx_precond(in_vec, out_vec)
-            # if self.mu > 0.012:         # 0.0115:
-            #     out_vec.equals(in_vec)
-            # else:
-            #     self.approx_precond(in_vec, out_vec)
-
-        else:            
-            out_vec.equals(in_vec)
-            # out_vec.dual.times(-1.0)
-
-            # if self.mu == 1.:
-            #     out_vec.equals(in_vec)
-            #     out_vec.dual.times(-1.0)
-
-            # elif self.mu == 0.:
-            #     out_vec.equals(in_vec)
-
-            # else:
-            #     out_vec.equals(in_vec)
-            #     out_vec.primal.times( 1./(1. - self.mu) + 1./self.mu )
-            #     out_vec.dual.times( 1./(1. - self.mu) - 1./self.mu )   
-
     def solve(self):
         self.info_file.write(
             '\n' +
@@ -339,9 +322,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.hessian.linearize(
             x, state, adj,
             obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
         if self.approx_adj is not None:
             self.approx_adj.linearize(x, state, adj, self.mu)
-        self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
+        if self.svd_pc is not None:
+            self.svd_pc.linearize(x, state, adj, self.mu)
+
+        self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
 
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -513,13 +500,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             self.approx_adj.update_mat = True  
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
+                    if self.svd_pc is not None:
+                        self.svd_pc.linearize(x, state, adj, self.mu)
+
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
 
                     # solve the system
                     dx.equals(0.0)
                     
-                    self.krylov.solve(self._mat_vec, dJdX_hom, dx, self._precond)
+                    self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
                     if self.mu < 0.0005:
                         dx.times(0.4)
@@ -618,11 +608,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
             if self.approx_adj is not None:
-                # if self.mu < 0.001:                        
-                #     self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
+            if self.svd_pc is not None:
+                self.svd_pc.linearize(x, state, adj, self.mu)
 
-            self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
+            self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -689,6 +679,7 @@ from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.matrices.hessian import ReducedKKTMatrix
 from kona.linalg.matrices.preconds import APPROXADJOINT
+from kona.linalg.matrices.preconds import SVDPC
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector
