@@ -71,7 +71,6 @@ class SVDPC(BaseHessian):
 
     def solve(self, rhs_vec, pcd_vec): 
         self.krylov.solve(self._mat_vec, rhs_vec, pcd_vec, self.eye_precond)
-        
 
     def _mat_vec(self, in_vec, out_vec):
         self._kkt_product(in_vec, out_vec)
@@ -126,6 +125,3 @@ class SVDPC(BaseHessian):
         slak = self.ineq_factory.generate()        
         dual = self.ineq_factory.generate()
         ReducedKKTVector(CompositePrimalVector(prim, slak), dual)
-
-
-
