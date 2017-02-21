@@ -8,6 +8,7 @@ from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import ReducedKKTVector
+from kona.linalg.matrices.hessian import TotalConstraintJacobian
 
 class SVDPC(BaseHessian):
 
@@ -24,14 +25,14 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        svd_optns = {'lanczos_size': 10}
+        svd_optns = {'lanczos_size': 20}
         self.svd_Ag = LowRankSVD(
-            fwd_mat_vec, self.pf, rev_mat_vec, self.df, svd_optns)
+            self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
         # krylov solver settings
         krylov_optns = {
-            'krylov_file'   : 'kona_krylov.dat',
-            'subspace_size' : 10,
+            'krylov_file'   : 'svdpc_krylov.dat',
+            'subspace_size' : 25,
             'check_res'     : False, 
             'rel_tol'       : 1e-2
         }
@@ -43,10 +44,10 @@ class SVDPC(BaseHessian):
         self._allocated = False
 
     def fwd_mat_vec(self, in_vec, out_vec):
-        self.Ag.product(in_vec, out_vec)
+        self.Ag.approx.product(in_vec, out_vec)
 
     def rev_mat_vec(self, in_vec, out_vec):
-        self.Ag.T.product(in_vec, out_vec)
+        self.Ag.T.approx.product(in_vec, out_vec)
 
     def linearize(self, X, state, adjoint, mu=0.0):
 
@@ -67,11 +68,21 @@ class SVDPC(BaseHessian):
         self.mu = mu
 
         self.Ag.linearize(X.primal.design, state)
-        self.svd_Ag.linearize()
+        singular_vals = self.svd_Ag.linearize()
+        self.singular_vals = singular_vals
+        return singular_vals
 
     def solve(self, rhs_vec, pcd_vec): 
+
+        self.krylov.outer_iters = 100000
+        self.krylov.inner_iters = 100000
+        self.krylov.mu = 100000
+        self.krylov.step = 'SVDPC'
         self.krylov.solve(self._mat_vec, rhs_vec, pcd_vec, self.eye_precond)
 
+        # &&&&&&&&&&&&&& scaled 
+        # pcd_vec.primal.slack.times(self.at_slack)
+        
     def _mat_vec(self, in_vec, out_vec):
         self._kkt_product(in_vec, out_vec)
 
@@ -79,6 +90,10 @@ class SVDPC(BaseHessian):
 
         self.kkt_work.equals(in_vec)
         self.kkt_work.times(self.mu)
+
+        # # &&&&&&&&&&&&&& scaled 
+        # self.kkt_work.primal.slack.times(self.at_slack)
+        # ------------------------------
 
         out_vec.primal.plus(self.kkt_work.primal)
         out_vec.dual.minus(self.kkt_work.dual)
@@ -105,23 +120,38 @@ class SVDPC(BaseHessian):
 
         # design block
         out_design.equals(in_design)
-        self.Ag.T.product(in_dual_ineq, self.design_work)
+        self.svd_Ag.approx_rev_prod(in_dual_ineq, self.design_work)
         out_design.plus(self.design_work)
-
+        
         # slack block
         out_slack.equals(in_slack)
         out_slack.times(self.at_dual_ineq)
+
+        # # &&&&&&&&&&&&&& scaled 
+        # out_slack.times(self.at_slack)
+        # ---------------------------------
+        
         self.slack_work.equals(in_dual_ineq)
         self.slack_work.times(self.at_slack)
         out_slack.plus(self.slack_work)
         out_slack.times(-1.0)
 
-        # ineq_dual block
-        self.Ag.product(in_design, out_dual_ineq)
-        out_dual_ineq.minus(in_slack)
+        # # ineq_dual block
+        self.svd_Ag.approx_fwd_prod(in_design, out_dual_ineq)
+        self.slack_work = in_slack
+
+        # # # &&&&&&&&&&&&&& scaled 
+        # self.slack_work.times(self.at_slack)
+        # ---------------------------------
+        out_dual_ineq.minus(self.slack_work)
+
+        # # ----- adding the theta_r block --------
+        # self.slack_work.equals(in_dual_ineq)
+        # self.slack_work.times(min(self.singular_vals))
+        # out_dual_ineq.plus(self.slack_work)
 
     def _generate_kkt(self):
         prim = self.primal_factory.generate()
         slak = self.ineq_factory.generate()        
         dual = self.ineq_factory.generate()
-        ReducedKKTVector(CompositePrimalVector(prim, slak), dual)
+        return ReducedKKTVector(CompositePrimalVector(prim, slak), dual)

@@ -93,6 +93,7 @@ class LowRankSVD(object):
         u_tmp, s_tmp, vT_tmp = np.linalg.svd(S, full_matrices=0)
         v_tmp = vT_tmp.T
 
+        # print 'Singular Values of A: ', s_tmp
         # save the singular values
         self.S = np.diag(s_tmp)
 
@@ -111,6 +112,8 @@ class LowRankSVD(object):
                 self.p_work.equals(self.P[i])
                 self.p_work.times(u_tmp[i, j])
                 self.U[j].plus(self.p_work)
+
+        return s_tmp
 
     def approx_fwd_prod(self, in_vec, out_vec):
         VT_in = np.zeros(len(self.V))

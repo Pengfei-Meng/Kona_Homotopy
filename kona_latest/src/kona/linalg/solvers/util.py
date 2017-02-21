@@ -259,7 +259,7 @@ def lanczos_bidiag(fwd_mat_vec, Q, q_work,
         B[j, j] = P[j].norm2 # alpha
         P[j].divide_by(B[j, j])
 
-        ## Previous Version
+        # # Previous Version
         # rev_mat_vec(P[j], Q[j+1])
         # H = np.zeros((j+2, j+1))
         # mod_GS_normalize(j, H, Q)

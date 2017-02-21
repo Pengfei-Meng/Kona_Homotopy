@@ -55,6 +55,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # self.eye_precond = self.eye.product
             self.precond = self.eye.product
 
+        # self.eye = IdentityMatrix()
+        # self.precond = self.eye.product
 
         # krylov solver settings
         ############################################################
@@ -202,7 +204,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         self.prod_work.equals(in_vec)
         self.prod_work.times(self.mu)
-        # self.prod_work.primal.slack.times(self.current_x.primal.slack)
 
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
@@ -275,7 +276,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # compute initial KKT conditions
         dJdX.equals_KKT_conditions(
             x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
         # send solution to solver
         solver_info = current_solution(
             num_iter=0, curr_primal=x.primal, curr_state=state, curr_adj=adj,
@@ -327,7 +327,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.approx_adj.linearize(x, state, adj, self.mu)
         if self.svd_pc is not None:
             self.svd_pc.linearize(x, state, adj, self.mu)
-
+        
+        self.krylov.outer_iters = 0
+        self.krylov.inner_iters = 0
+        self.krylov.mu = 1.0
+        self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
 
         # normalize tangent vector
@@ -402,7 +406,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
 
-            if self.mu < 0.1:           #0.1:        #0.03:
+            if self.mu < 0.01:      # 0.01         
+
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
@@ -429,7 +434,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
                         print 'self.inner_tol at mu = 0.0', self.inner_tol
-                        self.krylov.rel_tol = 1e-5
+                        # self.krylov.rel_tol = 1e-5
 
 
                     dJdX_hom.equals(dJdX)
@@ -501,18 +506,31 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
-                        self.svd_pc.linearize(x, state, adj, self.mu)
+                        sin_vals = self.svd_pc.linearize(x, state, adj, self.mu)
+
+                    # ---------- save the singular values for mu = 0.0 ----------
+                    # if self.mu == 0.0:
+                    #     file_name = './test/' + self.outdir + '/sinvals_%d_%d.pkl'%(outer_iters, inner_iters)
+                    #     output = open(file_name,'w')
+                    #     pickle.dump(sin_vals, output)
+                    #     output.close()   
+
+                        
+                    self.krylov.outer_iters = outer_iters
+                    self.krylov.inner_iters = inner_iters
+                    self.krylov.mu = self.mu
+                    self.krylov.step = 'Corrector'
 
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
 
                     # solve the system
                     dx.equals(0.0)
-                    
+
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    if self.mu < 0.0005:
-                        dx.times(0.4)
+                    # if self.mu < 0.0005:
+                    #     dx.times(0.4)
 
                     dx_newt.plus(dx)
                     # update the design
@@ -533,6 +551,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     adj.equals_lagrangian_adjoint(
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                    # solver_info = current_solution(
+                    #     num_iter=inner_iters, curr_primal=x.primal,
+                    #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
 
                     # advance iter counter
                     inner_iters += 1
@@ -611,6 +633,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 self.approx_adj.linearize(x, state, adj, self.mu)
             if self.svd_pc is not None:
                 self.svd_pc.linearize(x, state, adj, self.mu)
+            self.krylov.outer_iters = outer_iters
+            self.krylov.inner_iters = 0
+            self.krylov.mu = self.mu
+            self.krylov.step = 'Predictor'
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
 
@@ -665,7 +691,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     curr_state=state, curr_adj=adj, curr_dual=x.dual)
                 if isinstance(solver_info, str) and solver_info != '':
                     self.info_file.write('\n' + solver_info + '\n')
-
+                a = 1
             # advance iteration counter
             outer_iters += 1
             self.info_file.write('\n')
