@@ -387,7 +387,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
 
-            self.info_file.write('\nmu after pred  = %f\n'%self.mu)
+            self.info_file.write('\nmu after pred  = %.10f\n'%self.mu)
 
             # solve states
             if self.ineq_factory is not None:
@@ -633,7 +633,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 self.approx_adj.linearize(x, state, adj, self.mu)
             if self.svd_pc is not None:
                 self.svd_pc.linearize(x, state, adj, self.mu)
-            self.krylov.outer_iters = outer_iters
+            self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = 0
             self.krylov.mu = self.mu
             self.krylov.step = 'Predictor'

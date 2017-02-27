@@ -92,12 +92,12 @@ class FGMRES(KrylovSolver):
         # initialize RHS of reduced system
         g[0] = beta
 
-        # output header information
-        if hasattr(self, 'pcd'): 
-            self.out_file.write('approx_adjoint preconditioner in use! ')
-        # else:
-        #     self.out_file.write('Identity preconditioner in use! ')
-
+        self.out_file.write(
+            '@ %s \n' %(self.step) + 
+            '@ Outer Iter %i \n' %(self.outer_iters) +
+            '@ Inner Iter %i \n' %(self.inner_iters) + 
+            '@ self.mu %e \n' %(self.mu)
+        )
         write_header(self.out_file, 'FGMRES', self.rel_tol, beta)
         write_history(self.out_file, 0, beta, norm0)
 

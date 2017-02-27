@@ -112,8 +112,7 @@ class LowRankSVD(object):
                 self.p_work.equals(self.P[i])
                 self.p_work.times(u_tmp[i, j])
                 self.U[j].plus(self.p_work)
-
-        return s_tmp
+                
 
     def approx_fwd_prod(self, in_vec, out_vec):
         VT_in = np.zeros(len(self.V))

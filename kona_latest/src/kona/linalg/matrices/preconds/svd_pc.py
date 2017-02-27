@@ -1,5 +1,6 @@
 import numpy as np 
 import scipy as sp
+import pdb
 from kona.options import get_opt
 from kona.linalg.matrices.preconds import LowRankSVD
 from kona.linalg.matrices.hessian.basic import BaseHessian
@@ -25,14 +26,14 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        svd_optns = {'lanczos_size': 20}
+        svd_optns = {'lanczos_size': 5}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
         # krylov solver settings
         krylov_optns = {
             'krylov_file'   : 'svdpc_krylov.dat',
-            'subspace_size' : 25,
+            'subspace_size' : 7,
             'check_res'     : False, 
             'rel_tol'       : 1e-2
         }
@@ -68,11 +69,73 @@ class SVDPC(BaseHessian):
         self.mu = mu
 
         self.Ag.linearize(X.primal.design, state)
-        singular_vals = self.svd_Ag.linearize()
-        self.singular_vals = singular_vals
-        return singular_vals
+        self.svd_Ag.linearize()
 
-    def solve(self, rhs_vec, pcd_vec): 
+        # return self.svd_Ag.S
+
+        # # for direct solve part
+        # -----------------------
+        self.num_design = len(X.primal.design.base.data)
+        self.num_ineq = len(X.dual.base.data)
+
+
+        # self.at_design_data = X.primal.design.base.data
+        self.at_slack_data = X.primal.slack.base.data
+        if self.eq_factory is not None:
+            self.at_dual_eq_data = X.dual.eq.base.data
+            self.at_dual_ineq_data = X.dual.ineq.base.data
+        else:
+            self.at_dual_ineq_data = X.dual.base.data
+
+        self.W_eye = np.eye(self.num_design)
+        self.A_full = np.zeros((self.num_ineq, self.num_design))
+
+        # --------- peeling off SVD_Ag  U, V -----------
+        self.S = self.svd_Ag.S
+        self.U = np.zeros((self.num_ineq, len( self.svd_Ag.U ) ))
+        self.V = np.zeros((self.num_design, len( self.svd_Ag.V ) ))
+
+        for j in xrange(self.S.shape[0]):
+            self.U[:, j] = self.svd_Ag.U[j].base.data
+            self.V[:, j] = self.svd_Ag.V[j].base.data
+
+        self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
+
+        if self.mu == 0.0:
+            print 'dual_data: ', self.at_dual_ineq_data
+            print 'slack data: ', self.at_slack_data
+
+
+    def solve(self, rhs_vec, pcd_vec):
+
+        v_x = rhs_vec.primal.design.base.data
+        v_s = rhs_vec.primal.slack.base.data
+        v_g = rhs_vec.dual.base.data
+
+        rhs_full = np.hstack([v_x, v_s, v_g])
+
+        # # ----------------- The Full KKT Matrix -------------------
+        KKT_full = np.vstack([np.hstack([self.W_eye,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
+                              np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq_data), -np.diag(self.at_slack_data)]),
+                              np.hstack([self.A_full, -np.eye(self.num_ineq),  np.zeros((self.num_ineq, self.num_ineq))]) ])
+
+
+        eyes_h = np.hstack([ np.ones(self.num_design), np.ones(self.num_ineq), -np.ones(self.num_ineq) ])    
+        homo_I = np.diag(eyes_h)        
+
+        KKT = (1-self.mu)*KKT_full + self.mu*homo_I
+        p_full = sp.linalg.lu_solve(sp.linalg.lu_factor(KKT), rhs_full)
+
+        p_x = p_full[:self.num_design]
+        p_s = p_full[self.num_design:self.num_design + self.num_ineq]   
+        p_g = p_full[self.num_design + self.num_ineq:]
+
+        pcd_vec.primal.design.base.data = p_x
+        pcd_vec.primal.slack.base.data = p_s
+        pcd_vec.dual.base.data = p_g
+
+
+    def solve_krylov(self, rhs_vec, pcd_vec): 
 
         self.krylov.outer_iters = 100000
         self.krylov.inner_iters = 100000
@@ -80,7 +143,7 @@ class SVDPC(BaseHessian):
         self.krylov.step = 'SVDPC'
         self.krylov.solve(self._mat_vec, rhs_vec, pcd_vec, self.eye_precond)
 
-        # &&&&&&&&&&&&&& scaled 
+        # # &&&&&&&&&&&&&& scaled 
         # pcd_vec.primal.slack.times(self.at_slack)
         
     def _mat_vec(self, in_vec, out_vec):
@@ -143,12 +206,13 @@ class SVDPC(BaseHessian):
         # # # &&&&&&&&&&&&&& scaled 
         # self.slack_work.times(self.at_slack)
         # ---------------------------------
+
         out_dual_ineq.minus(self.slack_work)
 
         # # ----- adding the theta_r block --------
         # self.slack_work.equals(in_dual_ineq)
         # self.slack_work.times(min(self.singular_vals))
-        # out_dual_ineq.plus(self.slack_work)
+        # out_dual_ineq.minus(self.slack_work)
 
     def _generate_kkt(self):
         prim = self.primal_factory.generate()
