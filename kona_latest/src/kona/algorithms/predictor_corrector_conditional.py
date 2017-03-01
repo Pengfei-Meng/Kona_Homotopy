@@ -10,14 +10,14 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         )
 
         # number of vectors required in solve() method
-        self.primal_factory.request_num_vectors(14)
+        self.primal_factory.request_num_vectors(15)
         self.state_factory.request_num_vectors(5)
 
         if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(14)
+            self.eq_factory.request_num_vectors(15)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(30)
+            self.ineq_factory.request_num_vectors(32)
 
         # general options
         ############################################################
@@ -221,6 +221,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         x = self._generate_kkt()
         x0 = self._generate_kkt()
         x_save = self._generate_kkt()
+        x_temp = self._generate_kkt()
         dJdX = self._generate_kkt()
 
         dJdX_save = self._generate_kkt()
@@ -233,7 +234,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.prod_work = self._generate_kkt()
 
         self.current_x = self._generate_kkt()
-
 
         state = self.state_factory.generate()
         state_work = self.state_factory.generate()
@@ -372,7 +372,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             t_save.equals(t)
             dmu_save = dmu
             mu_save = self.mu
-            
+
+            # -----------------------------------------------------------
+            # -- modify the step size, 1) dmu within range, [min, max], new mu >= 0 
             # take a predictor step
             dmu_step = dmu * self.step
             dmu_step = max(self.dmu_min, dmu_step)
@@ -382,7 +384,36 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if tent_mu < 0.0:
                 tent_mu = 0.0
 
-            self.step = (tent_mu - self.mu)/dmu
+            # self.step = (tent_mu - self.mu)/dmu
+
+
+            # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+            max_mu_step = (tent_mu - self.mu)/dmu
+
+            min_t_slack = min(t.primal.slack.base.data)
+            min_t_slack_index = np.argmin(t.primal.slack.base.data)
+
+            if min_t_slack >= 0.0:
+                max_slack_step = 1.0
+            else:
+                max_slack_step = - 0.995* x.primal.slack.base.data[min_t_slack_index] / t.primal.slack.base.data[min_t_slack_index]
+
+            max_t_ineq = max(t.dual.base.data)
+            max_t_ineq_index = np.argmax(t.dual.base.data)  
+
+            if max_t_ineq <= 0.0:
+                max_ineq_step = 1.0
+            else:
+                max_ineq_step = - 0.995* x.dual.base.data[max_t_ineq_index] / t.dual.base.data[max_t_ineq_index]
+
+            slack_step = min(max_mu_step, max_slack_step)
+            ineq_step = min(max_mu_step, max_ineq_step)
+
+            # x.primal.equals_ax_p_by(1.0, x.primal, slack_step, t.primal)
+            # x.dual.equals_ax_p_by(1.0, x.dual, ineq_step, t.dual)
+
+            step = min(slack_step, ineq_step)
+            # ----------------------------------------------------------
 
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
@@ -532,6 +563,36 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # if self.mu < 0.0005:
                     #     dx.times(0.4)
 
+                    # -------------------------------------------------
+                    # -------------------------------------------------
+                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+                    min_t_slack = min(dx.primal.slack.base.data)
+                    min_t_slack_index = np.argmin(dx.primal.slack.base.data)
+
+                    if min_t_slack >= 0.0:
+                        max_slack_step = 1.0
+                    else:
+                        max_slack_step = - 0.995* x.primal.slack.base.data[min_t_slack_index] / dx.primal.slack.base.data[min_t_slack_index]
+
+                    max_t_ineq = max(dx.dual.base.data)
+                    max_t_ineq_index = np.argmax(dx.dual.base.data)  
+
+                    if max_t_ineq <= 0.0:
+                        max_ineq_step = 1.0
+                    else:
+                        max_ineq_step = - 0.995* x.dual.base.data[max_t_ineq_index] / dx.dual.base.data[max_t_ineq_index]
+
+                    slack_step = min(1.0, max_slack_step)
+                    ineq_step = min(1.0, max_ineq_step)
+
+                    # dx.primal.times(slack_step)
+                    # dx.dual.times(ineq_step)
+
+                    newton_step = min(slack_step, ineq_step)
+                    dx.times(newton_step)
+
+                    # ----------------------------------------------------------
+
                     dx_newt.plus(dx)
                     # update the design
                     x.plus(dx)
@@ -561,7 +622,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     total_iters += 1
 
                 # if we finished the corrector step at mu=0, we're done!
-                if self.mu == 0.0:
+                if self.mu < 1e-6:    # 0.0:
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
                     solver_info = current_solution(
