@@ -376,6 +376,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -----------------------------------------------------------
             # -- modify the step size, 1) dmu within range, [min, max], new mu >= 0 
             # take a predictor step
+            if np.any(x.dual.base.data > 0 ):
+                print 'Predictor, outer_iters', outer_iters
+                print 'dual_data in corrector: ', x.dual.base.data
+            if np.any(x.primal.slack.base.data < 0 ):
+                print 'slack data in corrector: ', x.primal.slack.base.data
+
             dmu_step = dmu * self.step
             dmu_step = max(self.dmu_min, dmu_step)
             dmu_step = min(self.dmu_max, dmu_step)
@@ -390,33 +396,35 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -- 2) new slack >= 0.0, new multipliers <= 0.0  
             max_mu_step = (tent_mu - self.mu)/dmu
 
-            min_t_slack = min(t.primal.slack.base.data)
-            min_t_slack_index = np.argmin(t.primal.slack.base.data)
-
-            if min_t_slack >= 0.0:
-                max_slack_step = 1.0
+            slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
+            if any(slack_steps > 0):
+                max_slack_step = min(slack_steps[slack_steps > 0])
             else:
-                max_slack_step = - 0.995* x.primal.slack.base.data[min_t_slack_index] / t.primal.slack.base.data[min_t_slack_index]
+                max_slack_step = 1e3
 
-            max_t_ineq = max(t.dual.base.data)
-            max_t_ineq_index = np.argmax(t.dual.base.data)  
-
-            if max_t_ineq <= 0.0:
-                max_ineq_step = 1.0
+            ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
+            if any(ineq_steps > 0):
+                max_ineq_step = min(ineq_steps[ineq_steps > 0])
             else:
-                max_ineq_step = - 0.995* x.dual.base.data[max_t_ineq_index] / t.dual.base.data[max_t_ineq_index]
+                max_ineq_step = 1e3
 
-            slack_step = min(max_mu_step, max_slack_step)
-            ineq_step = min(max_mu_step, max_ineq_step)
+            print 'max_slack_step, ', max_slack_step
+            print 'max_ineq_step, ', max_ineq_step
 
-            # x.primal.equals_ax_p_by(1.0, x.primal, slack_step, t.primal)
-            # x.dual.equals_ax_p_by(1.0, x.dual, ineq_step, t.dual)
 
-            step = min(slack_step, ineq_step)
+            x.primal.equals_ax_p_by(1.0, x.primal, max_slack_step, t.primal)
+            x.dual.equals_ax_p_by(1.0, x.dual, max_ineq_step, t.dual)
+            self.mu += max_mu_step*dmu
+
+            # self.step = min(max_mu_step, max_slack_step, max_ineq_step)
+
+            print 'max_mu_step, ', max_mu_step
+            print 'step, ', self.step
+
             # ----------------------------------------------------------
 
-            x.equals_ax_p_by(1.0, x, self.step, t)
-            self.mu += self.step*dmu
+            # x.equals_ax_p_by(1.0, x, self.step, t)
+            # self.mu += self.step*dmu
 
             self.info_file.write('\nmu after pred  = %.10f\n'%self.mu)
 
@@ -565,31 +573,33 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # -------------------------------------------------
                     # -------------------------------------------------
+                    if np.any(x.dual.base.data > 0 ):
+                        print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
+                        print 'dual_data in corrector: ', x.dual.base.data
+                    if np.any(x.primal.slack.base.data < 0 ):
+                        print 'slack data in corrector: ', x.primal.slack.base.data
+
+
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    min_t_slack = min(dx.primal.slack.base.data)
-                    min_t_slack_index = np.argmin(dx.primal.slack.base.data)
+                    slack_steps = -0.995*x.primal.slack.base.data/dx.primal.slack.base.data
 
-                    if min_t_slack >= 0.0:
-                        max_slack_step = 1.0
+                    if any(slack_steps > 0):
+                        max_slack_step = min(slack_steps[slack_steps > 0])
                     else:
-                        max_slack_step = - 0.995* x.primal.slack.base.data[min_t_slack_index] / dx.primal.slack.base.data[min_t_slack_index]
+                        max_slack_step = 1e3
 
-                    max_t_ineq = max(dx.dual.base.data)
-                    max_t_ineq_index = np.argmax(dx.dual.base.data)  
 
-                    if max_t_ineq <= 0.0:
-                        max_ineq_step = 1.0
+                    ineq_steps = -0.995*x.dual.base.data/dx.dual.base.data
+                    if any(ineq_steps > 0):
+                        max_ineq_step = min(ineq_steps[ineq_steps > 0])
                     else:
-                        max_ineq_step = - 0.995* x.dual.base.data[max_t_ineq_index] / dx.dual.base.data[max_t_ineq_index]
+                        max_ineq_step = 1e3
 
-                    slack_step = min(1.0, max_slack_step)
-                    ineq_step = min(1.0, max_ineq_step)
+                    dx.primal.times(max_slack_step)
+                    dx.dual.times(max_ineq_step)
 
-                    # dx.primal.times(slack_step)
-                    # dx.dual.times(ineq_step)
-
-                    newton_step = min(slack_step, ineq_step)
-                    dx.times(newton_step)
+                    # newton_step = min(max_slack_step, max_ineq_step)
+                    # dx.times(newton_step)
 
                     # ----------------------------------------------------------
 
