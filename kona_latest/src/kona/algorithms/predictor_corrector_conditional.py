@@ -390,41 +390,41 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if tent_mu < 0.0:
                 tent_mu = 0.0
 
-            # self.step = (tent_mu - self.mu)/dmu
+            self.step = (tent_mu - self.mu)/dmu
 
 
-            # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-            max_mu_step = (tent_mu - self.mu)/dmu
+            # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+            # max_mu_step = (tent_mu - self.mu)/dmu
 
-            slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
-            if any(slack_steps > 0):
-                max_slack_step = min(slack_steps[slack_steps > 0])
-            else:
-                max_slack_step = 1e3
+            # slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
+            # if any(slack_steps > 0):
+            #     max_slack_step = min(slack_steps[slack_steps > 0])
+            # else:
+            #     max_slack_step = 1e3
 
-            ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
-            if any(ineq_steps > 0):
-                max_ineq_step = min(ineq_steps[ineq_steps > 0])
-            else:
-                max_ineq_step = 1e3
+            # ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
+            # if any(ineq_steps > 0):
+            #     max_ineq_step = min(ineq_steps[ineq_steps > 0])
+            # else:
+            #     max_ineq_step = 1e3
 
-            print 'max_slack_step, ', max_slack_step
-            print 'max_ineq_step, ', max_ineq_step
+            # print 'max_slack_step, ', max_slack_step
+            # print 'max_ineq_step, ', max_ineq_step
 
 
-            x.primal.equals_ax_p_by(1.0, x.primal, max_slack_step, t.primal)
-            x.dual.equals_ax_p_by(1.0, x.dual, max_ineq_step, t.dual)
-            self.mu += max_mu_step*dmu
+            # x.primal.equals_ax_p_by(1.0, x.primal, max_slack_step, t.primal)
+            # x.dual.equals_ax_p_by(1.0, x.dual, max_ineq_step, t.dual)
+            # self.mu += max_mu_step*dmu
 
-            # self.step = min(max_mu_step, max_slack_step, max_ineq_step)
+            # # self.step = min(max_mu_step, max_slack_step, max_ineq_step)
 
-            print 'max_mu_step, ', max_mu_step
-            print 'step, ', self.step
+            # print 'max_mu_step, ', max_mu_step
+            # print 'step, ', self.step
 
             # ----------------------------------------------------------
 
-            # x.equals_ax_p_by(1.0, x, self.step, t)
-            # self.mu += self.step*dmu
+            x.equals_ax_p_by(1.0, x, self.step, t)
+            self.mu += self.step*dmu
 
             self.info_file.write('\nmu after pred  = %.10f\n'%self.mu)
 
@@ -573,30 +573,30 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # -------------------------------------------------
                     # -------------------------------------------------
-                    if np.any(x.dual.base.data > 0 ):
-                        print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
-                        print 'dual_data in corrector: ', x.dual.base.data
-                    if np.any(x.primal.slack.base.data < 0 ):
-                        print 'slack data in corrector: ', x.primal.slack.base.data
+                    # if np.any(x.dual.base.data > 0 ):
+                    #     print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
+                    print 'dual_data in corrector: ', x.dual.base.data
+                    # if np.any(x.primal.slack.base.data < 0 ):
+                    print 'slack data in corrector: ', x.primal.slack.base.data
 
 
-                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    slack_steps = -0.995*x.primal.slack.base.data/dx.primal.slack.base.data
+                    # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+                    # slack_steps = -0.995*x.primal.slack.base.data/dx.primal.slack.base.data
 
-                    if any(slack_steps > 0):
-                        max_slack_step = min(slack_steps[slack_steps > 0])
-                    else:
-                        max_slack_step = 1e3
+                    # if any(slack_steps > 0):
+                    #     max_slack_step = min(slack_steps[slack_steps > 0])
+                    # else:
+                    #     max_slack_step = 1e3
 
 
-                    ineq_steps = -0.995*x.dual.base.data/dx.dual.base.data
-                    if any(ineq_steps > 0):
-                        max_ineq_step = min(ineq_steps[ineq_steps > 0])
-                    else:
-                        max_ineq_step = 1e3
+                    # ineq_steps = -0.995*x.dual.base.data/dx.dual.base.data
+                    # if any(ineq_steps > 0):
+                    #     max_ineq_step = min(ineq_steps[ineq_steps > 0])
+                    # else:
+                    #     max_ineq_step = 1e3
 
-                    dx.primal.times(max_slack_step)
-                    dx.dual.times(max_ineq_step)
+                    # dx.primal.times(max_slack_step)
+                    # dx.dual.times(max_ineq_step)
 
                     # newton_step = min(max_slack_step, max_ineq_step)
                     # dx.times(newton_step)
