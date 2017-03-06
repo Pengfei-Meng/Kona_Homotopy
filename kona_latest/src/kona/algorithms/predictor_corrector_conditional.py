@@ -445,7 +445,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
 
-            if self.mu < 0.01:      # 0.01         
+            if self.mu < 0.1:      # 0.01         
 
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
@@ -473,7 +473,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
                         print 'self.inner_tol at mu = 0.0', self.inner_tol
-                        # self.krylov.rel_tol = 1e-5
+                        self.krylov.rel_tol = 1e-5
 
 
                     dJdX_hom.equals(dJdX)
