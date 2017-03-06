@@ -528,7 +528,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%sapprox_x'%(os.path.sep)
+prefix += '%sapprox_minusT'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)

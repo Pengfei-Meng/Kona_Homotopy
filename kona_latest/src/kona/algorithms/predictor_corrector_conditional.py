@@ -336,7 +336,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
-        t.times(1./tnorm)
+        t.times(-1./tnorm)
         dmu = -1./tnorm
 
         # START OUTER ITERATIONS
@@ -445,7 +445,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
 
-            if self.mu < 0.1:      # 0.01         
+            if self.mu < 0.01:      # 0.01         
 
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
@@ -713,7 +713,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
-            t.times(1./tnorm)
+            t.times(-1./tnorm)
             dmu = -1./tnorm
 
             # compute distance to curve
