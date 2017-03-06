@@ -376,11 +376,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -----------------------------------------------------------
             # -- modify the step size, 1) dmu within range, [min, max], new mu >= 0 
             # take a predictor step
-            if np.any(x.dual.base.data > 0 ):
-                print 'Predictor, outer_iters', outer_iters
-                print 'dual_data in corrector: ', x.dual.base.data
-            if np.any(x.primal.slack.base.data < 0 ):
-                print 'slack data in corrector: ', x.primal.slack.base.data
+            # if np.any(x.dual.base.data > 0 ):
+            # print 'Predictor, outer_iters', outer_iters
+            # print 'dual_data in corrector: ', x.dual.base.data
+            # # if np.any(x.primal.slack.base.data < 0 ):
+            # print 'slack data in corrector: ', x.primal.slack.base.data
 
             dmu_step = dmu * self.step
             dmu_step = max(self.dmu_min, dmu_step)
@@ -568,16 +568,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    # if self.mu < 0.0005:
-                    #     dx.times(0.4)
+                    if self.mu < 0.0005:
+                        dx.times(0.4)
 
                     # -------------------------------------------------
                     # -------------------------------------------------
                     # if np.any(x.dual.base.data > 0 ):
-                    #     print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
-                    print 'dual_data in corrector: ', x.dual.base.data
-                    # if np.any(x.primal.slack.base.data < 0 ):
-                    print 'slack data in corrector: ', x.primal.slack.base.data
+                    # print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
+                    # print 'dual_data in corrector: ', x.dual.base.data
+                    # # if np.any(x.primal.slack.base.data < 0 ):
+                    # print 'slack data in corrector: ', x.primal.slack.base.data
 
 
                     # # -- 2) new slack >= 0.0, new multipliers <= 0.0  

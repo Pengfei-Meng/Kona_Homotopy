@@ -102,8 +102,8 @@ class SVDPC(BaseHessian):
 
         self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
 
-        print 'dual_data: ', self.at_dual_ineq_data
-        print 'slack data: ', self.at_slack_data
+        # print 'dual_data: ', self.at_dual_ineq_data
+        # print 'slack data: ', self.at_slack_data
 
         # if self.mu < 1e-6:
         #     # print 'dual_data: ', self.at_dual_ineq_data
@@ -122,18 +122,20 @@ class SVDPC(BaseHessian):
         # # ----------------- The Full KKT Matrix -------------------
         KKT_full = np.vstack([np.hstack([self.W_eye,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
                               np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq_data), -np.diag(self.at_slack_data)]),
-                              np.hstack([ self.A_full, -np.eye(self.num_ineq),  -min(np.diag(self.S))*np.eye(self.num_ineq)  ]) ])  
-        # np.zeros((self.num_ineq, self.num_ineq))
+                              np.hstack([ self.A_full, -np.eye(self.num_ineq),   np.zeros((self.num_ineq, self.num_ineq)) ]) ])  
+        #      -min(np.diag(self.S))*np.eye(self.num_ineq)
 
         # if self.mu < 1e-6:
         #     print 'KKT_full condition number ', np.linalg.cond(KKT_full)
         #     print 'KKT_full rank ', np.linalg.matrix_rank(KKT_full)
+        #     print 'A_full condition number ', np.linalg.cond(self.A_full)
+        #     print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
 
-        #     # fig2 = pylt.figure()
-        #     # M = sps.csr_matrix(KKT_full)
-        #     # pylt.spy(M, precision=1e-5, marker='o', markersize=2)
-        #     # pylt.title('sparsity pattern for Jacobian')
-        #     # pylt.show()
+            # fig2 = pylt.figure()
+            # M = sps.csr_matrix(KKT_full)
+            # pylt.spy(M, precision=1e-5, marker='o', markersize=2)
+            # pylt.title('sparsity pattern for Jacobian')
+            # pylt.show()
 
 
         eyes_h = np.hstack([ np.ones(self.num_design), np.ones(self.num_ineq), -np.ones(self.num_ineq) ])    
