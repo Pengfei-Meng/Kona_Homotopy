@@ -102,13 +102,13 @@ class SVDPC(BaseHessian):
 
         self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
 
-        self.sigma = - self.at_dual_ineq_data/self.at_slack_data
+        # self.sigma = - self.at_dual_ineq_data/self.at_slack_data
 
-        if np.any(abs(self.sigma) > 1000 ):
-            print 'max dual_data: ', max(abs(self.at_dual_ineq_data))
-            print 'min dual_data: ', min(abs(self.at_dual_ineq_data))
-            print 'max slack data: ', max(abs(self.at_slack_data))
-            print 'min slack data: ', min(abs(self.at_slack_data))
+        # if np.any(abs(self.sigma) > 1000 ):
+        #     print 'max dual_data: ', max(abs(self.at_dual_ineq_data))
+        #     print 'min dual_data: ', min(abs(self.at_dual_ineq_data))
+        #     print 'max slack data: ', max(abs(self.at_slack_data))
+        #     print 'min slack data: ', min(abs(self.at_slack_data))
             # print 'A_full condition number ', np.linalg.cond(self.A_full)
             # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
             
@@ -123,8 +123,8 @@ class SVDPC(BaseHessian):
         # # ----------------- The Full KKT Matrix -------------------
         KKT_full = np.vstack([np.hstack([self.W_eye,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
                               np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq_data), -np.diag(self.at_slack_data)]),
-                              np.hstack([ self.A_full, -np.eye(self.num_ineq),   np.zeros((self.num_ineq, self.num_ineq)) ]) ])  
-        #      -min(np.diag(self.S))*np.eye(self.num_ineq)
+                              np.hstack([ self.A_full, -np.eye(self.num_ineq),  -min(np.diag(self.S))*np.eye(self.num_ineq)  ]) ])  
+        #       np.zeros((self.num_ineq, self.num_ineq))
 
         # if self.mu < 1e-6:
         #     print 'KKT_full condition number ', np.linalg.cond(KKT_full)

@@ -528,7 +528,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp3'%(os.path.sep)
+prefix += '%ssvd1'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -561,7 +561,7 @@ optns = {
     },
 
     'rsnk' : {
-        'precond'       : 'approx_adjoint',    #None,   #'svd_pc',       #      #None, # 
+        'precond'       : 'svd_pc',     # 'approx_adjoint',   # None, 
         # rsnk algorithm settings
         'dynamic_tol'   : False,
         'nu'            : 0.95,
