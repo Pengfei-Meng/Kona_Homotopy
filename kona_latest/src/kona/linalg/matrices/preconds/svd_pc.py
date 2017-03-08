@@ -28,14 +28,14 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        svd_optns = {'lanczos_size': 5}
+        svd_optns = {'lanczos_size': 20}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
         # krylov solver settings
         krylov_optns = {
             'krylov_file'   : 'svdpc_krylov.dat',
-            'subspace_size' : 7,
+            'subspace_size' : 25,
             'check_res'     : False, 
             'rel_tol'       : 1e-2
         }
@@ -102,14 +102,15 @@ class SVDPC(BaseHessian):
 
         self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
 
-        # print 'dual_data: ', self.at_dual_ineq_data
-        # print 'slack data: ', self.at_slack_data
+        self.sigma = - self.at_dual_ineq_data/self.at_slack_data
 
-        # if self.mu < 1e-6:
-        #     # print 'dual_data: ', self.at_dual_ineq_data
-        #     # print 'slack data: ', self.at_slack_data
-        #     print 'A_full condition number ', np.linalg.cond(self.A_full)
-        #     print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
+        if np.any(abs(self.sigma) > 1000 ):
+            print 'max dual_data: ', max(abs(self.at_dual_ineq_data))
+            print 'min dual_data: ', min(abs(self.at_dual_ineq_data))
+            print 'max slack data: ', max(abs(self.at_slack_data))
+            print 'min slack data: ', min(abs(self.at_slack_data))
+            # print 'A_full condition number ', np.linalg.cond(self.A_full)
+            # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
             
     def solve(self, rhs_vec, pcd_vec):
 

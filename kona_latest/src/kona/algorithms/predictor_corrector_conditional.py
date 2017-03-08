@@ -568,8 +568,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    # if self.mu < 0.0005:
-                    #     dx.times(0.4)
+                    if self.mu < 0.0005:
+                        dx.times(0.4)
 
                     # -------------------------------------------------
                     # -------------------------------------------------
