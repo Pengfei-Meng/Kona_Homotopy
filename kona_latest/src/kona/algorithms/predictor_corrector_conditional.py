@@ -451,7 +451,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu == 0.0:
+                if self.mu < 1e-6:
                     max_newton = 50
 
 
@@ -468,7 +468,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.mu == 0.0 and inner_iters == 0:
+                    if self.mu < 1e-6 and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
@@ -568,8 +568,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    if self.mu < 0.0005:
-                        dx.times(0.4)
+                    # if self.mu < 0.0005:
+                    #     dx.times(0.4)
 
                     # -------------------------------------------------
                     # -------------------------------------------------
