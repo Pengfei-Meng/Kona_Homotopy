@@ -10,6 +10,7 @@ from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
+from kona.linalg.matrices.hessian import LagrangianHessian
 import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
@@ -19,7 +20,7 @@ class SVDPC(BaseHessian):
 
         super(SVDPC, self).__init__(vector_factories, None)
         
-        self.primal_factory.request_num_vectors(5)
+        self.primal_factory.request_num_vectors(20)
         self.state_factory.request_num_vectors(2)
         if self.eq_factory is not None:
             self.eq_factory.request_num_vectors(3)
@@ -28,9 +29,15 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        svd_optns = {'lanczos_size': 20}
+        svd_optns = {'lanczos_size': 40}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
+
+        # #---------- Hessian ---------
+        # self.W = LagrangianHessian( vector_factories )
+        # self.svd_W = LowRankSVD(
+        #     self.W_mat_vec, self.primal_factory)
+        #----------------------------
 
         # krylov solver settings
         krylov_optns = {
@@ -45,6 +52,9 @@ class SVDPC(BaseHessian):
         self.eye = IdentityMatrix()
         self.eye_precond = self.eye.product
         self._allocated = False
+
+    def W_mat_vec(self, in_vec, out_vec):
+        self.W.approx.multiply_W(in_vec, out_vec)
 
     def fwd_mat_vec(self, in_vec, out_vec):
         self.Ag.approx.product(in_vec, out_vec)
@@ -73,7 +83,6 @@ class SVDPC(BaseHessian):
         self.Ag.linearize(X.primal.design, state)
         self.svd_Ag.linearize()
 
-
         # # # for direct solve part
         # -----------------------
         self.num_design = len(X.primal.design.base.data)
@@ -101,6 +110,22 @@ class SVDPC(BaseHessian):
             self.V[:, j] = self.svd_Ag.V[j].base.data
 
         self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
+
+
+        # # ------------------ Hessian ----------------
+        # self.W.linearize(X, state, adjoint)
+        # self.svd_W.linearize()
+        # self.W_explicit = np.zeros((self.num_design, self.num_design))
+
+        # self.W_S = self.svd_W.S
+        # self.W_U = np.zeros((self.num_design, len( self.svd_W.U ) ))
+        # self.W_V = np.zeros((self.num_design, len( self.svd_W.V ) ))
+
+        # for j in xrange(self.W_S.shape[0]):
+        #     self.W_U[:,j] = self.svd_W.U[j].base.data
+        #     self.W_V[:,j] = self.svd_W.V[j].base.data
+
+        # self.W_explicit = np.dot( self.W_U,  np.dot(self.W_S, self.W_V.transpose()) ) + 0.01*self.W_eye
 
         # self.sigma = - self.at_dual_ineq_data/self.at_slack_data
 
