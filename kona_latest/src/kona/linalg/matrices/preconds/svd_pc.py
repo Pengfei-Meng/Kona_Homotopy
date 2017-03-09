@@ -73,6 +73,9 @@ class SVDPC(BaseHessian):
             self.design_work = self.primal_factory.generate()
             self.slack_work = self.ineq_factory.generate()
             self.kkt_work = self._generate_kkt()
+
+            self.dual_work1 = self.ineq_factory.generate()
+
             self._allocated = True
 
         self.at_design = X.primal.design
@@ -111,7 +114,6 @@ class SVDPC(BaseHessian):
 
         self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
 
-
         # # ------------------ Hessian ----------------
         # self.W.linearize(X, state, adjoint)
         # self.svd_W.linearize()
@@ -136,8 +138,36 @@ class SVDPC(BaseHessian):
         #     print 'min slack data: ', min(abs(self.at_slack_data))
             # print 'A_full condition number ', np.linalg.cond(self.A_full)
             # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
-            
+
     def solve(self, rhs_vec, pcd_vec):
+        u_x = rhs_vec.primal.design.base.data
+        u_s = rhs_vec.primal.slack.base.data
+        u_g = rhs_vec.dual.base.data
+
+        self.svd_Ag.approx_fwd_prod(rhs_vec.primal.design, self.dual_work1)
+
+        rhs_vg = - self.at_dual_ineq_data * u_g + u_s + self.at_dual_ineq_data * self.dual_work1.base.data
+        
+        # ------------ data used in Sherman-Morrison inverse -------------
+        self.slack_inv = 1./self.at_slack_data
+        self.slack_inv[ abs(self.slack_inv) > 10000 ] = 0.0
+
+        self.sigma = - self.slack_inv * self.at_dual_ineq_data    # S_inv * Lambda_g
+
+        self.M_Gamma = np.dot(self.U, self.S)
+
+        core_mat = np.eye(self.S.shape) + np.dot(self.M_Gamma.transpose(),np.dot(np.diag(self.sigma),self.M_Gamma))
+        core_inv = inv(core_mat)
+
+        # ------------- multiplying ---------------
+        work_1 = - self.slack_inv * rhs_vg
+        work_2 = np.dot(self.M_Gamma.transpose(), work_1)
+        work_3 = np.dot(core_inv, work_2)
+        work_4 = 
+
+
+            
+    def solve_lu(self, rhs_vec, pcd_vec):
 
         v_x = rhs_vec.primal.design.base.data
         v_s = rhs_vec.primal.slack.base.data
