@@ -29,7 +29,7 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        svd_optns = {'lanczos_size': 40}
+        svd_optns = {'lanczos_size': 5}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
@@ -150,20 +150,42 @@ class SVDPC(BaseHessian):
         
         # ------------ data used in Sherman-Morrison inverse -------------
         self.slack_inv = 1./self.at_slack_data
-        self.slack_inv[ abs(self.slack_inv) > 10000 ] = 0.0
+        index_slack = abs(self.slack_inv) > 100000 
+        self.slack_inv[ index_slack ] = 0.0
 
         self.sigma = - self.slack_inv * self.at_dual_ineq_data    # S_inv * Lambda_g
 
         self.M_Gamma = np.dot(self.U, self.S)
 
-        core_mat = np.eye(self.S.shape) + np.dot(self.M_Gamma.transpose(),np.dot(np.diag(self.sigma),self.M_Gamma))
-        core_inv = inv(core_mat)
+        core_mat = np.eye(self.S.shape[0]) + np.dot(self.M_Gamma.transpose(),np.dot(np.diag(self.sigma),self.M_Gamma))
+        core_inv = np.linalg.inv(core_mat)
 
         # ------------- multiplying ---------------
         work_1 = - self.slack_inv * rhs_vg
         work_2 = np.dot(self.M_Gamma.transpose(), work_1)
         work_3 = np.dot(core_inv, work_2)
-        work_4 = 
+        work_4 = np.dot(self.M_Gamma, work_3)
+        work_5 = -self.sigma * work_4
+
+        p_g = - self.slack_inv*rhs_vg + work_5
+        p_g[ index_slack ] = u_g[ index_slack ] 
+        pcd_vec.dual.base.data = p_g
+
+
+        self.svd_Ag.approx_rev_prod(pcd_vec.dual, self.design_work)
+        p_x = - self.design_work.base.data + u_x 
+        pcd_vec.primal.design.base.data = p_x
+        
+
+        Lambda_g_p_s = - u_s - self.at_slack_data * p_g
+        Lambda_g_inv = 1./self.at_dual_ineq_data
+        index = abs(Lambda_g_inv) > 100000 
+        Lambda_g_inv[ index ] = 0.0
+        p_s = Lambda_g_p_s * Lambda_g_inv
+        p_s[ index ] = u_s[index]
+        
+        pcd_vec.primal.slack.base.data = p_s
+        
 
 
             
