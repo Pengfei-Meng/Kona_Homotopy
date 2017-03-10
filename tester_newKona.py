@@ -528,7 +528,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssvd1'%(os.path.sep)
+prefix += '%ssvd6'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -552,7 +552,7 @@ optns = {
         'inner_tol' : 0.1,
         'inner_maxiter' : 5,
         'init_step' : 0.05,        
-        'nominal_dist' : 1.0,            
+        'nominal_dist' : 1.0,
         'nominal_angle' : 8.0*np.pi/180., 
         'max_factor' : 10.0,                  
         'min_factor' : 0.5,                   

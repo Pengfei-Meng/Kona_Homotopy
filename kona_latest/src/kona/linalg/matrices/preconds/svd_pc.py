@@ -139,7 +139,7 @@ class SVDPC(BaseHessian):
             # print 'A_full condition number ', np.linalg.cond(self.A_full)
             # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
 
-    def solve(self, rhs_vec, pcd_vec):
+    def solve_sherman(self, rhs_vec, pcd_vec):
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
         u_g = rhs_vec.dual.base.data
@@ -150,8 +150,8 @@ class SVDPC(BaseHessian):
         
         # ------------ data used in Sherman-Morrison inverse -------------
         self.slack_inv = 1./self.at_slack_data
-        index_slack = abs(self.slack_inv) > 100000 
-        self.slack_inv[ index_slack ] = 0.0
+        # index_slack = abs(self.slack_inv) > 100000 
+        # self.slack_inv[ index_slack ] = 0.0
 
         self.sigma = - self.slack_inv * self.at_dual_ineq_data    # S_inv * Lambda_g
 
@@ -159,6 +159,8 @@ class SVDPC(BaseHessian):
 
         core_mat = np.eye(self.S.shape[0]) + np.dot(self.M_Gamma.transpose(),np.dot(np.diag(self.sigma),self.M_Gamma))
         core_inv = np.linalg.inv(core_mat)
+
+        # p_full = sp.linalg.lu_solve(sp.linalg.lu_factor(KKT), rhs_full)
 
         # ------------- multiplying ---------------
         work_1 = - self.slack_inv * rhs_vg
@@ -168,7 +170,7 @@ class SVDPC(BaseHessian):
         work_5 = -self.sigma * work_4
 
         p_g = - self.slack_inv*rhs_vg + work_5
-        p_g[ index_slack ] = u_g[ index_slack ] 
+        # p_g[ index_slack ] = u_g[ index_slack ] 
         pcd_vec.dual.base.data = p_g
 
 
@@ -179,17 +181,17 @@ class SVDPC(BaseHessian):
 
         Lambda_g_p_s = - u_s - self.at_slack_data * p_g
         Lambda_g_inv = 1./self.at_dual_ineq_data
-        index = abs(Lambda_g_inv) > 100000 
-        Lambda_g_inv[ index ] = 0.0
+        # index = abs(Lambda_g_inv) > 100000 
+        # Lambda_g_inv[ index ] = 0.0
         p_s = Lambda_g_p_s * Lambda_g_inv
-        p_s[ index ] = u_s[index]
+        # p_s[ index ] = u_s[index]
         
         pcd_vec.primal.slack.base.data = p_s
         
 
 
             
-    def solve_lu(self, rhs_vec, pcd_vec):
+    def solve(self, rhs_vec, pcd_vec):
 
         v_x = rhs_vec.primal.design.base.data
         v_s = rhs_vec.primal.slack.base.data

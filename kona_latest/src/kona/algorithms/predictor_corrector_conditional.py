@@ -445,7 +445,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
 
-            if self.mu < 0.1:      # 0.01         
+            if self.mu < 0.01:      # 0.01         
 
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
@@ -568,11 +568,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    if self.mu < 0.0005:
-                        if inner_iters < 50:
-                            dx.times(0.3)
-                        else:
-                            dx.times(1.0)
+                    # if self.mu < 0.0005:
+                    #     if inner_iters < 38:
+                    #         dx.times(0.3)
+                    #     else:
+                    #         dx.times(1.0)
 
 
                     # -------------------------------------------------
