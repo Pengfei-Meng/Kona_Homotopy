@@ -139,7 +139,7 @@ class SVDPC(BaseHessian):
             # print 'A_full condition number ', np.linalg.cond(self.A_full)
             # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
 
-    def solve_sherman(self, rhs_vec, pcd_vec):
+    def solve(self, rhs_vec, pcd_vec):
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
         u_g = rhs_vec.dual.base.data
@@ -191,7 +191,7 @@ class SVDPC(BaseHessian):
 
 
             
-    def solve(self, rhs_vec, pcd_vec):
+    def solve_lu(self, rhs_vec, pcd_vec):
 
         v_x = rhs_vec.primal.design.base.data
         v_s = rhs_vec.primal.slack.base.data
@@ -202,8 +202,8 @@ class SVDPC(BaseHessian):
         # # ----------------- The Full KKT Matrix -------------------
         KKT_full = np.vstack([np.hstack([self.W_eye,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
                               np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq_data), -np.diag(self.at_slack_data)]),
-                              np.hstack([ self.A_full, -np.eye(self.num_ineq),  -min(np.diag(self.S))*np.eye(self.num_ineq)  ]) ])  
-        #       np.zeros((self.num_ineq, self.num_ineq))
+                              np.hstack([ self.A_full, -np.eye(self.num_ineq),  np.zeros((self.num_ineq, self.num_ineq)) ]) ])  
+        #            -min(np.diag(self.S))*np.eye(self.num_ineq) 
 
         # if self.mu < 1e-6:
         #     print 'KKT_full condition number ', np.linalg.cond(KKT_full)
