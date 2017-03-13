@@ -5,6 +5,7 @@ import kona
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from kona.examples import Constructed_SVDA
+import timeit
 
 class InequalityTestCase(unittest.TestCase):
 
@@ -35,7 +36,7 @@ class InequalityTestCase(unittest.TestCase):
             },
 
             'rsnk' : {
-                'precond'       : 'svd_pc',              # 'approx_adjoint',      # None,  
+                'precond'       : 'svd_pc',   # 'approx_adjoint',      # None,  
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -67,14 +68,30 @@ class InequalityTestCase(unittest.TestCase):
             },
         }
 
+        start = timeit.timeit()
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
         optimizer = kona.Optimizer(solver, algorithm, optns)
         optimizer.solve()
 
-        # solution = solver.eval_obj(solver.curr_design, solver.curr_state)
-        # diff = abs(solution - true_obj)
-        # print diff
+        solution = solver.eval_obj(solver.curr_design, solver.curr_state)
+
+        end = timeit.timeit()
+        print 'Homotopy completed in time: %f   obj: %f'%((end - start), solution)
+
+
+        start = timeit.timeit()
+        true_obj, true_x = solver.scipy_solution()
+        end = timeit.timeit()
+        print 'Scipy completed in time: %f   obj:%f'%((end - start), true_obj)
+
+        # import pdb; pdb.set_trace()
+        diff = max((solver.curr_design - true_x)/np.linalg.norm(true_x))
+        # diff = np.linalg.norm(solver.curr_design.base.data - true_x, np.inf)
+
+        print diff
+
+
         # self.assertTrue(diff < 1e-6)
 
 

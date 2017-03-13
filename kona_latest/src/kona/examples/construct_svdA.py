@@ -1,6 +1,7 @@
 import numpy as np
 from kona.user import UserSolver
 import pdb
+from scipy import optimize
 
 class Constructed_SVDA(UserSolver):
     """
@@ -69,4 +70,36 @@ class Constructed_SVDA(UserSolver):
 
     def current_solution(self, num_iter, curr_design, curr_state, curr_adj,
                          curr_eq, curr_ineq, curr_slack):
-        pass
+        self.curr_design = curr_design
+        self.curr_state = curr_state
+
+    def scipy_solution(self):
+
+        def obj(x):
+            quadra = 0.5 * np.dot(x.T, np.dot(self.Q, x))    
+            result = quadra + np.dot(self.g, x)  
+            return result
+
+        def jac(x):
+            return (np.dot(x.T, self.Q) + self.g)
+
+        cons = {'type':'ineq',
+                'fun':lambda x: np.dot(self.A,x) - self.b,
+                'jac':lambda x: self.A}
+
+        opt = {'disp':True, 
+               'ftol':1e-6,
+               'iprint' : 2, 
+               'maxiter':1000}
+
+        res_cons = optimize.minimize(obj, self.init_x, jac=jac,constraints=cons,
+                                     method='SLSQP', options=opt)
+
+        # x1, x2 = res_cons['x']
+        f = res_cons['fun']
+
+        # print '\nConstrained obj:'
+        # print f
+
+        return f, res_cons['x']
+            
