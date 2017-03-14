@@ -6,19 +6,30 @@ from kona import Optimizer
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from kona.examples import Constructed_SVDA
 import timeit
+import pdb
+# from __future__ import print_function
+from pyoptsparse import Optimization, OPT
+
 
 class InequalityTestCase(unittest.TestCase):
 
-    def test_homotopy_svdA(self):
+    def setUp(self):
+
+        self.num_design = 300
+        self.num_ineq = 300
+        self.init_x = np.random.rand(300)    # np.zeros(300)
+
+        self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x)
+
+    def kona_optimize(self):
 
         prefix = './temp/'
-        solver = Constructed_SVDA(500, 500, np.ones(500))
-
+    
         # Optimizer
         optns = {
             'max_iter' : 100,
-            'opt_tol' : 1e-6,
-            'feas_tol' : 1e-6,        
+            'opt_tol' : 1e-8,
+            'feas_tol' : 1e-9,        
             'info_file' : prefix+'/kona_info.dat',
             'hist_file' : prefix+'/kona_hist.dat',
 
@@ -71,29 +82,110 @@ class InequalityTestCase(unittest.TestCase):
         start = timeit.timeit()
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
-        optimizer = kona.Optimizer(solver, algorithm, optns)
+        optimizer = kona.Optimizer(self.solver, algorithm, optns)
         optimizer.solve()
-
-        solution = solver.eval_obj(solver.curr_design, solver.curr_state)
-
         end = timeit.timeit()
-        print 'Homotopy completed in time: %f   obj: %f'%((end - start), solution)
 
+        self.kona_obj = self.solver.eval_obj(self.solver.curr_design, self.solver.curr_state)
+        self.kona_x = self.solver.curr_design
+        self.kona_time = end-start
+
+
+    def objfunc(self, xdict):
+        x = xdict['xvars']
+        funcs = {}
+        funcs['obj'] = 0.5 * np.dot(x.T, np.dot(self.solver.Q, x)) + np.dot(self.solver.g, x) 
+
+        conval = np.dot(self.solver.A,x) - self.solver.b
+        funcs['con'] = conval
+        fail = False
+
+        return funcs, fail
+
+    def sens(self, xdict, funcs):
+        x = xdict['xvars']
+        funcsSens = {}
+        funcsSens['obj'] = {'xvars': np.dot(x.T, self.solver.Q) + self.solver.g }
+        funcsSens['con'] = {'xvars': self.solver.A }
+        fail = False
+
+        return funcsSens, fail
+
+    def optimize(self, optName, optOptions={}, storeHistory=False):
 
         start = timeit.timeit()
-        true_obj, true_x = solver.scipy_solution()
+        # Optimization Object
+        optProb = Optimization('SVD_Construct Problem', self.objfunc)
+
+        # Design Variables
+        value = self.init_x
+        optProb.addVarGroup('xvars', self.num_design, value=value)
+
+        # Constraints
+        optProb.addConGroup('con', self.num_ineq)
+
+        # Objective
+        optProb.addObj('obj')
+
+        # Check optimization problem:
+        # print(optProb)
+
+        # Optimizer
+        try:
+            opt = OPT(optName, options=optOptions)
+        except:
+            raise unittest.SkipTest('Optimizer not available:', optName)
+
+        # Solution
+        if storeHistory:
+            histFileName = '%s_svdConstruct.hst' % (optName.lower())
+        else:
+            histFileName = None
+
+        sol = opt(optProb, sens=self.sens, storeHistory=histFileName)
+
         end = timeit.timeit()
-        print 'Scipy completed in time: %f   obj:%f'%((end - start), true_obj)
-
-        # import pdb; pdb.set_trace()
-        diff = max((solver.curr_design - true_x)/np.linalg.norm(true_x))
-        # diff = np.linalg.norm(solver.curr_design.base.data - true_x, np.inf)
-
-        print diff
+        # Check Solution
+        self.pyopt_obj = sol.objectives['obj'].value
+        self.pyopt_x = np.array(map(lambda x:  sol.variables['xvars'][x].value, xrange(self.num_design)))
+        self.pyopt_time = end-start
 
 
-        # self.assertTrue(diff < 1e-6)
+    def test_snopt(self):
+        self.optimize('snopt')
+        self.kona_optimize()
 
+        diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
+
+        print 'SNOPT  relative difference, ', diff
+        print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
+        print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
+
+    # def test_slsqp(self):
+    #     self.optimize('slsqp')
+    #     self.kona_optimize()
+
+    #     diff = max( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
+
+    #     print 'SLSQP relative difference, ', diff
+    #     print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
+    #     print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
+
+    # def test_nlpqlp(self):
+    #     self.optimize('nlpqlp')
+
+    # def test_fsqp(self):
+    #     self.optimize('fsqp')
+
+    # def test_ipopt(self):
+    #     self.optimize('ipopt')
+
+
+    # def test_conmin(self):
+    #     self.optimize('conmin')
+
+    # def test_psqp(self):
+    #     self.optimize('psqp')
 
 if __name__ == "__main__":
     unittest.main()

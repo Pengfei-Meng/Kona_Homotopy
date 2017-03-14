@@ -13,18 +13,22 @@ class Constructed_SVDA(UserSolver):
 
         super(Constructed_SVDA, self).__init__(
             num_design=numdesign, num_state=0, num_eq=0, num_ineq=numineq)
-        self.init_x = init_x
 
         # numdesign <= numineq, A = SVD;    if numdesign > numineq, A_T = SVD; 
-        assert numdesign <= numineq, \
-            " numdesign <= numineq for the toy problem!"
+        # assert numdesign <= numineq, \
+        #     " numdesign <= numineq for the toy problem!"
+
+        assert len(init_x) == numdesign, \
+            " initial x size is wrong"
+
+        self.init_x = init_x
 
         #--------- constructing Q and A ------------  
         A_sigma = np.diag(1./np.array(range(1, numdesign+1))**2 )  
         
-        np.random.seed(0)  
-        A_U = np.random.randint(10, size=(numineq, numdesign))   # (numineq, numdesign)
-        A_V = np.random.randint(10, size=(numdesign, numdesign))    # (numdesign, numdesign)
+        np.random.seed(0)   
+        A_U = np.random.rand((numineq, numdesign))       #  int(10, size=(numineq, numdesign))
+        A_V = np.random.rand((numdesign, numdesign))  #  int(10, size=(numdesign, numdesign))  
 
         Q_U, r_U = np.linalg.qr(A_U)
         Q_V, r_V = np.linalg.qr(A_V)
@@ -97,9 +101,6 @@ class Constructed_SVDA(UserSolver):
 
         # x1, x2 = res_cons['x']
         f = res_cons['fun']
-
-        # print '\nConstrained obj:'
-        # print f
 
         return f, res_cons['x']
             
