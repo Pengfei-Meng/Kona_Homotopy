@@ -16,8 +16,8 @@ class InequalityTestCase(unittest.TestCase):
 
         optns = {
             'max_iter' : 50,
-            'opt_tol' : 1.e-5,
-            'feas_tol' : 1.e-5,        
+            'opt_tol' : 1.e-6,
+            'feas_tol' : 1.e-6,        
             'info_file' : outdir+'/kona_info.dat',
             'hist_file' : outdir+'/kona_hist.dat',
 
@@ -30,11 +30,12 @@ class InequalityTestCase(unittest.TestCase):
                 'max_factor' : 5.0,                  
                 'min_factor' : 0.5,               
                 'dmu_max' : -0.001,       
-                'dmu_min' : -0.9,        
+                'dmu_min' : -0.9,  
+                'mu_correction' : 1.0,        
             },
 
             'rsnk' : {
-                'precond'       : None, 
+                'precond'       : None,   #'approx_adjoint',  #'svd_pc',  #None, 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -60,6 +61,11 @@ class InequalityTestCase(unittest.TestCase):
         diff = abs(solver.curr_design - expected)
         self.assertTrue(max(diff) < 1e-3)
 
+        self.kona_obj = solver.eval_obj(solver.curr_design, [])
+        self.kona_x = solver.curr_design
+
+        print 'kona_obj ,', self.kona_obj 
+        print 'kona_x  ', self.kona_x
 
 if __name__ == "__main__":
     unittest.main()

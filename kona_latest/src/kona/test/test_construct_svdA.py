@@ -15,11 +15,14 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.num_design = 300
-        self.num_ineq = 300
-        self.init_x = np.random.rand(300)    # np.zeros(300)
+        self.num_design = 500
+        self.num_ineq = 500
+        self.init_x = np.zeros(500)   #np.random.rand(20)    # np.zeros(300)
 
+        start = timeit.timeit()
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x)
+        end = timeit.timeit()
+        self.setup_time = end - start
 
     def kona_optimize(self):
 
@@ -27,9 +30,9 @@ class InequalityTestCase(unittest.TestCase):
     
         # Optimizer
         optns = {
-            'max_iter' : 100,
-            'opt_tol' : 1e-8,
-            'feas_tol' : 1e-9,        
+            'max_iter' : 200,
+            'opt_tol' : 1e-7,
+            'feas_tol' : 1e-7,        
             'info_file' : prefix+'/kona_info.dat',
             'hist_file' : prefix+'/kona_hist.dat',
 
@@ -43,11 +46,12 @@ class InequalityTestCase(unittest.TestCase):
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.5,                   
                 'dmu_max' : -0.0005,       
-                'dmu_min' : -0.9,        
-            },
+                'dmu_min' : -0.9,      
+                'mu_correction' : 0.1,  
+            }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',   # 'approx_adjoint',      # None,  
+                'precond'       : 'svd_pc',   # 'approx_adjoint', # None,  #  
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -79,16 +83,14 @@ class InequalityTestCase(unittest.TestCase):
             },
         }
 
-        start = timeit.timeit()
+        
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
         optimizer = kona.Optimizer(self.solver, algorithm, optns)
         optimizer.solve()
-        end = timeit.timeit()
 
         self.kona_obj = self.solver.eval_obj(self.solver.curr_design, self.solver.curr_state)
         self.kona_x = self.solver.curr_design
-        self.kona_time = end-start
 
 
     def objfunc(self, xdict):
@@ -113,7 +115,6 @@ class InequalityTestCase(unittest.TestCase):
 
     def optimize(self, optName, optOptions={}, storeHistory=False):
 
-        start = timeit.timeit()
         # Optimization Object
         optProb = Optimization('SVD_Construct Problem', self.objfunc)
 
@@ -122,7 +123,9 @@ class InequalityTestCase(unittest.TestCase):
         optProb.addVarGroup('xvars', self.num_design, value=value)
 
         # Constraints
-        optProb.addConGroup('con', self.num_ineq)
+        lower = np.zeros(self.num_ineq)
+        upper = [None]*self.num_ineq
+        optProb.addConGroup('con', self.num_ineq, lower = lower, upper = upper)
 
         # Objective
         optProb.addObj('obj')
@@ -144,22 +147,41 @@ class InequalityTestCase(unittest.TestCase):
 
         sol = opt(optProb, sens=self.sens, storeHistory=histFileName)
 
-        end = timeit.timeit()
+        
         # Check Solution
         self.pyopt_obj = sol.objectives['obj'].value
         self.pyopt_x = np.array(map(lambda x:  sol.variables['xvars'][x].value, xrange(self.num_design)))
-        self.pyopt_time = end-start
+        
 
 
     def test_snopt(self):
+
+        pyopt_start = timeit.timeit()
         self.optimize('snopt')
+        pyopt_end = timeit.timeit()
+        self.pyopt_time = pyopt_end - pyopt_start
+
+        kona_start = timeit.timeit()
         self.kona_optimize()
+        kona_end = timeit.timeit()
+        self.kona_time = kona_end - kona_start
 
         diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
 
         print 'SNOPT  relative difference, ', diff
-        print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
-        print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
+        print 'kona_obj %f, '%(self.kona_obj)
+        print 'pyopt_obj %f, '%(self.pyopt_obj)
+        print 'setup_time %f, kona_time %f, pyopt_time %f'%(self.setup_time, self.kona_time, self.pyopt_time)
+        # print 'kona_x', self.kona_x
+        # print 'pyopt_x', self.pyopt_x
+
+        # self.optimize('slsqp')
+        # diff = max( abs(self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
+
+        # print 'SLSQP relative difference, ', diff
+        # print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
+        # print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
+
 
     # def test_slsqp(self):
     #     self.optimize('slsqp')

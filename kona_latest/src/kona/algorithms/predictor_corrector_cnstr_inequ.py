@@ -1,4 +1,5 @@
 from kona.algorithms.base_algorithm import OptimizationAlgorithm
+from kona.linalg.matrices.preconds import SVDPC
 import pdb, pickle
 
 # Trying to solve Graeme's problem, this SAVE2 version works great for thickness 'tiny' case
@@ -40,20 +41,27 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
         ############################################################
         self.precond = get_opt(self.optns, None, 'rsnk', 'precond')
         
-        self.idf_schur = None
         self.approx_adj = None
-
-        self.eye = IdentityMatrix()
-        self.eye_precond = self.eye.product
+        self.svd_pc = None
 
         if self.precond is 'approx_adjoint':
             print 'approx_adjoint is used! '
-            self.approx_adj = APPROXADJOINT2(
+            self.approx_adj = APPROXADJOINT(
                 [primal_factory, state_factory, eq_factory, ineq_factory])
-            self.approx_precond = self.approx_adj.solve 
-            # self.precond = self.approx_precond
-            # self.precond = self.eye_precond
-        self.precond = self.eye_precond
+            # self.approx_precond = self.approx_adj.solve 
+            self.precond = self.approx_adj.solve
+
+        elif self.precond is 'svd_pc':
+            print 'svd_pc is used! '
+            self.svd_pc = SVDPC(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            # self.svd_precond = self.svd_pc.solve
+            self.precond = self.svd_pc.solve
+
+        else:
+            self.eye = IdentityMatrix()
+            # self.eye_precond = self.eye.product
+            self.precond = self.eye.product
 
         # krylov solver settings
         ############################################################
@@ -359,6 +367,13 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             obj_scale=obj_fac, cnstr_scale=cnstr_fac)
         if self.approx_adj is not None:
             self.approx_adj.linearize(x, state, adj, self.mu)
+        if self.svd_pc is not None:
+            self.svd_pc.linearize(x, state, adj, self.mu)
+
+        self.krylov.outer_iters = 0
+        self.krylov.inner_iters = 0
+        self.krylov.mu = 1.0
+        self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
 
         # print '5. cost after first krylov solve: ', self.primal_factory._memory.cost
@@ -555,6 +570,15 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
                         self.approx_adj.update_mat = True  
                     self.approx_adj.linearize(x, state, adj, self.mu)
 
+                if self.svd_pc is not None:
+                    self.svd_pc.linearize(x, state, adj, self.mu)
+
+
+                self.krylov.outer_iters = outer_iters
+                self.krylov.inner_iters = inner_iters
+                self.krylov.mu = self.mu
+                self.krylov.step = 'Corrector'
+
                 # define the RHS vector for the homotopy system
                 dJdX_hom.times(-1.)
 
@@ -630,6 +654,13 @@ class PredictorCorrectorCnstrINEQ(OptimizationAlgorithm):
             
             if self.approx_adj is not None: 
                 self.approx_adj.linearize(x, state, adj, self.mu)
+            if self.svd_pc is not None:
+                self.svd_pc.linearize(x, state, adj, self.mu)
+
+            self.krylov.outer_iters = outer_iters 
+            self.krylov.inner_iters = 0
+            self.krylov.mu = self.mu
+            self.krylov.step = 'Predictor'
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self._precond)
             # t.primal.slack.times(self.current_x.primal.slack)
@@ -698,7 +729,7 @@ from kona.linalg.common import current_solution, factor_linear_system, objective
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.matrices.hessian import ReducedKKTMatrix
-from kona.linalg.matrices.preconds import APPROXADJOINT2
+from kona.linalg.matrices.preconds import APPROXADJOINT
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector

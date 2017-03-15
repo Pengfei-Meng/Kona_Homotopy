@@ -103,7 +103,7 @@ class RosenSuzuki(UserSolver):
         at_state = []
         at_slack = self.eval_ineq_cnstr(at_design, at_state)
 
-        return BaseVector(size=len(at_slack), val=at_slack)
+        return (np.ones(self.num_ineq), 0)
 
     def current_solution(self, num_iter, curr_design, curr_state, curr_adj,
                          curr_eq, curr_ineq, curr_slack):

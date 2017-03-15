@@ -85,7 +85,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.min_factor = get_opt(self.optns, 0.5, 'homotopy', 'min_factor')
         self.dmu_max = get_opt(self.optns, -0.1, 'homotopy', 'dmu_max')
         self.dmu_min = get_opt(self.optns, -0.9, 'homotopy', 'dmu_min')
+        self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
 
+        print 'self.mu_correction :', self.mu_correction
         # print 'self.max_iter:', self.max_iter
         # print 'self.mu: ', self.mu
         # print 'self.inner_tol: ', self.inner_tol
@@ -336,7 +338,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
-        t.times(-1./tnorm)
+        t.times(1./tnorm)
         dmu = -1./tnorm
 
         # START OUTER ITERATIONS
@@ -445,7 +447,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
 
-            if self.mu < 0.01:      # 0.01         
+            if self.mu < self.mu_correction:              
 
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
@@ -545,7 +547,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
-                        sin_vals = self.svd_pc.linearize(x, state, adj, self.mu)
+                        self.svd_pc.linearize(x, state, adj, self.mu)
 
                     # ---------- save the singular values for mu = 0.0 ----------
                     # if self.mu == 0.0:
@@ -717,7 +719,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
-            t.times(-1./tnorm)
+            t.times(1./tnorm)
             dmu = -1./tnorm
 
             # compute distance to curve
