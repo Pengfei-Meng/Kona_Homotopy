@@ -5,7 +5,7 @@ import kona
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from kona.examples import Constructed_SVDA
-import timeit
+import time
 import pdb
 # from __future__ import print_function
 from pyoptsparse import Optimization, OPT
@@ -15,26 +15,22 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.num_design = 500
-        self.num_ineq = 500
-        self.init_x = np.zeros(500)   #np.random.rand(20)    # np.zeros(300)
+        self.outdir = './output'
+        self.num_design = 400
+        self.num_ineq = 400
+        self.init_x = np.zeros(400)   #np.random.rand(20)    # np.zeros(300)
 
-        start = timeit.timeit()
-        self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x)
-        end = timeit.timeit()
-        self.setup_time = end - start
+        self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
     def kona_optimize(self):
 
-        prefix = './temp/'
-    
         # Optimizer
         optns = {
             'max_iter' : 200,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
-            'info_file' : prefix+'/kona_info.dat',
-            'hist_file' : prefix+'/kona_hist.dat',
+            'info_file' : self.outdir+'/kona_info.dat',
+            'hist_file' : self.outdir+'/kona_hist.dat',
 
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 
@@ -47,7 +43,7 @@ class InequalityTestCase(unittest.TestCase):
                 'min_factor' : 0.5,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 0.1,  
+                'mu_correction' : 1.0,  
             }, 
 
             'rsnk' : {
@@ -62,7 +58,7 @@ class InequalityTestCase(unittest.TestCase):
                 'grad_scale'    : 1.0,
                 'feas_scale'    : 1.0,
                 # FLECS solver settings
-                'krylov_file'   : prefix+'/kona_krylov.dat',
+                'krylov_file'   : self.outdir+'/kona_krylov.dat',
                 'subspace_size' : 20,                                    
                 'check_res'     : False,
                 'rel_tol'       : 1e-4,        
@@ -79,7 +75,7 @@ class InequalityTestCase(unittest.TestCase):
                 'cnstr_jac_in'   : True,
                 'red_grad'       : True,
                 'lin_solve'      : True,
-                'out_file'       : prefix+'/kona_verify.dat',
+                'out_file'       : self.outdir+'/kona_verify.dat',
             },
         }
 
@@ -94,6 +90,9 @@ class InequalityTestCase(unittest.TestCase):
 
 
     def objfunc(self, xdict):
+        self.iteration += 1
+        self.fun_obj_counter += 1
+
         x = xdict['xvars']
         funcs = {}
         funcs['obj'] = 0.5 * np.dot(x.T, np.dot(self.solver.Q, x)) + np.dot(self.solver.g, x) 
@@ -105,11 +104,27 @@ class InequalityTestCase(unittest.TestCase):
         return funcs, fail
 
     def sens(self, xdict, funcs):
+
         x = xdict['xvars']
         funcsSens = {}
         funcsSens['obj'] = {'xvars': np.dot(x.T, self.solver.Q) + self.solver.g }
         funcsSens['con'] = {'xvars': self.solver.A }
         fail = False
+
+        # ---------- recording ----------
+        self.iteration += 1
+        self.sens_counter += 1
+        self.endTime_sn = time.clock()
+        self.duration_sn = self.endTime_sn - self.startTime_sn
+        self.totalTime_sn += self.duration_sn
+        self.startTime_sn = self.endTime_sn
+
+        timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}     \n'.format(
+            self.sens_counter, self.duration_sn, self.totalTime_sn,  funcs['obj'] )
+        file = open(self.outdir+'/SNOPT_timings.dat', 'a')
+        file.write(timing)
+        file.close()
+
 
         return funcsSens, fail
 
@@ -145,7 +160,7 @@ class InequalityTestCase(unittest.TestCase):
         else:
             histFileName = None
 
-        sol = opt(optProb, sens=self.sens, storeHistory=histFileName)
+        sol = opt(optProb, sens=self.sens, storeHistory=histFileName)   # 
 
         
         # Check Solution
@@ -156,22 +171,55 @@ class InequalityTestCase(unittest.TestCase):
 
     def test_snopt(self):
 
-        pyopt_start = timeit.timeit()
-        self.optimize('snopt')
-        pyopt_end = timeit.timeit()
-        self.pyopt_time = pyopt_end - pyopt_start
+        self.iteration = 0
+        self.fun_obj_counter = 0
+        self.sens_counter = 0
 
-        kona_start = timeit.timeit()
+        self.startTime_sn = time.clock()
+        self.totalTime_sn = 0
+        self.endTime_sn = 0
+        file = open(self.outdir+'/SNOPT_timings.dat', 'a')
+        file.write('# SNOPT iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}  \n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective')
+        file.write(titles)
+        file.close()
+
+        optOptions = {'Print file':self.outdir + '/SNOPT_print.out',
+                      'Summary file':self.outdir + '/SNOPT_summary.out',
+                      'Problem Type':'Minimize',
+                      }
+
+        self.optimize('snopt', optOptions)
+        
+
+        # ------ Kona Opt --------
+
+        self.solver.iterations = 0
+        self.solver.duration = 0.
+        self.solver.totalTime = 0.
+        self.solver.startTime = 0.
+        self.solver.startTime = time.clock()
+        file = open(self.outdir+'/kona_timings.dat', 'a')
+        file.write('# Constructed_SVDA iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}  \n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max( - slack * lambda )')
+        file.write(titles)
+        file.close()
+
         self.kona_optimize()
-        kona_end = timeit.timeit()
-        self.kona_time = kona_end - kona_start
-
+        
         diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
 
         print 'SNOPT  relative difference, ', diff
-        print 'kona_obj %f, '%(self.kona_obj)
-        print 'pyopt_obj %f, '%(self.pyopt_obj)
-        print 'setup_time %f, kona_time %f, pyopt_time %f'%(self.setup_time, self.kona_time, self.pyopt_time)
+
+
+
+        # print 'kona_obj %f, '%(self.kona_obj)
+        # print 'pyopt_obj %f, '%(self.pyopt_obj)
+        # print 'setup_time %f, kona_time %f, pyopt_time %f'%(self.setup_time, self.kona_time, self.pyopt_time)
+        
+
         # print 'kona_x', self.kona_x
         # print 'pyopt_x', self.pyopt_x
 
@@ -181,7 +229,6 @@ class InequalityTestCase(unittest.TestCase):
         # print 'SLSQP relative difference, ', diff
         # print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
         # print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
-
 
     # def test_slsqp(self):
     #     self.optimize('slsqp')
@@ -208,6 +255,23 @@ class InequalityTestCase(unittest.TestCase):
 
     # def test_psqp(self):
     #     self.optimize('psqp')
+
+        #    optOptions = {
+        #               'Major feasibility tolerance':1.0e-6,
+        #               'Major optimality tolerance':1.00e-6, 
+        #               'Major print level':1,
+        #               'Minor print level':1,        
+        #               'Major iterations limit':500,
+        #               'Minor iterations limit':500,
+        #               'Major step limit':.01,
+        #               'Nonderivative linesearch':None,
+        #               'Function precision':1.0e-6,
+        #               'Print file':self.outdir + '/SNOPT_print.out',
+        #               'Summary file':self.outdir + '/SNOPT_summary.out',
+        #               'Problem Type':'Minimize',
+        #               'Timing level': 3,
+        #              }
+
 
 if __name__ == "__main__":
     unittest.main()

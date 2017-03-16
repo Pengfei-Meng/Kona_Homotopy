@@ -1,0 +1,6 @@
+awk 'BEGIN{flag=0; step=-1;}{
+if(flag==1 && $1 == step + 1) {print $0;step = $1;}
+if($1 == "Major" && $2 == "Minors" && step == -1) {flag = 1; print $0}
+}' SNOPT_summary.out > SNOPT_summary.awk
+sed -i "s/(/ /g" SNOPT_summary.awk
+sed -i "s/)/ /g" SNOPT_summary.awk

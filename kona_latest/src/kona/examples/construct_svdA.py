@@ -2,6 +2,7 @@ import numpy as np
 from kona.user import UserSolver
 import pdb
 from scipy import optimize
+import time
 
 class Constructed_SVDA(UserSolver):
     """
@@ -9,7 +10,7 @@ class Constructed_SVDA(UserSolver):
     s.t.  g = Ax - b >= 0
     """
 
-    def __init__(self, numdesign, numineq, init_x):
+    def __init__(self, numdesign, numineq, init_x, outdir):
 
         super(Constructed_SVDA, self).__init__(
             num_design=numdesign, num_state=0, num_eq=0, num_ineq=numineq)
@@ -40,6 +41,10 @@ class Constructed_SVDA(UserSolver):
         
         print 'Condition no. self.A: ', np.linalg.cond(self.A)
         print 'Condition no. self.Q: ', np.linalg.cond(self.Q)
+
+        self.outdir = outdir
+
+
 
     def eval_obj(self, at_design, at_state):
 
@@ -79,6 +84,23 @@ class Constructed_SVDA(UserSolver):
                          curr_eq, curr_ineq, curr_slack):
         self.curr_design = curr_design
         self.curr_state = curr_state
+
+        # time the iteration
+        self.endTime = time.clock()
+        self.duration = self.endTime - self.startTime
+        self.totalTime += self.duration
+        self.startTime = self.endTime
+
+        objVal = self.eval_obj(curr_design, curr_state)
+         
+        slack_lamda = max(abs(curr_slack*curr_ineq))
+        # write timing to file
+        timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}        {4:4.4f} \n'.format(
+            num_iter, self.duration, self.totalTime, objVal,   slack_lamda )
+        file = open(self.outdir+'/kona_timings.dat', 'a')
+        file.write(timing)
+        file.close()
+
 
     def scipy_solution(self):
 

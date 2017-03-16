@@ -338,7 +338,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
-        t.times(1./tnorm)
+        t.times(-1./tnorm)
         dmu = -1./tnorm
 
         # START OUTER ITERATIONS
@@ -629,9 +629,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # solver_info = current_solution(
-                    #     num_iter=inner_iters, curr_primal=x.primal,
-                    #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    solver_info = current_solution(
+                        num_iter=inner_iters, curr_primal=x.primal,
+                        curr_state=state, curr_adj=adj, curr_dual=x.dual)
 
                     # advance iter counter
                     inner_iters += 1
@@ -719,7 +719,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
-            t.times(1./tnorm)
+            t.times(-1./tnorm)
             dmu = -1./tnorm
 
             # compute distance to curve
