@@ -16,9 +16,9 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './output'
-        self.num_design = 400
-        self.num_ineq = 400
-        self.init_x = np.zeros(400)   #np.random.rand(20)    # np.zeros(300)
+        self.num_design = 200
+        self.num_ineq = 200
+        self.init_x = np.zeros(200)   #np.random.rand(20)    # np.zeros(300)
 
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
@@ -43,7 +43,7 @@ class InequalityTestCase(unittest.TestCase):
                 'min_factor' : 0.5,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 1.0,  
+                'mu_correction' : 0.9,  
             }, 
 
             'rsnk' : {
@@ -178,7 +178,7 @@ class InequalityTestCase(unittest.TestCase):
         self.startTime_sn = time.clock()
         self.totalTime_sn = 0
         self.endTime_sn = 0
-        file = open(self.outdir+'/SNOPT_timings.dat', 'a')
+        file = open(self.outdir+'/SNOPT_timings.dat', 'w')
         file.write('# SNOPT iteration timing history\n')
         titles = '# {0:s}    {1:s}    {2:s}    {3:s}  \n'.format(
             'Iter', 'Time (s)', 'Total Time (s)', 'Objective')
@@ -200,7 +200,7 @@ class InequalityTestCase(unittest.TestCase):
         self.solver.totalTime = 0.
         self.solver.startTime = 0.
         self.solver.startTime = time.clock()
-        file = open(self.outdir+'/kona_timings.dat', 'a')
+        file = open(self.outdir+'/kona_timings.dat', 'w')
         file.write('# Constructed_SVDA iteration timing history\n')
         titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}  \n'.format(
             'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max( - slack * lambda )')
