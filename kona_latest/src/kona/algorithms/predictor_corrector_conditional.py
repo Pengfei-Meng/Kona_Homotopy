@@ -474,7 +474,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
-                        print 'self.inner_tol at mu = 0.0', self.inner_tol
+                        # print 'self.inner_tol at mu = 0.0', self.inner_tol
                         self.krylov.rel_tol = 1e-5
 
 

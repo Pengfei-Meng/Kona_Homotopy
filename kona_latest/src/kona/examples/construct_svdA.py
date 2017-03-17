@@ -34,10 +34,10 @@ class Constructed_SVDA(UserSolver):
         Q_U, r_U = np.linalg.qr(A_U)
         Q_V, r_V = np.linalg.qr(A_V)
 
-        self.A = Q_U.dot(A_sigma).dot(Q_V)        # np.eye(self.num_ineq, self.num_design)  
+        self.A = Q_U.dot(A_sigma).dot(Q_V)     #np.eye(self.num_ineq, self.num_design)     
         self.Q = 10*np.diag(1./np.array(range(1, numdesign+1)))   #np.eye(numdesign)  # 
-        self.g = np.random.rand(numdesign)       # np.zeros(numdesign)
-        self.b = np.random.rand(numineq)      # np.ones(numdesign)           
+        self.g = np.random.rand(numdesign)    #np.zeros(numdesign)      
+        self.b = np.random.rand(numineq)      #np.ones(numdesign)      
         
         print 'Condition no. self.A: ', np.linalg.cond(self.A)
         print 'Condition no. self.Q: ', np.linalg.cond(self.Q)

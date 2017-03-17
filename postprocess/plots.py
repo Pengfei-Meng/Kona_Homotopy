@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import pdb
 
-dir_konahist = '../kona_latest/src/kona/test/output/100_posT_cor0.1/'
+num_design = 600
+
+dir_konahist = '../kona_latest/src/kona/test/output/' + str(num_design) + '_posT_cor0.1/'
 fname = dir_konahist + 'kona_hist.dat'
 dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('objective', 'float64'), ('optimality', 'float'), ('feasibility', 'float64')])
 kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 3, usecols = (0,1,3,5,6))
@@ -51,7 +53,10 @@ plt.xlabel('cpu time seconds', fontsize=18)
 plt.legend([line3, line4], ['snopt_optimality', 'snopt_feasibility'], prop={'size':12})
 
 
-plt.suptitle('Num design = 100, diffX = 3.25e-06')
-# plt.suptitle('Toy Problem, num design = 500, max( abs(konaX - pyoptX)/norm(pyoptX) ) = 0.000694')
-# plt.suptitle('Toy Problem, num design = 400, max( abs(konaX - pyoptX)/norm(pyoptX) ) = ')
+# plt.suptitle('Num design = 100, diffX = 2.71e-06')
+# plt.suptitle('Num design = 200, diffX = 6.41e-07')
+# plt.suptitle('Num design = 300, diffX = 0.023')
+# plt.suptitle('Num design = 400, diffX = 0.0098')
+# plt.suptitle('Num design = 500, diffX = 0.0028')
+plt.suptitle('Num design = 600, diffX = 0.0044')
 plt.show()     #  max( abs(konaX - pyoptX)/norm(pyoptX) )

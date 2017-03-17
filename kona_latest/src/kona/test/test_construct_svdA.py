@@ -16,9 +16,9 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './output'
-        self.num_design = 200
-        self.num_ineq = 200
-        self.init_x = np.zeros(200)   #np.random.rand(20)    # np.zeros(300)
+        self.num_design = 600
+        self.num_ineq = 600
+        self.init_x = np.ones(600)     #  np.random.seed(0)  np.random.rand(200)  
 
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
@@ -38,16 +38,16 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_maxiter' : 5,
                 'init_step' : 0.05,        
                 'nominal_dist' : 1.0,            
-                'nominal_angle' : 8.0*np.pi/180., 
+                'nominal_angle' : 5.0*np.pi/180., 
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.5,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 0.9,  
+                'mu_correction' : 0.1,  
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',   # 'approx_adjoint', # None,  #  
+                'precond'       : 'svd_pc',   #'approx_adjoint', 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -213,15 +213,10 @@ class InequalityTestCase(unittest.TestCase):
 
         print 'SNOPT  relative difference, ', diff
 
-
-
-        # print 'kona_obj %f, '%(self.kona_obj)
-        # print 'pyopt_obj %f, '%(self.pyopt_obj)
-        # print 'setup_time %f, kona_time %f, pyopt_time %f'%(self.setup_time, self.kona_time, self.pyopt_time)
-        
-
-        # print 'kona_x', self.kona_x
-        # print 'pyopt_x', self.pyopt_x
+        print 'kona_obj %f, '%(self.kona_obj)
+        print 'pyopt_obj %f, '%(self.pyopt_obj)
+        #print 'kona_x', self.kona_x
+        #print 'pyopt_x', self.pyopt_x
 
         # self.optimize('slsqp')
         # diff = max( abs(self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
