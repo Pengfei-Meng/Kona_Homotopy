@@ -16,9 +16,12 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './output'
-        self.num_design = 600
-        self.num_ineq = 600
-        self.init_x = np.ones(600)     #  np.random.seed(0)  np.random.rand(200)  
+        size_prob = 400
+
+        self.num_design = size_prob
+        self.num_ineq = size_prob
+        np.random.seed(0) 
+        self.init_x = np.ones(size_prob)    #np.random.rand(size_prob)
 
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
@@ -26,7 +29,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # Optimizer
         optns = {
-            'max_iter' : 200,
+            'max_iter' : 300,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -215,8 +218,11 @@ class InequalityTestCase(unittest.TestCase):
 
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)
-        #print 'kona_x', self.kona_x
-        #print 'pyopt_x', self.pyopt_x
+        pdb.set_trace()
+        print 'kona_x', self.kona_x
+        print 'pyopt_x', self.pyopt_x
+        print 'max A', max(self.solver.A.max(axis=0))
+        print 'min A', min(self.solver.A.min(axis=0))
 
         # self.optimize('slsqp')
         # diff = max( abs(self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )

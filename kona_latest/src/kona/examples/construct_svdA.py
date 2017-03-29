@@ -25,8 +25,10 @@ class Constructed_SVDA(UserSolver):
         self.init_x = init_x
 
         #--------- constructing Q and A ------------  
-        A_sigma = 10*np.diag(1./np.array(range(1, numdesign+1))**2 )  
-        
+        A_sigma = 1./np.array(range(1, numdesign+1))**2 
+        # A_sigma[8:] = A_sigma[8]*np.ones(len(A_sigma[8:]))
+        A_sigma = 10*np.diag( A_sigma )
+
         np.random.seed(0)   
         A_U = np.random.randint(10, size=(numineq, numdesign))   #((numineq, numdesign))  
         A_V = np.random.randint(10, size=(numdesign, numdesign))   #((numdesign, numdesign))  
@@ -34,17 +36,22 @@ class Constructed_SVDA(UserSolver):
         Q_U, r_U = np.linalg.qr(A_U)
         Q_V, r_V = np.linalg.qr(A_V)
 
-        self.A = Q_U.dot(A_sigma).dot(Q_V)     #np.eye(self.num_ineq, self.num_design)     
-        self.Q = 10*np.diag(1./np.array(range(1, numdesign+1)))   #np.eye(numdesign)  # 
-        self.g = np.random.rand(numdesign)    #np.zeros(numdesign)      
-        self.b = np.random.rand(numineq)      #np.ones(numdesign)      
-        
-        print 'Condition no. self.A: ', np.linalg.cond(self.A)
-        print 'Condition no. self.Q: ', np.linalg.cond(self.Q)
+        # self.A = A_sigma
 
+        self.A = Q_U.dot(A_sigma).dot(Q_V)    #np.eye(self.num_ineq, self.num_design)     
+        self.g = np.random.rand(numdesign)    #np.zeros(numdesign)              
+        self.b = np.random.rand(numineq)      #np.ones(numdesign)             
+        
         self.outdir = outdir
 
+        self.Q_diag = 1./np.array(range(1, numdesign+1))         #np.eye(numdesign)  # 
+        # self.Q_diag[5:] = self.Q_diag[5]*np.ones( len(self.Q_diag[5:]) )
+        self.Q = 10*np.diag( self.Q_diag )
+        # self.Q = np.eye(numdesign) 
 
+
+        print 'Condition no. self.A: ', np.linalg.cond(self.A)
+        print 'Condition no. self.Q: ', np.linalg.cond(self.Q)
 
     def eval_obj(self, at_design, at_state):
 
