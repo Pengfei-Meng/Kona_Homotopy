@@ -7,7 +7,6 @@ from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from kona.examples import Constructed_SVDA
 import time
 import pdb
-# from __future__ import print_function
 from pyoptsparse import Optimization, OPT
 
 
@@ -15,8 +14,8 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output'
-        size_prob = 400
+        self.outdir = './temp'
+        size_prob = 200
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -50,7 +49,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',   #'approx_adjoint', 
+                'precond'       : 'svd_pc',      #'approx_adjoint', 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -218,11 +217,11 @@ class InequalityTestCase(unittest.TestCase):
 
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)
-        pdb.set_trace()
-        print 'kona_x', self.kona_x
-        print 'pyopt_x', self.pyopt_x
-        print 'max A', max(self.solver.A.max(axis=0))
-        print 'min A', min(self.solver.A.min(axis=0))
+
+        # print 'kona_x', self.kona_x
+        # print 'pyopt_x', self.pyopt_x
+        # print 'max A', max(self.solver.A.max(axis=0))
+        # print 'min A', min(self.solver.A.min(axis=0))
 
         # self.optimize('slsqp')
         # diff = max( abs(self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
