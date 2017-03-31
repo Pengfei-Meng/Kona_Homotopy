@@ -11,12 +11,13 @@ from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
 from kona.linalg.matrices.hessian import LagrangianHessian
+from kona.linalg.matrices.hessian import LimitedMemoryBFGS
 import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
 class SVDPC(BaseHessian):
 
-    def __init__(self, vector_factories):    
+    def __init__(self, vector_factories, optns={}):    
 
         super(SVDPC, self).__init__(vector_factories, None)
         
@@ -29,31 +30,44 @@ class SVDPC(BaseHessian):
 
         self.Ag = TotalConstraintJacobian( vector_factories )
 
-        self.use_hessian = True
+        self.use_hessian = False
 
-        svd_optns = {'lanczos_size': 5}
+        svd_optns = {'lanczos_size': 10}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
-        # #---------- Hessian ---------
-        self.W = LagrangianHessian( vector_factories )
-        self.svd_W = LowRankSVD(
-            self.W_mat_vec, self.primal_factory)
-        #----------------------------
 
-        # krylov solver settings
-        krylov_optns = {
-            'krylov_file'   : 'svdpc_krylov.dat',
-            'subspace_size' : 25,
-            'check_res'     : False, 
-            'rel_tol'       : 1e-2
-        }
-        self.krylov = FGMRES(self.primal_factory, krylov_optns,
-                             eq_factory=self.eq_factory, ineq_factory=self.ineq_factory)
+        # ----------- BFGS Hessian -----------
+        self.max_stored = get_opt(optns, 10, 'max_stored')  
+        bfgs_optns = {'max_stored': self.max_stored}
+
+        self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
+        self.svd_AWA = LowRankSVD(
+            self.awa_mat_vec, self.ineq_factory)
+
+        # #---------- Hessian ---------
+        # self.W = LagrangianHessian( vector_factories )
+        # self.svd_W = LowRankSVD(
+        #     self.W_mat_vec, self.primal_factory)
+        #----------------------------
+        # # krylov solver settings
+        # krylov_optns = {
+        #     'krylov_file'   : 'svdpc_krylov.dat',
+        #     'subspace_size' : 25,
+        #     'check_res'     : False, 
+        #     'rel_tol'       : 1e-2
+        # }
+        # self.krylov = FGMRES(self.primal_factory, krylov_optns,
+        #                      eq_factory=self.eq_factory, ineq_factory=self.ineq_factory)
 
         self.eye = IdentityMatrix()
         self.eye_precond = self.eye.product
         self._allocated = False
+
+    def awa_mat_vec(self, in_vec, out_vec):
+        self.Ag.T.approx.product(in_vec, self.design_work)  # self.svd_Ag.approx_fwd_prod
+        self.W_hat.solve(self.design_work, self.design_work0)
+        self.Ag.approx.product(self.design_work0, out_vec)
 
     def W_mat_vec(self, in_vec, out_vec):
         self.W.approx.multiply_W(in_vec, out_vec)
@@ -64,7 +78,7 @@ class SVDPC(BaseHessian):
     def rev_mat_vec(self, in_vec, out_vec):
         self.Ag.T.approx.product(in_vec, out_vec)
 
-    def linearize(self, X, state, adjoint, mu=0.0):
+    def linearize(self, X, state, adjoint, mu, dLdX, dLdX_oldual, inner_iters):
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
@@ -84,21 +98,22 @@ class SVDPC(BaseHessian):
             self.dual_work2 = self.ineq_factory.generate()
             self.dual_work3 = self.ineq_factory.generate()
 
+            # approximate BFGS Hessian
+            self.dldx_old = self.primal_factory.generate()
+            self.dldx = self.primal_factory.generate()
+            self.design_old = self.primal_factory.generate()
+            # ------------------------
+
             self._allocated = True
 
+        # ------------ Extract Data ------------
         self.at_design = X.primal.design
         self.at_slack = X.primal.slack
         self.at_dual_ineq = X.dual
         self.mu = mu
 
-        self.Ag.linearize(X.primal.design, state)
-        self.svd_Ag.linearize()
-
-        # # # for direct solve part
-        # -----------------------
         self.num_design = len(X.primal.design.base.data)
         self.num_ineq = len(X.dual.base.data)
-
 
         # self.at_design_data = X.primal.design.base.data
         self.at_slack_data = X.primal.slack.base.data
@@ -109,21 +124,53 @@ class SVDPC(BaseHessian):
             self.at_dual_ineq_data = X.dual.base.data
 
         # ------------------ for solve_lu -----------------
-        self.W_eye = np.eye(self.num_design)
-        self.A_full = np.zeros((self.num_ineq, self.num_design))
+        self.Ag.linearize(X.primal.design, state)
+        self.svd_Ag.linearize()
 
-        # --------- peeling off SVD_Ag  U, V -----------
-        self.S = self.svd_Ag.S
-        self.U = np.zeros((self.num_ineq, len( self.svd_Ag.U ) ))
-        self.V = np.zeros((self.num_design, len( self.svd_Ag.V ) ))
+        # self.W_eye = np.eye(self.num_design)
+        # self.A_full = np.zeros((self.num_ineq, self.num_design))
+
+        # # --------- peeling off SVD_Ag  U, V -----------
+        # self.S = self.svd_Ag.S
+        # self.U = np.zeros((self.num_ineq, len( self.svd_Ag.U ) ))
+        # self.V = np.zeros((self.num_design, len( self.svd_Ag.V ) ))
+
+        # for j in xrange(self.S.shape[0]):
+        #     self.U[:, j] = self.svd_Ag.U[j].base.data
+        #     self.V[:, j] = self.svd_Ag.V[j].base.data
+
+        # self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
+
+        # ------------- SVD on Ag W^{-1} Ag^T ---------------------
+        # ------------- Hessian LBFGS approximation ---------------
+        self.W_hat.norm_init = 1.0  
+
+        if inner_iters > 0:
+            self.design_old.minus(X.primal.design)
+            self.design_old.times(-1.0)
+
+            self.dldx.equals(dLdX_oldual.primal.design)
+            self.dldx_old.minus(self.dldx)
+            self.dldx_old.times(-1.0)
+            self.W_hat.add_correction(self.design_old, self.dldx_old)
+
+        self.design_old.equals(X.primal.design)
+        self.dldx_old.equals(dLdX.primal.design)
+
+        self.Ag.linearize(X.primal.design, state)
+
+        self.svd_AWA.linearize()
+
+        self.S = self.svd_AWA.S
+        self.U = np.zeros((self.num_ineq, len( self.svd_AWA.U ) ))
+        self.V = np.zeros((self.num_ineq, len( self.svd_AWA.V ) ))
 
         for j in xrange(self.S.shape[0]):
-            self.U[:, j] = self.svd_Ag.U[j].base.data
-            self.V[:, j] = self.svd_Ag.V[j].base.data
+            self.U[:, j] = self.svd_AWA.U[j].base.data
+            self.V[:, j] = self.svd_AWA.V[j].base.data
 
-        self.A_full = np.dot( self.U,  np.dot(self.S, self.V.transpose()) )
 
-        # ------------------ Hessian -----------------
+        # -------------- Hessian approx_adjoint expensive ------------
         # if self.use_hessian is True:
 
         #     self.W.linearize(X, state, adjoint)
@@ -143,35 +190,73 @@ class SVDPC(BaseHessian):
         #     self.W_full_inv = np.linalg.inv(self.W_full)
 
 
-        # # ------------------ Hessian ----------------
-        if self.use_hessian is True:
-            self.W.linearize(X, state, adjoint)
-            self.svd_W.linearize()
-            self.W_full = np.zeros((self.num_design, self.num_design))
+        # # ------------------ Hessian SVD ----------------
+        # if self.use_hessian is True:
+        #     self.W.linearize(X, state, adjoint)
+        #     self.svd_W.linearize()
+        #     self.W_full = np.zeros((self.num_design, self.num_design))
 
-            self.W_S = self.svd_W.S
-            self.W_U = np.zeros((self.num_design, len( self.svd_W.U ) ))
-            self.W_V = np.zeros((self.num_design, len( self.svd_W.V ) ))
+        #     self.W_S = self.svd_W.S
+        #     self.W_U = np.zeros((self.num_design, len( self.svd_W.U ) ))
+        #     self.W_V = np.zeros((self.num_design, len( self.svd_W.V ) ))
 
-            for j in xrange(self.W_S.shape[0]):
-                self.W_U[:,j] = self.svd_W.U[j].base.data
-                self.W_V[:,j] = self.svd_W.V[j].base.data
+        #     for j in xrange(self.W_S.shape[0]):
+        #         self.W_U[:,j] = self.svd_W.U[j].base.data
+        #         self.W_V[:,j] = self.svd_W.V[j].base.data
 
-            self.W_full = np.dot( self.W_U,  np.dot(self.W_S, self.W_V.transpose()) ) + self.W_eye
+        #     self.W_full = np.dot( self.W_U,  np.dot(self.W_S, self.W_V.transpose()) ) + self.W_eye
 
-            self.W_full_inv = np.linalg.inv(self.W_full)
+        #     self.W_full_inv = np.linalg.inv(self.W_full)
 
-        # self.sigma = - self.at_dual_ineq_data/self.at_slack_data
-
-        # if np.any(abs(self.sigma) > 1000 ):
-        #     print 'max dual_data: ', max(abs(self.at_dual_ineq_data))
-        #     print 'min dual_data: ', min(abs(self.at_dual_ineq_data))
-        #     print 'max slack data: ', max(abs(self.at_slack_data))
-        #     print 'min slack data: ', min(abs(self.at_slack_data))
-            # print 'A_full condition number ', np.linalg.cond(self.A_full)
-            # print 'A_full rank:', np.linalg.matrix_rank(self.A_full)
 
     def solve(self, rhs_vec, pcd_vec):
+        u_x = rhs_vec.primal.design.base.data
+        u_s = rhs_vec.primal.slack.base.data
+        u_g = rhs_vec.dual.base.data
+
+        if self.use_hessian is True:
+            self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
+        else:
+            self.design_work0.equals(rhs_vec.primal.design)
+
+        self.svd_Ag.approx_fwd_prod(self.design_work0, self.dual_work1)
+        rhs_vg = - self.at_dual_ineq_data * u_g + u_s + self.at_dual_ineq_data * self.dual_work1.base.data
+
+        # ------------ data used in Sherman-Morrison inverse -------------
+        self.slack_inv = 1./self.at_slack_data
+        self.sigma = - self.slack_inv * self.at_dual_ineq_data    # - S_inv * Lambda_g   
+
+        self.Gamma_Nstar = np.dot(self.S, self.V.transpose()) 
+
+        core_mat = np.eye(self.S.shape[0]) + np.dot(self.Gamma_Nstar, np.dot(np.diag(self.sigma),self.U))
+        core_inv = np.linalg.inv(core_mat)
+
+        # ------------- multiplying ---------------
+        work_1 = - self.slack_inv * rhs_vg
+        work_2 = np.dot(self.Gamma_Nstar, work_1)
+        work_3 = np.dot(core_inv, work_2)
+        work_4 = np.dot(self.U, work_3)
+        work_5 = -self.sigma * work_4
+
+        p_g = - self.slack_inv*rhs_vg + work_5
+        pcd_vec.dual.base.data = p_g
+
+        self.svd_Ag.approx_rev_prod(pcd_vec.dual, self.design_work)
+        self.design_work2.base.data = - self.design_work.base.data + u_x 
+
+        self.W_hat.solve(self.design_work2, pcd_vec.primal.design)
+        # pcd_vec.primal.design.base.data = p_x
+        
+
+        Lambda_g_p_s = - u_s - self.at_slack_data * p_g
+        Lambda_g_inv = 1./self.at_dual_ineq_data
+
+        p_s = Lambda_g_p_s * Lambda_g_inv
+        
+        pcd_vec.primal.slack.base.data = p_s
+
+        
+    def solve_W(self, rhs_vec, pcd_vec):
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
         u_g = rhs_vec.dual.base.data

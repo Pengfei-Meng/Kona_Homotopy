@@ -8,6 +8,7 @@ from kona.examples import Constructed_SVDA
 import time
 import pdb
 from pyoptsparse import Optimization, OPT
+from kona.linalg.matrices.hessian import LimitedMemoryBFGS
 
 
 class InequalityTestCase(unittest.TestCase):
@@ -29,10 +30,14 @@ class InequalityTestCase(unittest.TestCase):
         # Optimizer
         optns = {
             'max_iter' : 300,
-            'opt_tol' : 1e-7,
-            'feas_tol' : 1e-7,        
+            'opt_tol' : 1e-8,
+            'feas_tol' : 1e-8,        
             'info_file' : self.outdir+'/kona_info.dat',
             'hist_file' : self.outdir+'/kona_hist.dat',
+
+            'quasi_newton' : {
+                'type' : LimitedMemoryBFGS
+            },
 
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 

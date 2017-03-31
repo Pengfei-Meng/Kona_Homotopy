@@ -45,6 +45,7 @@ class LowRankSVD(object):
         # get references to individual factories
         self.fwd_mat_vec = fwd_mat_vec
         self.fwd_factory = fwd_factory
+
         if rev_mat_vec is not None:
             self.rev_mat_vec = rev_mat_vec
             self.rev_factory = rev_factory
@@ -54,7 +55,6 @@ class LowRankSVD(object):
 
         # reset the linearization flag
         self._allocated = False
-
         # request vector memory for future allocation
         self.fwd_factory.request_num_vectors(2*self.subspace_size + 1)
         self.rev_factory.request_num_vectors(2*self.subspace_size)

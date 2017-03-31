@@ -17,7 +17,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.eq_factory.request_num_vectors(15)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(32)
+            self.ineq_factory.request_num_vectors(50)
 
         # general options
         ############################################################
@@ -248,7 +248,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dual_work = self._generate_dual()
         dual_work2 = self._generate_dual()
 
-        # dual_workineq = self.ineq_factory.generate()
+        if self.svd_pc is not None:  # for BFGS Hessian 
+            X_olddual = self._generate_kkt()
+            dLdX_olddual = self._generate_kkt()
+            old_dual = self._generate_dual()
+
 
         if self.ineq_factory is not None:
             self.info_file.write(
@@ -328,7 +332,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         if self.approx_adj is not None:
             self.approx_adj.linearize(x, state, adj, self.mu)
         if self.svd_pc is not None:
-            self.svd_pc.linearize(x, state, adj, self.mu)
+            self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
         
         self.krylov.outer_iters = 0
         self.krylov.inner_iters = 0
@@ -547,7 +551,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
-                        self.svd_pc.linearize(x, state, adj, self.mu)
+                        if inner_iters == 0:
+                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, inner_iters)
+                        else:
+                            # BFGS Hessian approx
+                            X_olddual.equals(x)
+                            X_olddual.dual.equals(old_dual)
+                            dLdX_olddual.equals_KKT_conditions(
+                                X_olddual, state, adj)                        
+
+                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, inner_iters)
+
+                        old_dual.equals(x.dual)
 
                     # ---------- save the singular values for mu = 0.0 ----------
                     # if self.mu == 0.0:
@@ -709,7 +724,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.approx_adj is not None:
                 self.approx_adj.linearize(x, state, adj, self.mu)
             if self.svd_pc is not None:
-                self.svd_pc.linearize(x, state, adj, self.mu)
+                self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
+
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = 0
             self.krylov.mu = self.mu
