@@ -557,11 +557,12 @@ optns = {
         'max_factor' : 10.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,       
-        'dmu_min' : -0.9,        
+        'dmu_min' : -0.9,   
+        'mu_correction' : 0.1,       
     },
 
     'rsnk' : {
-        'precond'       : 'svd_pc',     # 'approx_adjoint',   # None, 
+        'precond'       : 'approx_adjoint',     #'svd_pc',     #    # None, 
         # rsnk algorithm settings
         'dynamic_tol'   : False,
         'nu'            : 0.95,
