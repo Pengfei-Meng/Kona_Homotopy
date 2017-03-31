@@ -16,7 +16,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 200
+        size_prob = 300
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -30,8 +30,8 @@ class InequalityTestCase(unittest.TestCase):
         # Optimizer
         optns = {
             'max_iter' : 300,
-            'opt_tol' : 1e-8,
-            'feas_tol' : 1e-8,        
+            'opt_tol' : 1e-7,
+            'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
             'hist_file' : self.outdir+'/kona_hist.dat',
 
