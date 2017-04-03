@@ -107,17 +107,17 @@ class APPROXADJOINT(BaseHessian):
             out_design = self.primal_factory.generate()
             out_dual = self.ineq_factory.generate()
 
-            # self.W_full = np.zeros((self.num_design, self.num_design))
-            # self.A_full = np.zeros((self.num_ineq, self.num_design))
+            self.W_full = np.zeros((self.num_design, self.num_design))
+            self.A_full = np.zeros((self.num_ineq, self.num_design))
 
             # loop over design variables and start assembling the matrices
             for i in xrange(self.num_design):
                 # set the input vector so that we only pluck out one column of the matrix
                 in_design.equals(0.0)
                 in_design.base.data[i] = 1.
-                # # perform the Lagrangian Hessian product and store
-                # self.W.approx.multiply_W(in_design, out_design)
-                # self.W_full[:, i] = out_design.base.data
+                # perform the Lagrangian Hessian product and store
+                self.W.approx.multiply_W(in_design, out_design)
+                self.W_full[:, i] = out_design.base.data
                 # perform the Constraint Jacobian product and store
                 self.Ag.approx.product(in_design, out_dual)
                 self.A_full[:, i] = out_dual.base.data

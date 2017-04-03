@@ -16,7 +16,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 300
+        size_prob = 10
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -29,7 +29,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # Optimizer
         optns = {
-            'max_iter' : 300,
+            'max_iter' : 50,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -54,7 +54,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',      #'approx_adjoint', 
+                'precond'       : None,     # 'svd_pc',   #'approx_adjoint', 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,

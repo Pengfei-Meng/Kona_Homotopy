@@ -86,8 +86,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.dmu_max = get_opt(self.optns, -0.1, 'homotopy', 'dmu_max')
         self.dmu_min = get_opt(self.optns, -0.9, 'homotopy', 'dmu_min')
         self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
+        self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
 
-        print 'self.mu_correction :', self.mu_correction
+        # print 'self.mu_correction :', self.mu_correction
         # print 'self.max_iter:', self.max_iter
         # print 'self.mu: ', self.mu
         # print 'self.inner_tol: ', self.inner_tol
@@ -210,6 +211,54 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
 
+    def check_sign(self, x, outer, inner):
+
+        slack_ind = x.primal.slack.base.data < 0
+
+        if np.any(slack_ind):
+            slack = x.primal.slack.base.data[slack_ind] 
+            print 'Outer %d, Inner %d Slack \n'%(outer, inner)
+            print slack
+
+        dual_ind = x.dual.base.data > 0
+
+        if np.any(dual_ind):
+            dual = x.dual.base.data[dual_ind]
+            print 'Outer %d, Inner %d Dual \n'%(outer, inner)
+            print dual
+
+    def find_step(self, max_mu_step, x, t):
+
+            # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+            # --------- fraction to boundary rule ----------
+
+            slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
+            if any(slack_steps > 0):
+                max_slack_step = min(slack_steps[slack_steps > 0])
+            else:
+                max_slack_step = max_mu_step
+            max_slack_step = min(max_mu_step, max_slack_step)
+
+            ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
+            if any(ineq_steps > 0):
+                max_ineq_step = min(ineq_steps[ineq_steps > 0])
+            else:
+                max_ineq_step = max_mu_step
+            max_ineq_step = min(max_mu_step, max_ineq_step)
+
+            print 'max_slack_step, ', max_slack_step
+            print 'max_ineq_step, ', max_ineq_step
+
+            if max_slack_step < 1e-6:
+                print x.primal.slack.base.data
+                pdb.set_trace()
+
+            if max_ineq_step < 1e-6:
+                print x.dual.base.data
+                pdb.set_trace()
+
+            return min(max_mu_step, max_slack_step, max_ineq_step)
+
 
     def solve(self):
         self.info_file.write(
@@ -266,6 +315,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x.equals(x0)
+
+        self.check_sign(x, 0, 0)
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
@@ -379,15 +430,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dmu_save = dmu
             mu_save = self.mu
 
-            # -----------------------------------------------------------
-            # -- modify the step size, 1) dmu within range, [min, max], new mu >= 0 
-            # take a predictor step
-            # if np.any(x.dual.base.data > 0 ):
-            # print 'Predictor, outer_iters', outer_iters
-            # print 'dual_data in corrector: ', x.dual.base.data
-            # # if np.any(x.primal.slack.base.data < 0 ):
-            # print 'slack data in corrector: ', x.primal.slack.base.data
-
+            # influence of mu on step size
             dmu_step = dmu * self.step
             dmu_step = max(self.dmu_min, dmu_step)
             dmu_step = min(self.dmu_max, dmu_step)
@@ -395,39 +438,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             tent_mu = self.mu + dmu_step
             if tent_mu < 0.0:
                 tent_mu = 0.0
+            # -----------------------------
+            max_mu_step = (tent_mu - self.mu)/dmu
 
-            self.step = (tent_mu - self.mu)/dmu
-
-
-            # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-            # max_mu_step = (tent_mu - self.mu)/dmu
-
-            # slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
-            # if any(slack_steps > 0):
-            #     max_slack_step = min(slack_steps[slack_steps > 0])
-            # else:
-            #     max_slack_step = 1e3
-
-            # ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
-            # if any(ineq_steps > 0):
-            #     max_ineq_step = min(ineq_steps[ineq_steps > 0])
-            # else:
-            #     max_ineq_step = 1e3
-
-            # print 'max_slack_step, ', max_slack_step
-            # print 'max_ineq_step, ', max_ineq_step
-
-
-            # x.primal.equals_ax_p_by(1.0, x.primal, max_slack_step, t.primal)
-            # x.dual.equals_ax_p_by(1.0, x.dual, max_ineq_step, t.dual)
-            # self.mu += max_mu_step*dmu
-
-            # # self.step = min(max_mu_step, max_slack_step, max_ineq_step)
-
-            # print 'max_mu_step, ', max_mu_step
-            # print 'step, ', self.step
-
-            # ----------------------------------------------------------
+            if self.use_frac_to_bound is True:
+                self.step = self.find_step(max_mu_step, x, t)
+            else:
+                self.step = max_mu_step
 
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
@@ -439,6 +456,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.design.enforce_bounds()
             else:
                 x.primal.enforce_bounds()
+
+            self.check_sign(x, outer_iters, 0)
+
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -591,43 +611,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     #     else:
                     #         dx.times(1.0)
 
+                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+                    if self.use_frac_to_bound is True:
+                        newton_step = self.find_step(1.0, x, dx)
+                    else:
+                        newton_step = 1.0
 
-                    # -------------------------------------------------
-                    # -------------------------------------------------
-                    # if np.any(x.dual.base.data > 0 ):
-                    # print 'Corrector, outer_iters, inner_iters', outer_iters, inner_iters
-                    # print 'dual_data in corrector: ', x.dual.base.data
-                    # # if np.any(x.primal.slack.base.data < 0 ):
-                    # print 'slack data in corrector: ', x.primal.slack.base.data
-
-
-                    # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    # slack_steps = -0.995*x.primal.slack.base.data/dx.primal.slack.base.data
-
-                    # if any(slack_steps > 0):
-                    #     max_slack_step = min(slack_steps[slack_steps > 0])
-                    # else:
-                    #     max_slack_step = 1e3
-
-
-                    # ineq_steps = -0.995*x.dual.base.data/dx.dual.base.data
-                    # if any(ineq_steps > 0):
-                    #     max_ineq_step = min(ineq_steps[ineq_steps > 0])
-                    # else:
-                    #     max_ineq_step = 1e3
-
-                    # dx.primal.times(max_slack_step)
-                    # dx.dual.times(max_ineq_step)
-
-                    # newton_step = min(max_slack_step, max_ineq_step)
-                    # dx.times(newton_step)
-
-                    # ----------------------------------------------------------
+                    dx.times(newton_step)
 
                     dx_newt.plus(dx)
                     # update the design
                     x.plus(dx)
-
+                    self.check_sign(x, outer_iters, inner_iters)
 
                     if self.ineq_factory is not None:
                         x.primal.design.enforce_bounds()
