@@ -215,7 +215,7 @@ class SVDPC(BaseHessian):
         #     self.W_full_inv = np.linalg.inv(self.W_full)
 
 
-    def solve(self, rhs_vec, pcd_vec):
+    def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
         u_g = rhs_vec.dual.base.data

@@ -229,35 +229,53 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
     def find_step(self, max_mu_step, x, t):
 
+            # active constraints:    s = 0 ,   lam < 0
+            # inactive constraints:   s > 0,   lam = 0   
+
             # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
             # --------- fraction to boundary rule ----------
+            thresh_0 = 1e-3
 
             slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
-            if any(slack_steps > 0):
-                max_slack_step = min(slack_steps[slack_steps > 0])
+            if any(slack_steps > thresh_0):
+
+                max_slack_step = min(slack_steps[slack_steps > thresh_0])
             else:
                 max_slack_step = max_mu_step
-            max_slack_step = min(max_mu_step, max_slack_step)
+
+            # max_slack_step = min(max_mu_step, max_slack_step)
+
+            # --------- if a certain element of slack_steps (0, 1e-6) 
+            # --------- meaning this slack is hitting 0, active constraints. 
+            ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
+
 
             ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
-            if any(ineq_steps > 0):
-                max_ineq_step = min(ineq_steps[ineq_steps > 0])
+
+            if any(ineq_steps > thresh_0):
+                max_ineq_step = min(ineq_steps[ineq_steps > thresh_0])
             else:
                 max_ineq_step = max_mu_step
-            max_ineq_step = min(max_mu_step, max_ineq_step)
+
+            # max_ineq_step = min(max_mu_step, max_ineq_step)
+
+            ind_inactive_lam0 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
+
+            # --------- if a certain element of ineq_steps (0, 1e-6) 
+            # --------- meaning this lam is hitting 0, inactive constraints. 
 
             print 'max_slack_step, ', max_slack_step
             print 'max_ineq_step, ', max_ineq_step
 
-            if max_slack_step < 1e-6:
-                print x.primal.slack.base.data
-                pdb.set_trace()
+            # if max_slack_step < 1e-6:
+            #     print x.primal.slack.base.data
+            #     pdb.set_trace()
 
-            if max_ineq_step < 1e-6:
-                print x.dual.base.data
-                pdb.set_trace()
+            # if max_ineq_step < 1e-6:
+            #     print x.dual.base.data
+            #     pdb.set_trace()
 
-            return min(max_mu_step, max_slack_step, max_ineq_step)
+            return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
 
 
     def solve(self):
@@ -442,7 +460,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             max_mu_step = (tent_mu - self.mu)/dmu
 
             if self.use_frac_to_bound is True:
-                self.step = self.find_step(max_mu_step, x, t)
+                self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
+                t.primal.slack.base.data[ind_active_s0] = 0.0
+                t.dual.base.data[ind_inactive_lam0] = 0.0 
+
             else:
                 self.step = max_mu_step
 
@@ -613,7 +634,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
                     if self.use_frac_to_bound is True:
-                        newton_step = self.find_step(1.0, x, dx)
+                        newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
+                        dx.primal.slack.base.data[ind_active_s0] = 0.0
+                        dx.dual.base.data[ind_inactive_lam0] = 0.0 
+
                     else:
                         newton_step = 1.0
 

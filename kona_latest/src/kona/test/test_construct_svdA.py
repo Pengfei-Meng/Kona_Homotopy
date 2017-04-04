@@ -16,7 +16,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 10
+        size_prob = 100
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -29,7 +29,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # Optimizer
         optns = {
-            'max_iter' : 50,
+            'max_iter' : 200,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -44,17 +44,17 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 5,
                 'init_step' : 0.05,        
-                'nominal_dist' : 1.0,            
-                'nominal_angle' : 5.0*np.pi/180., 
+                'nominal_dist' : 10.0,            
+                'nominal_angle' : 20.0*np.pi/180., 
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.5,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 0.1,  
+                'mu_correction' : 1e-3,  
             }, 
 
             'rsnk' : {
-                'precond'       : None,     # 'svd_pc',   #'approx_adjoint', 
+                'precond'       : None,    #'svd_pc',   #'approx_adjoint', 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -209,8 +209,8 @@ class InequalityTestCase(unittest.TestCase):
         self.solver.startTime = time.clock()
         file = open(self.outdir+'/kona_timings.dat', 'w')
         file.write('# Constructed_SVDA iteration timing history\n')
-        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}  \n'.format(
-            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max( - slack * lambda )')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
         file.write(titles)
         file.close()
 
