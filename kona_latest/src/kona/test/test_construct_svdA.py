@@ -29,7 +29,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # Optimizer
         optns = {
-            'max_iter' : 200,
+            'max_iter' : 300,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -43,18 +43,18 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 5,
-                'init_step' : 0.05,        
-                'nominal_dist' : 10.0,            
-                'nominal_angle' : 20.0*np.pi/180., 
+                'init_step' : 0.5,        
+                'nominal_dist' : 1.0,            
+                'nominal_angle' : 8.0*np.pi/180., 
                 'max_factor' : 30.0,                  
-                'min_factor' : 0.5,                   
+                'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 1e-3,  
+                'mu_correction' : 0.01,  
             }, 
 
             'rsnk' : {
-                'precond'       : None,    #'svd_pc',   #'approx_adjoint', 
+                'precond'       : 'svd_pc',   #'approx_adjoint', 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
