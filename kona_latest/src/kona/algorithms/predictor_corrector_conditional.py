@@ -326,7 +326,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x.equals(x0)
-
+        # pdb.set_trace()
         self.check_sign(x, 0, 0)
 
         if not state.equals_primal_solution(x.primal):
@@ -394,6 +394,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         if self.approx_adj is not None:
             self.approx_adj.linearize(x, state, adj, self.mu)
         if self.svd_pc is not None:
+            self.svd_pc.use_hessian = False
             self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
         
         self.krylov.outer_iters = 0
@@ -460,6 +461,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             else:
                 self.step = max_mu_step
+
+            # pdb.set_trace()
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
 
@@ -585,6 +588,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
+                        self.svd_pc.use_hessian = True
+
                         if inner_iters == 0:
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
                         else:
@@ -740,7 +745,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.approx_adj is not None:
                 self.approx_adj.linearize(x, state, adj, self.mu)
             if self.svd_pc is not None:
-                self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
+                self.svd_pc.use_hessian = False
+                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, 0)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = 0

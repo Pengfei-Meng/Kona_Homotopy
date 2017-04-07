@@ -82,7 +82,9 @@ class Constructed_SVDA(UserSolver):
         return self.init_x
 
     def init_slack(self):
-        return (0.2*np.ones(self.num_ineq), 0)
+        at_slack = np.ones(self.num_ineq)
+        # at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        return (at_slack, 0)
 
     def enforce_bounds(self, design_vec):
         pass

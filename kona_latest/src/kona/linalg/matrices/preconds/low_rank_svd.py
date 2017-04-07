@@ -40,7 +40,7 @@ class LowRankSVD(object):
                  optns={}):
 
         # set basic internal options
-        self.subspace_size = get_opt(optns, 10, 'lanczos_size')
+        self.subspace_size = get_opt(optns, 5, 'lanczos_size')
 
         # get references to individual factories
         self.fwd_mat_vec = fwd_mat_vec

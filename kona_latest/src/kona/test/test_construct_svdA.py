@@ -43,7 +43,7 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 5,
-                'init_step' : 0.5,        
+                'init_step' : 5,        
                 'nominal_dist' : 1.0,            
                 'nominal_angle' : 8.0*np.pi/180., 
                 'max_factor' : 30.0,                  
