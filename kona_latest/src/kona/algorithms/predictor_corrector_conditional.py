@@ -52,11 +52,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         else:
             self.eye = IdentityMatrix()
-            # self.eye_precond = self.eye.product
             self.precond = self.eye.product
 
-        # self.eye = IdentityMatrix()
-        # self.precond = self.eye.product
+        self.eye = IdentityMatrix()
+        self.eye_precond = self.eye.product
 
         # krylov solver settings
         ############################################################
@@ -217,14 +216,14 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         if np.any(slack_ind):
             slack = x.primal.slack.base.data[slack_ind] 
-            print 'Outer %d, Inner %d Slack \n'%(outer, inner)
+            print 'Negative Slack Outer %d, Inner %d Slack \n'%(outer, inner)
             print slack
 
         dual_ind = x.dual.base.data > 0
 
         if np.any(dual_ind):
             dual = x.dual.base.data[dual_ind]
-            print 'Outer %d, Inner %d Dual \n'%(outer, inner)
+            print 'Positive Dual Outer %d, Inner %d Dual \n'%(outer, inner)
             print dual
 
     def find_step(self, max_mu_step, x, t):
@@ -385,7 +384,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dual_work.minus(x0.dual)
         rhs_vec.dual.minus(dual_work)
 
-        # compute the tangent vector
+        # compute the tangent vector    # steepest descent direction when mu = 1.0;  p = -dJdX
         t.equals(0.0)
         self.hessian.linearize(
             x, state, adj,
@@ -454,6 +453,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -----------------------------
             max_mu_step = (tent_mu - self.mu)/dmu
 
+            print 'Predictor outer %d \n'%outer_iters
             if self.use_frac_to_bound is True:
                 self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
                 t.primal.slack.base.data[ind_active_s0] = 0.0
@@ -476,7 +476,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             self.check_sign(x, outer_iters, 0)
 
-
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
                     'Invalid predictor point! State-solve failed.')
@@ -496,7 +495,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
                     max_newton = 100
-
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -628,12 +626,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    # if self.mu < 0.0005:
-                    #     if inner_iters < 38:
-                    #         dx.times(0.3)
-                    #     else:
-                    #         dx.times(1.0)
-
+                    print 'Corrector outer: %d inner: %d'%(outer_iters, inner_iters)
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
                     if self.use_frac_to_bound is True:
                         newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
@@ -642,6 +635,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     else:
                         newton_step = 1.0
+
+                    print 'newton step, self.mu', newton_step, self.mu
+
 
                     dx.times(newton_step)
 
@@ -697,6 +693,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             primal_work.equals(x.primal)
             primal_work.minus(x0.primal)
+            
+            # prod_next = self.mu * sum(-x.primal.slack.base.data*x.dual.base.data)/len(x.dual.base.data)
+            # primal_work.slack.equals(prod_next)
 
             # if self.ineq_factory is None:
             rhs_vec.primal.plus(primal_work)
@@ -744,16 +743,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             
             if self.approx_adj is not None:
                 self.approx_adj.linearize(x, state, adj, self.mu)
-            if self.svd_pc is not None:
-                self.svd_pc.use_hessian = False
-                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, 0)
+            # if self.svd_pc is not None:
+            #     self.svd_pc.use_hessian = False
+            #     self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, 0)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = 0
             self.krylov.mu = self.mu
             self.krylov.step = 'Predictor'
 
-            self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+            self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)

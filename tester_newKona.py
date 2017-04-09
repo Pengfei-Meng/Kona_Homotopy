@@ -541,7 +541,7 @@ solver = kona_opt.FSTopoSolver(
 
 # Optimizer
 optns = {
-    'max_iter' : 100,
+    'max_iter' : 300,
     'opt_tol' : 1e-4,
     'feas_tol' : 1e-4,        
     'info_file' : prefix+'/kona_info.dat',
@@ -551,7 +551,7 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 5,
-        'init_step' : 0.05,        
+        'init_step' : 5,        
         'nominal_dist' : 1.0,
         'nominal_angle' : 8.0*np.pi/180., 
         'max_factor' : 10.0,                  
@@ -562,7 +562,7 @@ optns = {
     },
 
     'rsnk' : {
-        'precond'       : 'approx_adjoint',     #'svd_pc',     #    # None, 
+        'precond'       : 'svd_pc',     # None,    #'approx_adjoint',     #   
         # rsnk algorithm settings
         'dynamic_tol'   : False,
         'nu'            : 0.95,

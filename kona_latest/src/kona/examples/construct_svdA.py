@@ -82,7 +82,7 @@ class Constructed_SVDA(UserSolver):
         return self.init_x
 
     def init_slack(self):
-        at_slack = np.ones(self.num_ineq)
+        at_slack = 10*np.ones(self.num_ineq)
         # at_slack = self.eval_ineq_cnstr(self.init_x, [])
         return (at_slack, 0)
 

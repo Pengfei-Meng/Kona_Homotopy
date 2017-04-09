@@ -42,7 +42,7 @@ class InequalityTestCase(unittest.TestCase):
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
-                'inner_maxiter' : 5,
+                'inner_maxiter' : 10,
                 'init_step' : 5,        
                 'nominal_dist' : 1.0,            
                 'nominal_angle' : 8.0*np.pi/180., 
@@ -50,7 +50,7 @@ class InequalityTestCase(unittest.TestCase):
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
-                'mu_correction' : 0.01,  
+                'mu_correction' : 0.9,  
             }, 
 
             'rsnk' : {
