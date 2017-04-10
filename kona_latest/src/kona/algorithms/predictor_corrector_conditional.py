@@ -308,9 +308,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dual_work2 = self._generate_dual()
 
         if self.svd_pc is not None:  # for BFGS Hessian 
-            X_olddual = self._generate_kkt()
-            dLdX_olddual = self._generate_kkt()
-            old_dual = self._generate_dual()
+            X_olddualS = self._generate_kkt()
+            dLdX_olddualS = self._generate_kkt()
+            old_x = self._generate_kkt()
 
 
         if self.ineq_factory is not None:
@@ -411,6 +411,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # START OUTER ITERATIONS
         #########################
         outer_iters = 1
+        inner_iters = 0
         total_iters = 0
         corrector = False
 
@@ -453,7 +454,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -----------------------------
             max_mu_step = (tent_mu - self.mu)/dmu
 
-            print 'Predictor outer %d \n'%outer_iters
+            # if self.mu < 0.8:
+            #     pdb.set_trace()
+            
+            print '\n'
+            print 'Predictor outer %d '%outer_iters
             if self.use_frac_to_bound is True:
                 self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
                 t.primal.slack.base.data[ind_active_s0] = 0.0
@@ -461,8 +466,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             else:
                 self.step = max_mu_step
-
-            # pdb.set_trace()
+            
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
 
@@ -592,18 +596,29 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
                         else:
                             # BFGS Hessian approx
-                            X_olddual.equals(x)
-                            X_olddual.dual.equals(old_dual)
-                            dLdX_olddual.equals_KKT_conditions(
-                                X_olddual, state, adj) 
+                            X_olddualS.equals(x)
+                            X_olddualS.dual.equals(old_x.dual)
+                            X_olddualS.primal.slack.equals(old_x.primal.slack)
 
-                            dLdX_olddual.times(1. - self.mu)
-                            dLdX_olddual.primal.plus(primal_work)
-                            dLdX_olddual.dual.minus(dual_work)
+                            dLdX_olddualS.equals_KKT_conditions(
+                                X_olddualS, state, adj) 
+                            dLdX_olddualS.times(1. - self.mu)
 
-                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddual, inner_iters)
+                            primal_work.equals(X_olddualS.primal)
+                            primal_work.minus(x0.primal)
+                            primal_work.times(self.mu)
 
-                        old_dual.equals(x.dual)
+                            dLdX_olddualS.primal.plus(primal_work)
+
+                            dual_work.equals(X_olddualS.dual)
+                            dual_work.minus(x0.dual)
+                            dual_work.times(self.mu)
+
+                            dLdX_olddualS.dual.minus(dual_work)
+
+                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
+
+                        old_x.equals(x)
 
                     # ---------- save the singular values for mu = 0.0 ----------
                     # if self.mu == 0.0:
@@ -626,7 +641,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    print 'Corrector outer: %d inner: %d'%(outer_iters, inner_iters)
+                    print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
                     if self.use_frac_to_bound is True:
                         newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
@@ -637,7 +652,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         newton_step = 1.0
 
                     print 'newton step, self.mu', newton_step, self.mu
-
 
                     dx.times(newton_step)
 
@@ -743,12 +757,27 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             
             if self.approx_adj is not None:
                 self.approx_adj.linearize(x, state, adj, self.mu)
-            # if self.svd_pc is not None:
-            #     self.svd_pc.use_hessian = False
-            #     self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, 0)
+
+            if self.svd_pc is not None:
+                # # BFGS Hessian approx
+                # X_olddual.equals(x)
+                # X_olddual.dual.equals(old_dual)
+                # dLdX_olddual.equals_KKT_conditions(
+                #     X_olddual, state, adj) 
+
+                # dLdX_olddual.times(1. - self.mu)
+                # dLdX_olddual.primal.plus(primal_work)
+
+                # dual_work.equals(old_dual)
+                # dual_work.minus(x0.dual)
+                # dual_work.times(self.mu)
+                # dLdX_olddual.dual.minus(dual_work)
+
+                # self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddual, inner_iters)
+                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
 
             self.krylov.outer_iters = outer_iters 
-            self.krylov.inner_iters = 0
+            self.krylov.inner_iters = inner_iters
             self.krylov.mu = self.mu
             self.krylov.step = 'Predictor'
 
