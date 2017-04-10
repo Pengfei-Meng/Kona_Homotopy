@@ -53,6 +53,20 @@ class LimitedMemoryBFGS(QuasiNewtonApprox):
         self.s_dot_s_list.append(two_norm)
         self.s_dot_y_list.append(curvature)
 
+    def restart(self):
+        # restart BFGS , clear up the correction records
+        if len(self.s_list) > 0:
+            del self.s_list[:]
+
+        if len(self.y_list) > 0:
+            del self.y_list[:]
+
+        if len(self.s_dot_s_list) > 0:
+            del self.s_dot_s_list[:]
+            
+        if len(self.s_dot_y_list) > 0:
+            del self.s_dot_y_list[:]
+
     def product(self, in_vec, out_vec):
         raise NotImplementedError
 

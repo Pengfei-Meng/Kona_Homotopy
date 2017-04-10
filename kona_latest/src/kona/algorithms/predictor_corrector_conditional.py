@@ -718,22 +718,22 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dual_work.minus(x0.dual)
             rhs_vec.dual.minus(dual_work)
 
+            # ---------------------------------
+            # for BFGS approximation of W = (1-mu)KKT + mu * I 
+            dJdX_hom.equals(dJdX)
+            dJdX_hom.times(1. - self.mu)
+
+            xTx = primal_work.inner(primal_work)
+            primal_work.times(self.mu)
+            dJdX_hom.primal.plus(primal_work)
+
+            mTm = dual_work.inner(dual_work)
+            dual_work.times(self.mu)
+            dJdX_hom.dual.minus(dual_work)
+
             if corrector is False:
                 # ------------------------------------------------
                 # --------- write inner for predictor step -------
-
-                dJdX_hom.equals(dJdX)
-                dJdX_hom.times(1. - self.mu)
-
-                xTx = primal_work.inner(primal_work)
-
-                primal_work.times(self.mu)
-                dJdX_hom.primal.plus(primal_work)
-
-                mTm = dual_work.inner(dual_work)
-                dual_work.times(self.mu)
-                dJdX_hom.dual.minus(dual_work)
-
                 hom_opt_norm = dJdX_hom.primal.norm2
                 hom_feas_norm = dJdX_hom.dual.norm2
 
@@ -759,29 +759,35 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             if self.svd_pc is not None:
-                # # BFGS Hessian approx
-                # X_olddual.equals(x)
-                # X_olddual.dual.equals(old_dual)
-                # dLdX_olddual.equals_KKT_conditions(
-                #     X_olddual, state, adj) 
+                # BFGS Hessian approx
+                X_olddualS.equals(x)
+                X_olddualS.dual.equals(old_x.dual)
+                X_olddualS.primal.slack.equals(old_x.primal.slack)
 
-                # dLdX_olddual.times(1. - self.mu)
-                # dLdX_olddual.primal.plus(primal_work)
+                dLdX_olddualS.equals_KKT_conditions(
+                    X_olddualS, state, adj) 
+                dLdX_olddualS.times(1. - self.mu)
 
-                # dual_work.equals(old_dual)
-                # dual_work.minus(x0.dual)
-                # dual_work.times(self.mu)
-                # dLdX_olddual.dual.minus(dual_work)
+                primal_work.equals(X_olddualS.primal)
+                primal_work.minus(x0.primal)
+                primal_work.times(self.mu)
 
-                # self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddual, inner_iters)
-                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
+                dLdX_olddualS.primal.plus(primal_work)
+
+                dual_work.equals(X_olddualS.dual)
+                dual_work.minus(x0.dual)
+                dual_work.times(self.mu)
+
+                dLdX_olddualS.dual.minus(dual_work)
+
+                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters
             self.krylov.mu = self.mu
             self.krylov.step = 'Predictor'
 
-            self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
+            self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
