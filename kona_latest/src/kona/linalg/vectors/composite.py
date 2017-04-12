@@ -378,7 +378,7 @@ class CompositeDualVector(CompositeVector):
         Inequality Constraints
     """
     init_eq = 0.0
-    init_ineq = -0.1
+    init_ineq = -10.0
 
     def __init__(self, dual_eq, dual_ineq):
         if isinstance(dual_eq, DualVectorEQ):

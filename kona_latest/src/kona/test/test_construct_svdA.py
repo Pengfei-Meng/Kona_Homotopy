@@ -16,7 +16,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 10
+        size_prob = 100
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -43,7 +43,7 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 3,
-                'init_step' : 5,        
+                'init_step' : 0.5,        
                 'nominal_dist' : 1.0,            
                 'nominal_angle' : 8.0*np.pi/180., 
                 'max_factor' : 30.0,                  
@@ -94,7 +94,8 @@ class InequalityTestCase(unittest.TestCase):
 
         self.kona_obj = self.solver.eval_obj(self.solver.curr_design, self.solver.curr_state)
         self.kona_x = self.solver.curr_design
-
+        print 'self.solver.curr_dual', self.solver.curr_dual
+        print 'self.solver.curr_slack', self.solver.curr_slack
 
     def objfunc(self, xdict):
         self.iteration += 1

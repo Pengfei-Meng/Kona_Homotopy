@@ -157,7 +157,7 @@ class SVDPC(BaseHessian):
         self.dldx_old.equals(dLdX_homo.primal.design)
 
 
-        if self.mu < 1.0:
+        if self.mu < 0.9:
             self.svd_AWA_mu.linearize()
 
             self.awa_S = self.svd_AWA_mu.S
@@ -171,7 +171,7 @@ class SVDPC(BaseHessian):
 
     def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T
 
-        if self.mu == 1.0:
+        if self.mu > 0.9:
             pcd_vec.equals(rhs_vec)
         else:
             u_x = rhs_vec.primal.design.base.data

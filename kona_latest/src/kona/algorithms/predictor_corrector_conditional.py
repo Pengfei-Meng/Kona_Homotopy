@@ -242,8 +242,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 max_slack_step = max_mu_step
 
-            # max_slack_step = min(max_mu_step, max_slack_step)
-
             # --------- if a certain element of slack_steps (0, 1e-6) 
             # --------- meaning this slack is hitting 0, active constraints. 
             ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
@@ -255,8 +253,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_ineq_step = min(ineq_steps[ineq_steps > thresh_0])
             else:
                 max_ineq_step = max_mu_step
-
-            # max_ineq_step = min(max_mu_step, max_ineq_step)
 
             ind_inactive_lam0 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
 
@@ -453,9 +449,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 tent_mu = 0.0
             # -----------------------------
             max_mu_step = (tent_mu - self.mu)/dmu
-
-            # if self.mu < 0.8:
-            #     pdb.set_trace()
             
             print '\n'
             print 'Predictor outer %d '%outer_iters
@@ -489,7 +482,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # # compute adjoint
             adj.equals_lagrangian_adjoint(
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
 
             if self.mu < self.mu_correction:              
 
@@ -641,17 +633,17 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
-                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    if self.use_frac_to_bound is True:
-                        newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
-                        dx.primal.slack.base.data[ind_active_s0] = 0.0
-                        dx.dual.base.data[ind_inactive_lam0] = 0.0 
+                    # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
+                    # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+                    # if self.use_frac_to_bound is True:
+                    #     newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
+                    #     dx.primal.slack.base.data[ind_active_s0] = 0.0
+                    #     dx.dual.base.data[ind_inactive_lam0] = 0.0 
 
-                    else:
-                        newton_step = 1.0
+                    # else:
+                    newton_step = 1.0
 
-                    print 'newton step, self.mu', newton_step, self.mu
+                    # print 'newton step, self.mu', newton_step, self.mu
 
                     dx.times(newton_step)
 
@@ -709,8 +701,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             primal_work.minus(x0.primal)
             
             # prod_next = self.mu * sum(-x.primal.slack.base.data*x.dual.base.data)/len(x.dual.base.data)
-            # primal_work.slack.equals(prod_next)
-
+            # primal_work.slack.base.data += prod_next
+            # primal_work.slack.times(-1.0)
             # if self.ineq_factory is None:
             rhs_vec.primal.plus(primal_work)
 
@@ -722,6 +714,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # for BFGS approximation of W = (1-mu)KKT + mu * I 
             dJdX_hom.equals(dJdX)
             dJdX_hom.times(1. - self.mu)
+
+            primal_work.equals(x.primal)
+            primal_work.minus(x0.primal)
 
             xTx = primal_work.inner(primal_work)
             primal_work.times(self.mu)

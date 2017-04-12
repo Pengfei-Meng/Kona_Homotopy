@@ -93,6 +93,8 @@ class Constructed_SVDA(UserSolver):
                          curr_eq, curr_ineq, curr_slack):
         self.curr_design = curr_design
         self.curr_state = curr_state
+        self.curr_dual = curr_ineq
+        self.curr_slack = curr_slack
 
         # time the iteration
         self.endTime = time.clock()
