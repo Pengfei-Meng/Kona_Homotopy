@@ -16,7 +16,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 100
+        size_prob = 300
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -51,6 +51,7 @@ class InequalityTestCase(unittest.TestCase):
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
+                'use_frac_to_bound' : False,
             }, 
 
             'rsnk' : {

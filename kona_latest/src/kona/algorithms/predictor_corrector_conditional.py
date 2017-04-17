@@ -87,7 +87,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
         self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
 
-        # print 'self.mu_correction :', self.mu_correction
+        print 'self.use_frac_to_bound :', self.use_frac_to_bound
         # print 'self.max_iter:', self.max_iter
         # print 'self.mu: ', self.mu
         # print 'self.inner_tol: ', self.inner_tol
@@ -212,19 +212,22 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
     def check_sign(self, x, outer, inner):
 
-        slack_ind = x.primal.slack.base.data < 0
+        slack_ind = x.primal.slack.base.data < -1e-6
 
         if np.any(slack_ind):
             slack = x.primal.slack.base.data[slack_ind] 
-            print 'Negative Slack Outer %d, Inner %d Slack \n'%(outer, inner)
-            print slack
+            print '\n Negative Slack Outer %d, Inner %d Slack %d'%(outer, inner, len(slack))
+            # print slack
+            # x.primal.slack.base.data[slack_ind] = 1e-6   # clipping to 0 doesn't work
 
-        dual_ind = x.dual.base.data > 0
+
+        dual_ind = x.dual.base.data > 1e-6
 
         if np.any(dual_ind):
             dual = x.dual.base.data[dual_ind]
-            print 'Positive Dual Outer %d, Inner %d Dual \n'%(outer, inner)
-            print dual
+            print '\n Positive Dual Outer %d, Inner %d Dual %d'%(outer, inner, len(dual))
+            # print dual
+            # x.dual.base.data[dual_ind] = -1e-6           # clipping to 0 doesn't work
 
     def find_step(self, max_mu_step, x, t):
 
@@ -449,10 +452,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 tent_mu = 0.0
             # -----------------------------
             max_mu_step = (tent_mu - self.mu)/dmu
-            
-            print '\n'
-            print 'Predictor outer %d '%outer_iters
+
             if self.use_frac_to_bound is True:
+                print '\n Predictor outer %d '%outer_iters
                 self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
                 t.primal.slack.base.data[ind_active_s0] = 0.0
                 t.dual.base.data[ind_inactive_lam0] = 0.0 
@@ -633,15 +635,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
                     
-                    # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
-                    # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    # if self.use_frac_to_bound is True:
-                    #     newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
-                    #     dx.primal.slack.base.data[ind_active_s0] = 0.0
-                    #     dx.dual.base.data[ind_inactive_lam0] = 0.0 
+                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+                    if self.use_frac_to_bound is True:
+                        print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
+                        newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
+                        dx.primal.slack.base.data[ind_active_s0] = 0.0
+                        dx.dual.base.data[ind_inactive_lam0] = 0.0 
 
-                    # else:
-                    newton_step = 1.0
+                    else:
+                        newton_step = 1.0
 
                     # print 'newton step, self.mu', newton_step, self.mu
 
@@ -751,6 +753,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
             if self.approx_adj is not None:
+                if self.mu < 0.01:                           
+                    self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             if self.svd_pc is not None:

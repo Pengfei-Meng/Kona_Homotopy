@@ -105,8 +105,8 @@ class Constructed_SVDA(UserSolver):
         objVal = self.eval_obj(curr_design, curr_state)
          
         slack_lamda = max(abs(curr_slack*curr_ineq))
-        neg_S = sum(curr_slack < 0)
-        pos_Lam = sum(curr_ineq > 0)
+        neg_S = sum(curr_slack < -1e-4)
+        pos_Lam = sum(curr_ineq > 1e-4)
 
         # write timing to file
         timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}       {4:4.4f}    {5:3d}   {6:3d}\n'.format(

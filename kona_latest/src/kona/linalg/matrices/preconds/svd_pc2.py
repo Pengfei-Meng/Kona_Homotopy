@@ -194,6 +194,10 @@ class SVDPC(BaseHessian):
 
             # ----------------------------------------
             self.A_61 = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+            
+            # ind = abs(self.A_61) < 1e6
+            # self.A_61[ind] = 1e6 * np.sign(self.A_61[ind])
+
             self.A_61_inv = 1.0/self.A_61
             
             # self.slack_inv = 1./self.at_slack_data
