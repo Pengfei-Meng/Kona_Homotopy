@@ -551,19 +551,19 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 5,
-        'init_step' : 5,        
+        'init_step' : 0.05,        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 8.0*np.pi/180., 
+        'nominal_angle' : 5.0*np.pi/180., 
         'max_factor' : 20.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,       
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
-        'use_frac_to_bound' : True,     
+        'use_frac_to_bound' : False,     
     },
 
     'rsnk' : {
-        'precond'       : 'svd_pc',    #'approx_adjoint',       #None,    #  
+        'precond'       : 'approx_adjoint',    #'svd_pc', 
         # rsnk algorithm settings
         'dynamic_tol'   : False,
         'nu'            : 0.95,

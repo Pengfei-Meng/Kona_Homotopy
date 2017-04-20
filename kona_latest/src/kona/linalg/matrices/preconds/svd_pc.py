@@ -32,7 +32,7 @@ class SVDPC(BaseHessian):
 
         self.use_hessian = True
 
-        svd_optns = {'lanczos_size': 5}
+        svd_optns = {'lanczos_size': 10}
         self.svd_Ag = LowRankSVD(
             self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 

@@ -216,7 +216,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         if np.any(slack_ind):
             slack = x.primal.slack.base.data[slack_ind] 
-            print '\n Negative Slack Outer %d, Inner %d Slack %d'%(outer, inner, len(slack))
+            # print '\n Negative Slack Outer %d, Inner %d Slack %d'%(outer, inner, len(slack))
             # print slack
             # x.primal.slack.base.data[slack_ind] = 1e-6   # clipping to 0 doesn't work
 
@@ -225,7 +225,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         if np.any(dual_ind):
             dual = x.dual.base.data[dual_ind]
-            print '\n Positive Dual Outer %d, Inner %d Dual %d'%(outer, inner, len(dual))
+            # print '\n Positive Dual Outer %d, Inner %d Dual %d'%(outer, inner, len(dual))
             # print dual
             # x.dual.base.data[dual_ind] = -1e-6           # clipping to 0 doesn't work
 
@@ -342,6 +342,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # compute initial KKT conditions
         dJdX.equals_KKT_conditions(
             x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+        print 'dJdX.inner(x): ', dJdX.inner(x)
+        
         # send solution to solver
         solver_info = current_solution(
             num_iter=0, curr_primal=x.primal, curr_state=state, curr_adj=adj,
@@ -579,7 +582,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
                     if self.approx_adj is not None:
-                        if self.mu < 0.01:                           
+                        if self.mu < 0.05:                           
                             self.approx_adj.update_mat = True  
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
@@ -591,8 +594,17 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         else:
                             # BFGS Hessian approx
                             X_olddualS.equals(x)
-                            X_olddualS.dual.equals(old_x.dual)
-                            X_olddualS.primal.slack.equals(old_x.primal.slack)
+                            # X_olddualS.dual.equals(old_x.dual)
+                            # X_olddualS.primal.slack.equals(old_x.primal.slack)
+                            X_olddualS.primal.design.equals(old_x.primal.design)
+
+                            # if not state.equals_primal_solution(X_olddualS.primal):
+                            #     raise RuntimeError(
+                            #         'Invalid predictor point! State-solve failed.')
+                            # # # compute adjoint
+                            # adj.equals_lagrangian_adjoint(
+                            #     X_olddualS, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
 
                             dLdX_olddualS.equals_KKT_conditions(
                                 X_olddualS, state, adj) 
@@ -702,9 +714,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             primal_work.equals(x.primal)
             primal_work.minus(x0.primal)
             
-            # prod_next = self.mu * sum(-x.primal.slack.base.data*x.dual.base.data)/len(x.dual.base.data)
-            # primal_work.slack.base.data += prod_next
-            # primal_work.slack.times(-1.0)
             # if self.ineq_factory is None:
             rhs_vec.primal.plus(primal_work)
 
@@ -716,9 +725,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # for BFGS approximation of W = (1-mu)KKT + mu * I 
             dJdX_hom.equals(dJdX)
             dJdX_hom.times(1. - self.mu)
-
-            primal_work.equals(x.primal)
-            primal_work.minus(x0.primal)
 
             xTx = primal_work.inner(primal_work)
             primal_work.times(self.mu)
@@ -753,15 +759,23 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
             if self.approx_adj is not None:
-                if self.mu < 0.01:                           
+                if self.mu < 0.05:                           
                     self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
             if self.svd_pc is not None:
                 # BFGS Hessian approx
                 X_olddualS.equals(x)
-                X_olddualS.dual.equals(old_x.dual)
-                X_olddualS.primal.slack.equals(old_x.primal.slack)
+                # X_olddualS.dual.equals(old_x.dual)
+                # X_olddualS.primal.slack.equals(old_x.primal.slack)
+                X_olddualS.primal.design.equals(old_x.primal.design)
+
+                # if not state.equals_primal_solution(X_olddualS.primal):
+                #     raise RuntimeError(
+                #         'Invalid predictor point! State-solve failed.')
+                # # # compute adjoint
+                # adj.equals_lagrangian_adjoint(
+                #     X_olddualS, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
                 dLdX_olddualS.equals_KKT_conditions(
                     X_olddualS, state, adj) 
