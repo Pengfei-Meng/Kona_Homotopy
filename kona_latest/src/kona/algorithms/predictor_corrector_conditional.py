@@ -88,7 +88,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
 
         print 'self.use_frac_to_bound :', self.use_frac_to_bound
-        # print 'self.max_iter:', self.max_iter
+        print 'self.init_step:', self.step
         # print 'self.mu: ', self.mu
         # print 'self.inner_tol: ', self.inner_tol
 
@@ -408,7 +408,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         tnorm = np.sqrt(t.inner(t) + 1.0)
         t.times(1./tnorm)
         dmu = -1./tnorm
-
+        print 'dmu:', dmu
 
         # START OUTER ITERATIONS
         #########################
@@ -467,7 +467,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
-
+            # pdb.set_trace()
             self.info_file.write('\nmu after pred  = %.10f\n'%self.mu)
 
             # solve states
@@ -495,7 +495,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
-                    max_newton = 100
+                    max_newton = 20
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -573,7 +573,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # check convergence
                     if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
-                        self.info_file.write('\n   Corrector step converged!\n')
+                        self.info_file.write('\n  Corrector step converged!\n')
                         break
 
                     # linearize the hessian at the new point
@@ -594,9 +594,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         else:
                             # BFGS Hessian approx
                             X_olddualS.equals(x)
-                            # X_olddualS.dual.equals(old_x.dual)
-                            # X_olddualS.primal.slack.equals(old_x.primal.slack)
-                            X_olddualS.primal.design.equals(old_x.primal.design)
+                            X_olddualS.dual.equals(old_x.dual)
+                            X_olddualS.primal.slack.equals(old_x.primal.slack)
+                            # X_olddualS.primal.design.equals(old_x.primal.design)
 
                             # if not state.equals_primal_solution(X_olddualS.primal):
                             #     raise RuntimeError(
@@ -766,9 +766,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.svd_pc is not None:
                 # BFGS Hessian approx
                 X_olddualS.equals(x)
-                # X_olddualS.dual.equals(old_x.dual)
-                # X_olddualS.primal.slack.equals(old_x.primal.slack)
-                X_olddualS.primal.design.equals(old_x.primal.design)
+                X_olddualS.dual.equals(old_x.dual)
+                X_olddualS.primal.slack.equals(old_x.primal.slack)
+                # X_olddualS.primal.design.equals(old_x.primal.design)
 
                 # if not state.equals_primal_solution(X_olddualS.primal):
                 #     raise RuntimeError(
@@ -806,7 +806,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             tnorm = np.sqrt(t.inner(t) + 1.0)
             t.times(1./tnorm)
             dmu = -1./tnorm
-
+            print 'dmu:', dmu
             # compute distance to curve
             self.info_file.write('\n')
             dcurve = dx_newt.norm2

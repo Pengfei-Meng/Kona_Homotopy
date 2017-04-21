@@ -115,7 +115,7 @@ class APPROXADJOINT(BaseHessian):
                 # set the input vector so that we only pluck out one column of the matrix
                 in_design.equals(0.0)
                 in_design.base.data[i] = 1.
-                # perform the Lagrangian Hessian product and store
+                # # perform the Lagrangian Hessian product and store
                 self.W.approx.multiply_W(in_design, out_design)
                 self.W_full[:, i] = out_design.base.data
                 # perform the Constraint Jacobian product and store
@@ -136,25 +136,6 @@ class APPROXADJOINT(BaseHessian):
 
         rhs_full = np.hstack([v_x, v_s, v_g])
 
-        # ------------------- Assembling W_full, A_full -----------------
-        # inversely retrieving Lagrangian Hessian or Constraint Jacobian
-        # in_design = self.primal_factory.generate()
-        # out_design = self.primal_factory.generate()
-        # out_dual = self.ineq_factory.generate()
-
-        # # loop over design variables and start assembling the matrices
-        # for i in xrange(self.num_design):
-        #     # set the input vector so that we only pluck out one column of the matrix
-        #     in_design.equals(0.0)
-        #     in_design.base.data[i] = 1.
-        #     # perform the Lagrangian Hessian product and store
-        #     # self.W.approx.multiply_W(in_design, out_design)
-        #     # self.W_full[:, i] = out_design.base.data
-        #     # perform the Constraint Jacobian product and store
-        #     self.Ag.approx.product(in_design, out_dual)
-        #     self.A_full[:, i] = out_dual.base.data
-
-
         # # ----------------- The Full KKT Matrix -------------------
         KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
                               np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq), -np.diag(self.at_slack)]),
@@ -172,7 +153,7 @@ class APPROXADJOINT(BaseHessian):
         # print 'lu_solve in approx_adjoint time spent in seconds: ', end-start
 
         p_x = p_full[:self.num_design]
-        p_s = p_full[self.num_design:self.num_design + self.num_ineq]   
+        p_s = p_full[self.num_design:self.num_design + self.num_ineq]     
         p_g = p_full[self.num_design + self.num_ineq:]
 
         out_vec.primal.design.base.data = p_x
@@ -181,7 +162,41 @@ class APPROXADJOINT(BaseHessian):
 
         self.update_mat = False
 
-        
+    def solve_reduce(self, in_vec, out_vec):
+
+        if self.mu > 0.9:
+            out_vec.equals(in_vec)
+
+        else: 
+            v_x = in_vec.primal.design.base.data
+            v_s = in_vec.primal.slack.base.data
+            v_g = in_vec.dual.base.data
+
+            LAM = -(1.0-self.mu)*self.at_dual_ineq + self.mu*np.ones(self.at_dual_ineq.shape)
+
+            GAM = -(1.0-self.mu)**2 * (1.0/LAM) * self.at_slack - self.mu*np.ones(self.at_slack.shape)
+            UV1 = np.dot( np.diag(1.0/GAM), self.A_full )
+            UV = -(1.0-self.mu)**2 * np.dot( self.A_full.transpose(), UV1) 
+
+            W = (1.0-self.mu) * self.W_full + self.mu*np.eye(self.num_design) + UV
+
+
+            # rhs_x
+            rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * 1.0/LAM * v_s) 
+            rhs_x = v_x - np.dot( self.A_full.transpose(), rhs_x_1 )
+
+            p_x = sp.linalg.lu_solve(sp.linalg.lu_factor(W), rhs_x)
+
+            rhs_g_1 = v_g + (1.0-self.mu) * 1./LAM * v_s - np.dot( self.A_full, p_x)
+            p_g = 1.0/GAM * rhs_g_1 
+            
+            p_s = 1.0/LAM * ( (1.0-self.mu) * self.at_slack * p_g + v_s )     
+
+            out_vec.primal.design.base.data = p_x
+            out_vec.primal.slack.base.data = p_s
+            out_vec.dual.base.data = p_g 
+
+       
 
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
 from kona.linalg.matrices.common import IdentityMatrix

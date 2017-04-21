@@ -1,5 +1,6 @@
 import numpy as np
 import unittest
+import pprint
 
 import kona
 from kona import Optimizer 
@@ -21,7 +22,7 @@ class InequalityTestCase(unittest.TestCase):
         self.num_design = size_prob
         self.num_ineq = size_prob
         np.random.seed(0) 
-        self.init_x = np.ones(size_prob)    #np.random.rand(size_prob)
+        self.init_x = np.random.rand(size_prob)   #np.ones(size_prob)    #
 
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
@@ -43,9 +44,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 3,
-                'init_step' : 0.5,        
-                'nominal_dist' : 1.0,            
-                'nominal_angle' : 8.0*np.pi/180., 
+                'init_step' : 100.0,        
+                'nominal_dist' : 10.0,            
+                'nominal_angle' : 20.0*np.pi/180., 
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -55,7 +56,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',   #'approx_adjoint', 
+                'precond'       : 'svd_pc',   #'approx_adjoint',    # None,  #               
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -87,7 +88,7 @@ class InequalityTestCase(unittest.TestCase):
             },
         }
 
-        
+        pprint.pprint(optns['homotopy'])
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
         optimizer = kona.Optimizer(self.solver, algorithm, optns)
@@ -95,8 +96,8 @@ class InequalityTestCase(unittest.TestCase):
 
         self.kona_obj = self.solver.eval_obj(self.solver.curr_design, self.solver.curr_state)
         self.kona_x = self.solver.curr_design
-        print 'self.solver.curr_dual', self.solver.curr_dual
-        print 'self.solver.curr_slack', self.solver.curr_slack
+        #print 'self.solver.curr_dual', self.solver.curr_dual
+        #print 'self.solver.curr_slack', self.solver.curr_slack
 
     def objfunc(self, xdict):
         self.iteration += 1
