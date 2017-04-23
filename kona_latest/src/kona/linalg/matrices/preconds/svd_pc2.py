@@ -36,18 +36,13 @@ class SVDPC(BaseHessian):
         if self.ineq_factory is not None:
             self.ineq_factory.request_num_vectors(5)
 
-        self.use_hessian = True
-
-        svd_optns = {'lanczos_size': 48}
+        svd_optns = {'lanczos_size': 32}
         self.max_stored = get_opt(optns, 10, 'max_stored')  
         bfgs_optns = {'max_stored': self.max_stored}
 
 
         self.svd_AWA_mu = LowRankSVD(
             self.awa_mat_vec_mu, self.ineq_factory, None, None, svd_optns)
-
-        # self.svd_Ag = LowRankSVD(
-        #     self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
@@ -60,20 +55,11 @@ class SVDPC(BaseHessian):
         self.Ag.T.approx.product(in_vec, self.design_work)      
         self.design_work.times(1.0 - self.mu)
 
-        if self.use_hessian is True:
-            self.W_hat.solve(self.design_work, self.design_work0)
-        else:
-            self.design_work0.equals(self.design_work)
+        self.W_hat.solve(self.design_work, self.design_work0)
 
         self.Ag.approx.product(self.design_work0, out_vec)
         out_vec.times(1.0 - self.mu)
 
-
-    def fwd_mat_vec(self, in_vec, out_vec):
-        self.Ag.approx.product(in_vec, out_vec)
-
-    def rev_mat_vec(self, in_vec, out_vec):
-        self.Ag.T.approx.product(in_vec, out_vec)
 
     def linearize(self, X, state, adjoint, mu, dLdX_homo, dLdX_homo_oldual, inner_iters):
 
@@ -120,20 +106,8 @@ class SVDPC(BaseHessian):
         else:
             self.at_dual_ineq_data = X.dual.base.data
 
-        # ------------------ for solve_lu -----------------
+
         self.Ag.linearize(X.primal.design, state)
-        # self.svd_Ag.linearize()
-
-
-        # # --------- peeling off SVD_Ag  U, V -----------
-        # self.S = self.svd_Ag.S
-        # self.U = np.zeros((self.num_ineq, len( self.svd_Ag.U ) ))
-        # self.V = np.zeros((self.num_design, len( self.svd_Ag.V ) ))
-
-        # for j in xrange(self.S.shape[0]):
-        #     self.U[:, j] = self.svd_Ag.U[j].base.data
-        #     self.V[:, j] = self.svd_Ag.V[j].base.data
-
 
         # ------------- SVD on Ag W^{-1} Ag^T ---------------------
         # ------------- Hessian LBFGS approximation ---------------
@@ -141,7 +115,6 @@ class SVDPC(BaseHessian):
 
         if inner_iters == 0:
             self.W_hat.restart()
-            self.use_hessian = False
 
         else:
             self.design_old.minus(X.primal.design)
@@ -155,10 +128,8 @@ class SVDPC(BaseHessian):
             self.dldx.minus(dLdX_homo_oldual.primal.design)
 
             self.W_hat.add_correction(self.design_old, self.dldx)
-            self.use_hessian = True
 
         self.design_old.equals(X.primal.design)
-        # self.dldx_old.equals(dLdX_homo.primal.design)
 
 
         if self.mu < 0.9:
@@ -173,9 +144,9 @@ class SVDPC(BaseHessian):
                 self.awa_V[:, j] = self.svd_AWA_mu.V[j].base.data
 
 
-    def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T
+    def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T, 2nd Type with mu
 
-        if self.mu > 0.5:
+        if self.mu >= 0.9:
             pcd_vec.equals(rhs_vec)
         else:
             u_x = rhs_vec.primal.design.base.data
@@ -186,12 +157,9 @@ class SVDPC(BaseHessian):
             self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
             self.lam_aug_inv = 1./self.lam_aug
 
-            if self.use_hessian is True:
-                self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
-            else:
-                self.design_work0.equals(rhs_vec.primal.design)
+            self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
 
-            # self.svd_Ag.approx_fwd_prod(self.design_work0, self.dual_work1)
+
             self.Ag.approx.product(self.design_work0, self.dual_work1)
             self.dual_work1.times(1.0 - self.mu)
 
@@ -202,9 +170,6 @@ class SVDPC(BaseHessian):
 
             self.A_61_inv = 1.0/self.A_61
             
-            # self.slack_inv = 1./self.at_slack_data
-            # self.sigma = - self.slack_inv * self.at_dual_ineq_data    # - S_inv * Lambda_g   
-
             self.Gamma_Nstar = np.dot(self.awa_S, self.awa_V.transpose()) 
 
             core_mat = np.eye(self.awa_S.shape[0]) + np.dot(self.Gamma_Nstar, np.dot(np.diag(self.A_61_inv),self.awa_U))
@@ -222,16 +187,12 @@ class SVDPC(BaseHessian):
 
             # ------------- next look for p_s, p_x 
 
-            # self.svd_Ag.approx_rev_prod(pcd_vec.dual, self.design_work)
             self.Ag.T.approx.product(pcd_vec.dual, self.design_work)
             self.design_work.times(self.mu - 1.0)
 
             self.design_work2.base.data = self.design_work.base.data + u_x 
 
-            if self.use_hessian is True:
-                self.W_hat.solve(self.design_work2, pcd_vec.primal.design)
-            else:
-                pcd_vec.primal.design.equals(self.design_work2)
+            self.W_hat.solve(self.design_work2, pcd_vec.primal.design)
             
 
             Lambda_g_p_s = (1-self.mu) * self.at_slack_data * p_g  + u_s 
@@ -253,8 +214,6 @@ class SVDPC(BaseHessian):
         
         # ------------ data used in Sherman-Morrison inverse -------------
         self.slack_inv = 1./self.at_slack_data
-        # index_slack = abs(self.slack_inv) > 100000 
-        # self.slack_inv[ index_slack ] = 0.0
 
         self.sigma = - self.slack_inv * self.at_dual_ineq_data    # S_inv * Lambda_g
 
@@ -263,7 +222,6 @@ class SVDPC(BaseHessian):
         core_mat = np.eye(self.S.shape[0]) + np.dot(self.M_Gamma.transpose(),np.dot(np.diag(self.sigma),self.M_Gamma))
         core_inv = np.linalg.inv(core_mat)
 
-        # p_full = sp.linalg.lu_solve(sp.linalg.lu_factor(KKT), rhs_full)
 
         # ------------- multiplying ---------------
         work_1 = - self.slack_inv * rhs_vg
@@ -273,7 +231,6 @@ class SVDPC(BaseHessian):
         work_5 = -self.sigma * work_4
 
         p_g = - self.slack_inv*rhs_vg + work_5
-        # p_g[ index_slack ] = u_g[ index_slack ] 
         pcd_vec.dual.base.data = p_g
 
 
@@ -284,10 +241,8 @@ class SVDPC(BaseHessian):
 
         Lambda_g_p_s = - u_s - self.at_slack_data * p_g
         Lambda_g_inv = 1./self.at_dual_ineq_data
-        # index = abs(Lambda_g_inv) > 100000 
-        # Lambda_g_inv[ index ] = 0.0
+
         p_s = Lambda_g_p_s * Lambda_g_inv
-        # p_s[ index ] = u_s[index]
         
         pcd_vec.primal.slack.base.data = p_s
         

@@ -54,6 +54,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.eye = IdentityMatrix()
             self.precond = self.eye.product
 
+
+        #------------ use svd_pc for mu > 0, use approx_adj for mu = 0 ----------
+
+
+
+
         self.eye = IdentityMatrix()
         self.eye_precond = self.eye.product
 
@@ -400,7 +406,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         if self.approx_adj is not None:
             self.approx_adj.linearize(x, state, adj, self.mu)
         if self.svd_pc is not None:
-            self.svd_pc.use_hessian = False
             self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
         
         self.krylov.outer_iters = 0
@@ -592,7 +597,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
-                        self.svd_pc.use_hessian = True
 
                         if inner_iters == 0:
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)

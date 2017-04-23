@@ -132,11 +132,8 @@ class APPROXADJOINT(BaseHessian):
     def solve(self, in_vec, out_vec):  
         # in_vec  : to be preconditioned
         # out_vec : after preconditioned
-        # note: you cannot change in_vec!!!!!!! 
+        # note: you cannot change in_vec!!!!!!!         Working 
 
-        # if self.mu > 0.2:
-        #     out_vec.equals(in_vec)
-        # else:
         # specifically for Graeme's Problem
         v_x = in_vec.primal.design.base.data
         v_s = in_vec.primal.slack.base.data
@@ -171,39 +168,35 @@ class APPROXADJOINT(BaseHessian):
         self.update_mat = False
 
     def solve_reduce(self, in_vec, out_vec):
-        # 1st Type System Reduction, with mu
+        # 1st Type System Reduction, with mu // Working! 
 
-        if self.mu > 0.9:
-            out_vec.equals(in_vec)
+        v_x = in_vec.primal.design.base.data
+        v_s = in_vec.primal.slack.base.data
+        v_g = in_vec.dual.base.data
 
-        else: 
-            v_x = in_vec.primal.design.base.data
-            v_s = in_vec.primal.slack.base.data
-            v_g = in_vec.dual.base.data
+        LAM = -(1.0-self.mu)*self.at_dual_ineq + self.mu*np.ones(self.at_dual_ineq.shape)
 
-            LAM = -(1.0-self.mu)*self.at_dual_ineq + self.mu*np.ones(self.at_dual_ineq.shape)
+        GAM = -(1.0-self.mu)**2 * (1.0/LAM) * self.at_slack - self.mu*np.ones(self.at_slack.shape)
+        UV1 = np.dot( np.diag(1.0/GAM), self.A_full )
+        UV = -(1.0-self.mu)**2 * np.dot( self.A_full.transpose(), UV1) 
 
-            GAM = -(1.0-self.mu)**2 * (1.0/LAM) * self.at_slack - self.mu*np.ones(self.at_slack.shape)
-            UV1 = np.dot( np.diag(1.0/GAM), self.A_full )
-            UV = -(1.0-self.mu)**2 * np.dot( self.A_full.transpose(), UV1) 
-
-            W = (1.0-self.mu) * self.W_full + self.mu*np.eye(self.num_design) + UV
+        W = (1.0-self.mu) * self.W_full + self.mu*np.eye(self.num_design) + UV
 
 
-            # rhs_x
-            rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * 1.0/LAM * v_s) 
-            rhs_x = v_x - np.dot( self.A_full.transpose(), rhs_x_1 )
+        # rhs_x
+        rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * 1.0/LAM * v_s) 
+        rhs_x = v_x - np.dot( self.A_full.transpose(), rhs_x_1 )
 
-            p_x = sp.linalg.lu_solve(sp.linalg.lu_factor(W), rhs_x)
+        p_x = sp.linalg.lu_solve(sp.linalg.lu_factor(W), rhs_x)
 
-            rhs_g_1 = v_g + (1.0-self.mu) * 1./LAM * v_s - np.dot( self.A_full, p_x)
-            p_g = 1.0/GAM * rhs_g_1 
-            
-            p_s = 1.0/LAM * ( (1.0-self.mu) * self.at_slack * p_g + v_s )     
+        rhs_g_1 = v_g + (1.0-self.mu) * 1./LAM * v_s - np.dot( self.A_full, p_x)
+        p_g = 1.0/GAM * rhs_g_1 
+        
+        p_s = 1.0/LAM * ( (1.0-self.mu) * self.at_slack * p_g + v_s )     
 
-            out_vec.primal.design.base.data = p_x
-            out_vec.primal.slack.base.data = p_s
-            out_vec.dual.base.data = p_g 
+        out_vec.primal.design.base.data = p_x
+        out_vec.primal.slack.base.data = p_s
+        out_vec.dual.base.data = p_g 
 
        
 

@@ -563,7 +563,7 @@ optns = {
     },
 
     'rsnk' : {
-        'precond'       : 'approx_adjoint',    #'svd_pc',  #   #     #    #None,        
+        'precond'       : 'svd_pc',        #'approx_adjoint',                
         # rsnk algorithm settings
         'dynamic_tol'   : False,
         'nu'            : 0.95,
@@ -603,8 +603,8 @@ optimizer.solve()
 
 # print 'inequality multipliers: \n', solver.curr_ineq  
 # print solver.curr_slack 
-print sum(solver.curr_ineq > 1e-5)
-print sum(solver.curr_slack < -1e-5)
+print 'Positive Lagrangian', solver.curr_ineq[solver.curr_ineq > 1e-5]
+print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 
 
 
