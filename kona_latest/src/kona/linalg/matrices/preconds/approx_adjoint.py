@@ -99,6 +99,10 @@ class APPROXADJOINT(BaseHessian):
 
         self.W_full = np.eye(self.num_design)
         self.A_full = np.zeros((self.num_ineq, self.num_design))
+        self.A_full[:128, :] = np.eye(self.num_design)
+        self.A_full[128:128*2, :] = -1.0*np.eye(self.num_design)
+        # self.A_full[128*2:, :] = np.eye(self.num_design)
+
 
         if self.update_mat is True:
             print 'approx_precond.W_full .A_full being calculated'
@@ -121,6 +125,7 @@ class APPROXADJOINT(BaseHessian):
                 # perform the Constraint Jacobian product and store
                 self.Ag.approx.product(in_design, out_dual)
                 self.A_full[:, i] = out_dual.base.data
+                # self.A_full[128*2:, :] = out_dual.base.data[128*2:]
 
 
     
@@ -129,6 +134,9 @@ class APPROXADJOINT(BaseHessian):
         # out_vec : after preconditioned
         # note: you cannot change in_vec!!!!!!! 
 
+        # if self.mu > 0.2:
+        #     out_vec.equals(in_vec)
+        # else:
         # specifically for Graeme's Problem
         v_x = in_vec.primal.design.base.data
         v_s = in_vec.primal.slack.base.data
@@ -163,6 +171,7 @@ class APPROXADJOINT(BaseHessian):
         self.update_mat = False
 
     def solve_reduce(self, in_vec, out_vec):
+        # 1st Type System Reduction, with mu
 
         if self.mu > 0.9:
             out_vec.equals(in_vec)

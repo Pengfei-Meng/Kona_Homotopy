@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import pdb
 
-num_design = 600
 
 dir_konahist = '../test/approx_adj/'
 fname = dir_konahist + 'kona_hist.dat'

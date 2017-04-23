@@ -323,8 +323,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # initialize the problem at the starting point
         x0.equals_init_guess()
+
+        # x0.dual.base.data[128:128*2] = 0.0
+        # x0.primal.slack.base.data[128:128*2] = 10.0
+        # x0.primal.slack.base.data[:128] = 1.0
+
         x.equals(x0)
-        # pdb.set_trace()
+
         self.check_sign(x, 0, 0)
 
         if not state.equals_primal_solution(x.primal):
@@ -495,7 +500,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
-                    max_newton = 20
+                    max_newton = 10
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -594,9 +599,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         else:
                             # BFGS Hessian approx
                             X_olddualS.equals(x)
-                            X_olddualS.dual.equals(old_x.dual)
-                            X_olddualS.primal.slack.equals(old_x.primal.slack)
-                            # X_olddualS.primal.design.equals(old_x.primal.design)
+                            # X_olddualS.dual.equals(old_x.dual)
+                            # X_olddualS.primal.slack.equals(old_x.primal.slack)
+                            X_olddualS.primal.design.equals(old_x.primal.design)
 
                             # if not state.equals_primal_solution(X_olddualS.primal):
                             #     raise RuntimeError(
@@ -766,9 +771,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.svd_pc is not None:
                 # BFGS Hessian approx
                 X_olddualS.equals(x)
-                X_olddualS.dual.equals(old_x.dual)
-                X_olddualS.primal.slack.equals(old_x.primal.slack)
-                # X_olddualS.primal.design.equals(old_x.primal.design)
+                # X_olddualS.dual.equals(old_x.dual)
+                # X_olddualS.primal.slack.equals(old_x.primal.slack)
+                X_olddualS.primal.design.equals(old_x.primal.design)
 
                 # if not state.equals_primal_solution(X_olddualS.primal):
                 #     raise RuntimeError(

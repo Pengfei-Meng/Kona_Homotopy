@@ -38,7 +38,7 @@ class SVDPC(BaseHessian):
 
         self.use_hessian = True
 
-        svd_optns = {'lanczos_size': 5}
+        svd_optns = {'lanczos_size': 48}
         self.max_stored = get_opt(optns, 10, 'max_stored')  
         bfgs_optns = {'max_stored': self.max_stored}
 
@@ -46,8 +46,8 @@ class SVDPC(BaseHessian):
         self.svd_AWA_mu = LowRankSVD(
             self.awa_mat_vec_mu, self.ineq_factory, None, None, svd_optns)
 
-        self.svd_Ag = LowRankSVD(
-            self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
+        # self.svd_Ag = LowRankSVD(
+        #     self.fwd_mat_vec, self.primal_factory, self.rev_mat_vec, self.ineq_factory, svd_optns)
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
@@ -122,7 +122,7 @@ class SVDPC(BaseHessian):
 
         # ------------------ for solve_lu -----------------
         self.Ag.linearize(X.primal.design, state)
-        self.svd_Ag.linearize()
+        # self.svd_Ag.linearize()
 
 
         # # --------- peeling off SVD_Ag  U, V -----------
@@ -147,14 +147,18 @@ class SVDPC(BaseHessian):
             self.design_old.minus(X.primal.design)
             self.design_old.times(-1.0)
 
-            self.dldx.equals(dLdX_homo_oldual.primal.design)
-            self.dldx_old.minus(self.dldx)
-            self.dldx_old.times(-1.0)
-            self.W_hat.add_correction(self.design_old, self.dldx_old)
+            # self.dldx.equals(dLdX_homo_oldual.primal.design)
+            # self.dldx_old.minus(self.dldx)
+            # self.dldx_old.times(-1.0)
+
+            self.dldx.equals(dLdX_homo.primal.design)
+            self.dldx.minus(dLdX_homo_oldual.primal.design)
+
+            self.W_hat.add_correction(self.design_old, self.dldx)
             self.use_hessian = True
 
         self.design_old.equals(X.primal.design)
-        self.dldx_old.equals(dLdX_homo.primal.design)
+        # self.dldx_old.equals(dLdX_homo.primal.design)
 
 
         if self.mu < 0.9:
@@ -171,7 +175,7 @@ class SVDPC(BaseHessian):
 
     def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T
 
-        if self.mu > 0.9:
+        if self.mu > 0.5:
             pcd_vec.equals(rhs_vec)
         else:
             u_x = rhs_vec.primal.design.base.data
@@ -187,16 +191,14 @@ class SVDPC(BaseHessian):
             else:
                 self.design_work0.equals(rhs_vec.primal.design)
 
-            self.svd_Ag.approx_fwd_prod(self.design_work0, self.dual_work1)
+            # self.svd_Ag.approx_fwd_prod(self.design_work0, self.dual_work1)
+            self.Ag.approx.product(self.design_work0, self.dual_work1)
             self.dual_work1.times(1.0 - self.mu)
 
             rhs_vg = - u_g - (1.0 - self.mu)*self.lam_aug_inv * u_s + self.dual_work1.base.data
 
             # ----------------------------------------
             self.A_61 = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
-            
-            # ind = abs(self.A_61) < 1e6
-            # self.A_61[ind] = 1e6 * np.sign(self.A_61[ind])
 
             self.A_61_inv = 1.0/self.A_61
             
@@ -220,7 +222,8 @@ class SVDPC(BaseHessian):
 
             # ------------- next look for p_s, p_x 
 
-            self.svd_Ag.approx_rev_prod(pcd_vec.dual, self.design_work)
+            # self.svd_Ag.approx_rev_prod(pcd_vec.dual, self.design_work)
+            self.Ag.T.approx.product(pcd_vec.dual, self.design_work)
             self.design_work.times(self.mu - 1.0)
 
             self.design_work2.base.data = self.design_work.base.data + u_x 
