@@ -1,0 +1,72 @@
+============================================================
+Directional derivative test (design): dF/dX * 1
+   FD perturbation      : 7.303059e-08
+   analytical dir_deriv : 54.000000
+   finite-difference    : 54.000000
+   absolute error       : 1.369897e-07
+   relative error       : 2.536846e-09
+============================================================
+Directional derivative test (state): dF/dU * 1
+   FD perturbation      : 9.249709e-09
+   analytical dir_deriv : 0.000000
+   finite-difference    : 0.000000
+   absolute error       : 0.000000e+00
+   relative error       : 0.000000e+00
+============================================================
+PDE jacobian-vector product test (design): dR/dX * 1
+   FD perturbation      : 7.303059e-08
+   analytical product   : -3060.599878
+   FD product           : -3060.598123
+   absolute error       : 1.754407e-03
+   relative error       : 5.732235e-07
+WARNING: multiply_dRdX or eval_residual may be inaccurate!
+============================================================
+PDE jacobian-vector transpose-product test (design): 
+1^{T} dR/dX * 1
+   forward product      : -3060.599878
+   reverse product      : -3060.599878
+   absolute error       : 4.820322e-10
+   relative error       : 1.574960e-13
+============================================================
+PDE jacobian-vector product test (state): dR/dU * 1
+   FD perturbation      : 9.249709e-09
+   analytical product   : 4071600.000000
+   FD product           : 4071599.996112
+   absolute error       : 3.888480e-03
+   relative error       : 9.550252e-10
+============================================================
+PDE jacobian-vector transpose-product test (state): 
+1^{T} dR/dU * 1
+   FD perturbation      : 9.249709e-09
+   analytical product   : 4071600.000000
+   FD product           : 4071599.996112
+   absolute error       : 3.888483e-03
+   relative error       : 9.550258e-10
+============================================================
+Linear solve test: dR/dU * w = z 
+   FWD solve product    : 0.000000e+00
+   REV solve product    : 0.000000e+00
+   difference           : 0.000000e+00
+============================================================
+Reduced gradient (total derivative) test: dF/dX * 1 
+1^{T} dC/dU * 1
+   FD perturbation      : 7.303059e-08
+   analytical product   : 54.000000
+   FD product           : 54.000000
+   absolute error       : 1.369897e-07
+   relative error       : 2.536846e-09
+============================================================
+Verification Report
+------------------------------
+eval_dFdU..............Passed
+eval_dFdX..............Passed
+multiply_dRdX..........WARNING! Possible errors
+multiply_dRdX_T........Passed
+multiply_dRdU..........Passed
+multiply_dRdU_T........Passed
+multiply_dCdX..........Untested
+multiply_dCdX_T........Untested
+multiply_dCdU..........Untested
+multiply_dCdU_T........Untested
+solve_linear...........Passed
+solve_adjoint..........Passed

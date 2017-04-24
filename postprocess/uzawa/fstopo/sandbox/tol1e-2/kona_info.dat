@@ -1,0 +1,1237 @@
+
+**************************************************
+***        Using FLECS-based Algorithm         ***
+**************************************************
+
+
+max thickness = 4.901000
+min thickness = 4.901000
+
+max stress    = 9.999802e-01
+min stress    = 9.924873e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -1.984012e-05
+min stress - e^s    = -7.512709e-03
+
+max curr_dual       = -1.000000e-02
+min curr_dual       = -1.000000e-02
+
+lambda*(max stress - e^s) = 7.512709e-05
+lambda*(min stress - e^s) = 1.984012e-07
+
+==========================================================
+Beginning Major Iteration 1
+
+primal vars        = 5.544849e+01
+   design vars     = 5.544849e+01
+   slack vars      = 0.000000e+00
+multipliers        = 1.959592e-01
+
+grad_norm0         = 4.776911e+00
+   design_norm0    = 4.772890e+00
+   slack_norm0     = 1.959592e-01
+feas_norm0         = 6.324495e+01
+
+Trust Region Step : iter 1
+   primal_step    = 9.936676e+01
+      design_step = 4.545368e+01
+      slack_step  = 8.836129e+01
+   lambda_step    = 3.467754e+00
+
+   merit_init     = 2.254506e+03
+   merit_next     = 3.837773e+08
+   pred_aug       = 2.162025e+03
+   rho            = -1.775072e+05
+   Attempting a second order correction...
+Trust Region Step : iter 2
+   primal_step    = 8.201364e+04
+      design_step = 9.936682e+01
+      slack_step  = 8.201358e+04
+   lambda_step    = 3.467754e+00
+
+   merit_init     = 2.254506e+03
+   merit_next     = 2.414596e+07
+   pred_aug       = 2.162025e+03
+   rho            = -1.116717e+04
+   Correction failed! Resetting step...
+Trust Region Step : iter 3
+   primal_step    = 9.936676e+01
+      design_step = 4.545368e+01
+      slack_step  = 8.836129e+01
+   lambda_step    = 3.467754e+00
+
+   merit_init     = 2.254506e+03
+   merit_next     = 3.837773e+08
+   pred_aug       = 2.162025e+03
+   rho            = -1.775072e+05
+   Re-solving with smaller radius -> 49.683412
+Trust Region Step : iter 4
+   primal_step    = 4.968334e+01
+      design_step = 5.449393e+00
+      slack_step  = 4.938358e+01
+   lambda_step    = 3.467754e+00
+
+   merit_init     = 2.254506e+03
+   merit_next     = 5.786919e+04
+   pred_aug       = 1.899151e+03
+   rho            = -2.928398e+01
+   Re-solving with smaller radius -> 24.841706
+Trust Region Step : iter 5
+   primal_step    = 2.484167e+01
+      design_step = 9.921210e-01
+      slack_step  = 2.482185e+01
+   lambda_step    = 3.467754e+00
+
+   merit_init     = 2.254506e+03
+   merit_next     = 2.710207e+02
+   pred_aug       = 1.256855e+03
+   rho            = 1.578134e+00
+
+Step accepted!
+   Mu increased -> 1.02e+00
+Trust radius active...
+   Radius increased -> 49.683412
+
+
+max thickness = 4.813309
+min thickness = 4.813308
+
+max stress    = 9.999794e-01
+min stress    = 9.922111e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 3.663709e-05
+min stress - e^s    = -4.693074e-03
+
+max curr_dual       = -1.893324e-06
+min curr_dual       = -7.174348e-04
+
+lambda*(max stress - e^s) = 3.366975e-06
+lambda*(min stress - e^s) = -6.936590e-11
+
+==========================================================
+Beginning Major Iteration 2
+
+primal vars        = 5.984663e+01
+   design vars     = 5.445636e+01
+   slack vars      = 2.482185e+01
+multipliers        = 3.432944e+00
+
+grad_norm          = 1.682424e+01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.704786e-03
+   slack_norm      = 1.682424e+01
+feas_norm          = 4.832475e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 4.968342e+01
+      design_step = 4.758206e+01
+      slack_step  = 1.429648e+01
+   lambda_step    = 3.608696e+01
+
+   merit_init     = 2.632555e+02
+   merit_next     = 8.076218e+02
+   pred_aug       = 2.629940e+02
+   rho            = -2.069881e+00
+   Attempting a second order correction...
+Trust Region Step : iter 2
+   primal_step    = 7.635058e+01
+      design_step = 4.968342e+01
+      slack_step  = 5.797386e+01
+   lambda_step    = 3.608696e+01
+
+   merit_init     = 2.632555e+02
+   merit_next     = 3.543993e+03
+   pred_aug       = 2.629940e+02
+   rho            = -1.247457e+01
+   Correction failed! Resetting step...
+Trust Region Step : iter 3
+   primal_step    = 4.968342e+01
+      design_step = 4.758206e+01
+      slack_step  = 1.429648e+01
+   lambda_step    = 3.608696e+01
+
+   merit_init     = 2.632555e+02
+   merit_next     = 8.076218e+02
+   pred_aug       = 2.629940e+02
+   rho            = -2.069881e+00
+   Re-solving with smaller radius -> 24.841708
+Trust Region Step : iter 4
+   primal_step    = 2.484171e+01
+      design_step = 2.379772e+01
+      slack_step  = 7.125949e+00
+   lambda_step    = 3.608696e+01
+
+   merit_init     = 2.632555e+02
+   merit_next     = 1.926901e+02
+   pred_aug       = 1.325773e+02
+   rho            = 5.322591e-01
+
+Step accepted!
+   Mu increased -> 1.05e+00
+Trust radius active...
+   Radius increased -> 49.683417
+
+
+max thickness = 2.709896
+min thickness = 2.709805
+
+max stress    = 9.999351e-01
+min stress    = 9.754257e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -1.644913e-05
+min stress - e^s    = -1.139571e-02
+
+max curr_dual       = 3.186046e-04
+min curr_dual       = -1.037579e-03
+
+lambda*(max stress - e^s) = 1.182395e-05
+lambda*(min stress - e^s) = -1.415719e-06
+
+==========================================================
+Beginning Major Iteration 3
+
+primal vars        = 4.068398e+01
+   design vars     = 3.065865e+01
+   slack vars      = 2.674385e+01
+multipliers        = 3.687374e+01
+
+grad_norm          = 2.455216e+02 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.421938e-04
+   slack_norm      = 2.455216e+02
+feas_norm          = 1.206929e+01 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 4.968372e+01
+      design_step = 3.305578e+01
+      slack_step  = 3.709161e+01
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = 3.026192e+05
+   pred_aug       = 2.858657e+03
+   rho            = -1.059215e+02
+   Attempting a second order correction...
+Trust Region Step : iter 2
+   primal_step    = 1.352867e+02
+      design_step = 4.968526e+01
+      slack_step  = 1.258327e+02
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = 9.166796e+10
+   pred_aug       = 2.858657e+03
+   rho            = -3.206680e+07
+   Correction failed! Resetting step...
+Trust Region Step : iter 3
+   primal_step    = 4.968372e+01
+      design_step = 3.305578e+01
+      slack_step  = 3.709161e+01
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = 3.026192e+05
+   pred_aug       = 2.858657e+03
+   rho            = -1.059215e+02
+   Re-solving with smaller radius -> 24.842629
+Trust Region Step : iter 4
+   primal_step    = 2.484301e+01
+      design_step = 1.249989e+01
+      slack_step  = 2.146924e+01
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = 1.135381e+04
+   pred_aug       = 1.204834e+03
+   rho            = -9.567964e+00
+   Re-solving with smaller radius -> 12.421774
+Trust Region Step : iter 5
+   primal_step    = 1.242217e+01
+      design_step = 1.538443e+00
+      slack_step  = 1.232653e+01
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = 3.837201e+02
+   pred_aug       = 7.071707e+02
+   rho            = -7.886599e-01
+   Re-solving with smaller radius -> 6.211117
+Trust Region Step : iter 6
+   primal_step    = 6.211347e+00
+      design_step = 1.570350e+00
+      slack_step  = 6.009561e+00
+   lambda_step    = 3.377464e+01
+
+   merit_init     = -1.739970e+02
+   merit_next     = -4.880875e+02
+   pred_aug       = 4.781220e+02
+   rho            = 6.569255e-01
+
+Step accepted!
+   Mu increased -> 1.07e+00
+Trust radius active...
+   Radius increased -> 12.422695
+
+
+max thickness = 2.571234
+min thickness = 2.570678
+
+max stress    = 9.999279e-01
+min stress    = 9.726966e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -2.055649e-05
+min stress - e^s    = -1.328218e-02
+
+max curr_dual       = -5.457376e-05
+min curr_dual       = -2.493029e-02
+
+lambda*(max stress - e^s) = 3.311285e-04
+lambda*(min stress - e^s) = 1.121845e-09
+
+==========================================================
+Beginning Major Iteration 4
+
+primal vars        = 4.296756e+01
+   design vars     = 2.908830e+01
+   slack vars      = 3.162408e+01
+multipliers        = 4.478833e+00
+
+grad_norm          = 4.638647e+01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.327599e-03
+   slack_norm      = 4.638647e+01
+feas_norm          = 4.125244e+01 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 1.242593e+01
+      design_step = 9.863397e+00
+      slack_step  = 7.557589e+00
+   lambda_step    = 1.100040e+00
+
+   merit_init     = 9.088743e+02
+   merit_next     = 1.318900e+02
+   pred_aug       = 8.302859e+02
+   rho            = 9.358033e-01
+
+Step accepted!
+   Mu increased -> 1.10e+00
+Trust radius active...
+   Radius increased -> 24.851861
+
+
+max thickness = 1.699641
+min thickness = 1.698611
+
+max stress    = 9.998350e-01
+min stress    = 9.374780e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -7.159529e-06
+min stress - e^s    = -8.597802e-03
+
+max curr_dual       = 5.932170e-03
+min curr_dual       = -1.645316e-04
+
+lambda*(max stress - e^s) = 1.740056e-07
+lambda*(min stress - e^s) = -5.100362e-05
+
+==========================================================
+Beginning Major Iteration 5
+
+primal vars        = 3.274173e+01
+   design vars     = 1.922490e+01
+   slack vars      = 2.650328e+01
+multipliers        = 5.266983e+00
+
+grad_norm          = 4.593898e+01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.154366e-02
+   slack_norm      = 4.593898e+01
+feas_norm          = 1.060146e+01 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 5.210899e+00
+      design_step = 2.285159e+00
+      slack_step  = 4.683110e+00
+   lambda_step    = 2.046325e+00
+
+   merit_init     = 1.221524e+02
+   merit_next     = 7.013050e+01
+   pred_aug       = 5.512870e+01
+   rho            = 9.436439e-01
+
+Step accepted!
+   Mu increased -> 1.12e+00
+
+
+max thickness = 1.497484
+min thickness = 1.496857
+
+max stress    = 9.997875e-01
+min stress    = 9.194771e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 2.726733e-05
+min stress - e^s    = -8.648960e-03
+
+max curr_dual       = -1.516269e-05
+min curr_dual       = -1.049269e-03
+
+lambda*(max stress - e^s) = 9.075087e-06
+lambda*(min stress - e^s) = -6.491475e-10
+
+==========================================================
+Beginning Major Iteration 6
+
+primal vars        = 3.048432e+01
+   design vars     = 1.693974e+01
+   slack vars      = 2.534441e+01
+multipliers        = 3.917757e+00
+
+grad_norm          = 3.394343e+01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.425155e-02
+   slack_norm      = 3.394342e+01
+feas_norm          = 5.415654e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 3.008140e+01
+      design_step = 2.485186e+01
+      slack_step  = 1.694921e+01
+   lambda_step    = 1.955974e+01
+
+   merit_init     = 8.093755e+01
+   merit_next     = 2.489195e+03
+   pred_aug       = 1.159262e+02
+   rho            = -2.077406e+01
+   Attempting a second order correction...
+Trust Region Step : iter 2
+   primal_step    = 8.700311e+01
+      design_step = 2.485186e+01
+      slack_step  = 8.337821e+01
+   lambda_step    = 1.955974e+01
+
+   merit_init     = 8.093755e+01
+   merit_next     = 2.770075e+15
+   pred_aug       = 1.159262e+02
+   rho            = -2.389517e+13
+   Correction failed! Resetting step...
+Trust Region Step : iter 3
+   primal_step    = 3.008140e+01
+      design_step = 2.485186e+01
+      slack_step  = 1.694921e+01
+   lambda_step    = 1.955974e+01
+
+   merit_init     = 8.093755e+01
+   merit_next     = 2.489195e+03
+   pred_aug       = 1.159262e+02
+   rho            = -2.077406e+01
+   Re-solving with smaller radius -> 12.425931
+Trust Region Step : iter 4
+   primal_step    = 1.557766e+01
+      design_step = 1.242593e+01
+      slack_step  = 9.394662e+00
+   lambda_step    = 1.955974e+01
+
+   merit_init     = 8.093755e+01
+   merit_next     = 3.883988e+01
+   pred_aug       = 6.229116e+01
+   rho            = 6.758209e-01
+
+Step accepted!
+   Mu increased -> 1.15e+00
+Trust radius active...
+   Radius increased -> 24.851861
+
+
+max thickness = 0.404715
+min thickness = 0.394348
+
+max stress    = 9.970631e-01
+min stress    = -1.470498e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -2.597241e-03
+min stress - e^s    = -9.556286e-01
+
+max curr_dual       = 7.636769e-03
+min curr_dual       = -9.024240e-03
+
+lambda*(max stress - e^s) = 6.226871e-03
+lambda*(min stress - e^s) = -7.297915e-03
+
+==========================================================
+Beginning Major Iteration 7
+
+primal vars        = 2.673750e+01
+   design vars     = 4.513947e+00
+   slack vars      = 2.635371e+01
+multipliers        = 1.788615e+01
+
+grad_norm          = 1.008553e+02 (4.776911e-03 <-- tolerance)
+   design_norm     = 9.535732e-02
+   slack_norm      = 1.008552e+02
+feas_norm          = 7.258898e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 1.154117e+01
+      design_step = 7.612039e+00
+      slack_step  = 8.674987e+00
+   lambda_step    = 1.287075e+01
+
+   merit_init     = 1.638938e+02
+   merit_next     = 1.467694e+00
+   pred_aug       = 1.909372e+02
+   rho            = 8.506782e-01
+
+Step accepted!
+   Mu increased -> 1.17e+00
+
+
+max thickness = 1.171134
+min thickness = 0.312719
+
+max stress    = 9.996355e-01
+min stress    = 6.128124e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -9.977578e-03
+min stress - e^s    = -2.048468e+00
+
+max curr_dual       = 1.053108e-01
+min curr_dual       = 3.071661e-04
+
+lambda*(max stress - e^s) = -3.064774e-06
+lambda*(min stress - e^s) = -2.049865e-01
+
+==========================================================
+Beginning Major Iteration 8
+
+primal vars        = 2.916701e+01
+   design vars     = 1.202742e+01
+   slack vars      = 2.657171e+01
+multipliers        = 6.302383e+00
+
+grad_norm          = 5.160712e+00 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.076144e+00
+   slack_norm      = 5.047263e+00
+feas_norm          = 1.241723e+01 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 1.334402e+01
+      design_step = 8.644899e+00
+      slack_step  = 1.016506e+01
+   lambda_step    = 1.934903e+00
+
+   merit_init     = 1.056792e+02
+   merit_next     = 3.663679e+01
+   pred_aug       = 8.778077e+01
+   rho            = 7.865321e-01
+
+Step accepted!
+   Mu increased -> 1.20e+00
+
+
+max thickness = 0.442643
+min thickness = 0.288230
+
+max stress    = 9.944536e-01
+min stress    = -2.706567e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = -5.044966e-03
+min stress - e^s    = -1.390945e+00
+
+max curr_dual       = 8.843445e-02
+min curr_dual       = -4.995131e-02
+
+lambda*(max stress - e^s) = 1.627575e-02
+lambda*(min stress - e^s) = -1.229830e-01
+
+==========================================================
+Beginning Major Iteration 9
+
+primal vars        = 3.172731e+01
+   design vars     = 3.554124e+00
+   slack vars      = 3.152761e+01
+multipliers        = 4.533357e+00
+
+grad_norm          = 1.488397e+00 (4.776911e-03 <-- tolerance)
+   design_norm     = 8.565280e-01
+   slack_norm      = 1.217245e+00
+feas_norm          = 6.272571e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 6.947293e+00
+      design_step = 1.735031e+00
+      slack_step  = 6.727150e+00
+   lambda_step    = 1.636818e+00
+
+   merit_init     = 3.869750e+01
+   merit_next     = 2.099876e+01
+   pred_aug       = 2.431017e+01
+   rho            = 7.280383e-01
+
+Step accepted!
+   Mu increased -> 1.23e+00
+
+
+max thickness = 0.723723
+min thickness = 0.118954
+
+max stress    = 9.835288e-01
+min stress    = 9.877444e-02
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 2.880029e-02
+min stress - e^s    = -7.911134e-01
+
+max curr_dual       = 1.855214e-02
+min curr_dual       = -7.769586e-02
+
+lambda*(max stress - e^s) = 2.952265e-02
+lambda*(min stress - e^s) = -3.159445e-03
+
+==========================================================
+Beginning Major Iteration 10
+
+primal vars        = 3.551463e+01
+   design vars     = 3.985162e+00
+   slack vars      = 3.529033e+01
+multipliers        = 3.638469e+00
+
+grad_norm          = 2.000359e+00 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.908328e+00
+   slack_norm      = 5.997668e-01
+feas_norm          = 4.033343e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 7.423639e+00
+      design_step = 3.057734e+00
+      slack_step  = 6.764664e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.997322e+02
+   pred_aug       = 1.329608e+01
+   rho            = -1.310399e+01
+   Attempting a second order correction...
+Trust Region Step : iter 2
+   primal_step    = 1.238645e+01
+      design_step = 7.410370e+00
+      slack_step  = 9.925252e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.166307e+03
+   pred_aug       = 1.329608e+01
+   rho            = -8.580018e+01
+   Correction failed! Resetting step...
+Trust Region Step : iter 3
+   primal_step    = 7.423639e+00
+      design_step = 3.057734e+00
+      slack_step  = 6.764664e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.997322e+02
+   pred_aug       = 1.329608e+01
+   rho            = -1.310399e+01
+   Re-solving with smaller radius -> 12.425931
+Trust Region Step : iter 4
+   primal_step    = 7.423639e+00
+      design_step = 3.057734e+00
+      slack_step  = 6.764664e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.997322e+02
+   pred_aug       = 1.329608e+01
+   rho            = -1.310399e+01
+   Re-solving with smaller radius -> 6.212965
+Trust Region Step : iter 5
+   primal_step    = 7.423639e+00
+      design_step = 3.057734e+00
+      slack_step  = 6.764664e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.997322e+02
+   pred_aug       = 1.329608e+01
+   rho            = -1.310399e+01
+   Re-solving with smaller radius -> 3.106483
+Trust Region Step : iter 6
+   primal_step    = 7.423639e+00
+      design_step = 3.057734e+00
+      slack_step  = 6.764664e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 1.997322e+02
+   pred_aug       = 1.329608e+01
+   rho            = -1.310399e+01
+   Re-solving with smaller radius -> 1.553241
+Trust Region Step : iter 7
+   primal_step    = 4.695859e+00
+      design_step = 1.553241e+00
+      slack_step  = 4.431538e+00
+   lambda_step    = 1.350797e+00
+
+   merit_init     = 2.550046e+01
+   merit_next     = 2.102399e+01
+   pred_aug       = 1.175960e+01
+   rho            = 3.806648e-01
+
+Step accepted!
+   Mu increased -> 1.26e+00
+Trust radius active...
+
+
+max thickness = 0.558306
+min thickness = 0.104817
+
+max stress    = 9.852662e-01
+min stress    = -5.652880e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 7.235841e-02
+min stress - e^s    = -1.259212e+00
+
+max curr_dual       = 1.072098e-02
+min curr_dual       = -7.794318e-02
+
+lambda*(max stress - e^s) = 2.795011e-02
+lambda*(min stress - e^s) = -3.188928e-03
+
+==========================================================
+Beginning Major Iteration 11
+
+primal vars        = 3.733196e+01
+   design vars     = 3.082964e+00
+   slack vars      = 3.720444e+01
+multipliers        = 4.226725e+00
+
+grad_norm          = 1.081736e+00 (4.776911e-03 <-- tolerance)
+   design_norm     = 9.250260e-01
+   slack_norm      = 5.607848e-01
+feas_norm          = 3.750819e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 6.228936e+00
+      design_step = 1.068581e+00
+      slack_step  = 6.136593e+00
+   lambda_step    = 7.774868e-01
+
+   merit_init     = 2.035176e+01
+   merit_next     = 1.270212e+01
+   pred_aug       = 8.781170e+00
+   rho            = 8.711417e-01
+
+Step accepted!
+   Mu increased -> 1.29e+00
+
+
+max thickness = 0.541174
+min thickness = 0.100000
+
+max stress    = 9.811432e-01
+min stress    = -9.302221e-02
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 6.054494e-02
+min stress - e^s    = -5.471873e-01
+
+max curr_dual       = 1.022962e-02
+min curr_dual       = -1.204773e-01
+
+lambda*(max stress - e^s) = 3.538779e-02
+lambda*(min stress - e^s) = -5.597520e-03
+
+==========================================================
+Beginning Major Iteration 12
+
+primal vars        = 4.179789e+01
+   design vars     = 3.051693e+00
+   slack vars      = 4.168634e+01
+multipliers        = 3.819648e+00
+
+grad_norm          = 6.892146e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 6.314489e-01
+   slack_norm      = 2.762048e-01
+feas_norm          = 2.370176e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 5.963839e+00
+      design_step = 1.019269e+00
+      slack_step  = 5.876093e+00
+   lambda_step    = 2.096246e-01
+
+   merit_init     = 1.409065e+01
+   merit_next     = 1.192402e+01
+   pred_aug       = 2.417059e+00
+   rho            = 8.963899e-01
+
+Step accepted!
+   Mu increased -> 1.32e+00
+
+
+max thickness = 0.657211
+min thickness = 0.100000
+
+max stress    = 9.830747e-01
+min stress    = -2.031291e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 9.048261e-02
+min stress - e^s    = -3.367927e-01
+
+max curr_dual       = 9.621050e-03
+min curr_dual       = -1.139757e-01
+
+lambda*(max stress - e^s) = 3.084811e-02
+lambda*(min stress - e^s) = -2.802636e-03
+
+==========================================================
+Beginning Major Iteration 13
+
+primal vars        = 4.613517e+01
+   design vars     = 2.991965e+00
+   slack vars      = 4.603805e+01
+multipliers        = 3.881243e+00
+
+grad_norm          = 5.015834e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 4.711373e-01
+   slack_norm      = 1.720916e-01
+feas_norm          = 2.038012e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 1.697045e+00
+      design_step = 7.724435e-01
+      slack_step  = 1.511057e+00
+   lambda_step    = 1.912132e-01
+
+   merit_init     = 1.170499e+01
+   merit_next     = 1.099992e+01
+   pred_aug       = 7.937014e-01
+   rho            = 8.883339e-01
+
+Step accepted!
+   Mu increased -> 1.35e+00
+
+
+max thickness = 0.511113
+min thickness = 0.100513
+
+max stress    = 9.761158e-01
+min stress    = -8.501325e-02
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 7.512550e-02
+min stress - e^s    = -3.020097e-01
+
+max curr_dual       = 1.440339e-03
+min curr_dual       = -1.121698e-01
+
+lambda*(max stress - e^s) = 2.050446e-02
+lambda*(min stress - e^s) = -2.060275e-03
+
+==========================================================
+Beginning Major Iteration 14
+
+primal vars        = 4.732553e+01
+   design vars     = 2.908603e+00
+   slack vars      = 4.723606e+01
+multipliers        = 3.787419e+00
+
+grad_norm          = 2.296933e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.716204e-01
+   slack_norm      = 1.526612e-01
+feas_norm          = 1.863213e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 3.421042e+00
+      design_step = 4.825802e-01
+      slack_step  = 3.386835e+00
+   lambda_step    = 1.774574e-01
+
+   merit_init     = 1.133927e+01
+   merit_next     = 1.087828e+01
+   pred_aug       = 4.963692e-01
+   rho            = 9.287412e-01
+
+Step accepted!
+   Mu increased -> 1.38e+00
+
+
+max thickness = 0.496774
+min thickness = 0.100000
+
+max stress    = 9.715471e-01
+min stress    = -1.336298e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 8.340208e-02
+min stress - e^s    = -2.148285e-01
+
+max curr_dual       = 3.267262e-03
+min curr_dual       = -1.290527e-01
+
+lambda*(max stress - e^s) = 2.465364e-02
+lambda*(min stress - e^s) = -1.220781e-03
+
+==========================================================
+Beginning Major Iteration 15
+
+primal vars        = 5.007683e+01
+   design vars     = 2.855903e+00
+   slack vars      = 4.999533e+01
+multipliers        = 3.701708e+00
+
+grad_norm          = 1.951715e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.590363e-01
+   slack_norm      = 1.131344e-01
+feas_norm          = 1.840604e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 2.854607e+00
+      design_step = 4.660598e-01
+      slack_step  = 2.816304e+00
+   lambda_step    = 2.371608e-01
+
+   merit_init     = 1.123616e+01
+   merit_next     = 1.088917e+01
+   pred_aug       = 3.726793e-01
+   rho            = 9.310756e-01
+
+Step accepted!
+   Mu increased -> 1.41e+00
+
+
+max thickness = 0.543076
+min thickness = 0.100000
+
+max stress    = 9.721583e-01
+min stress    = -1.268771e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 1.058381e-01
+min stress - e^s    = -1.928393e-01
+
+max curr_dual       = 3.420813e-03
+min curr_dual       = -1.472833e-01
+
+lambda*(max stress - e^s) = 2.604636e-02
+lambda*(min stress - e^s) = -4.208971e-04
+
+==========================================================
+Beginning Major Iteration 16
+
+primal vars        = 5.245520e+01
+   design vars     = 2.812048e+00
+   slack vars      = 5.237977e+01
+multipliers        = 3.586238e+00
+
+grad_norm          = 1.564792e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.268424e-01
+   slack_norm      = 9.163367e-02
+feas_norm          = 1.812283e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 3.254414e+00
+      design_step = 4.359911e-01
+      slack_step  = 3.225077e+00
+   lambda_step    = 1.162218e-01
+
+   merit_init     = 1.136466e+01
+   merit_next     = 1.102621e+01
+   pred_aug       = 3.190395e-01
+   rho            = 1.060829e+00
+
+Step accepted!
+   Mu increased -> 1.45e+00
+
+
+max thickness = 0.549993
+min thickness = 0.100000
+
+max stress    = 9.700371e-01
+min stress    = -1.554235e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 8.094633e-02
+min stress - e^s    = -2.015675e-01
+
+max curr_dual       = 5.255252e-03
+min curr_dual       = -1.390784e-01
+
+lambda*(max stress - e^s) = 2.526108e-02
+lambda*(min stress - e^s) = -1.348982e-03
+
+==========================================================
+Beginning Major Iteration 17
+
+primal vars        = 5.514042e+01
+   design vars     = 2.771377e+00
+   slack vars      = 5.507073e+01
+multipliers        = 3.636905e+00
+
+grad_norm          = 1.364270e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 1.166478e-01
+   slack_norm      = 7.075046e-02
+feas_norm          = 1.796630e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 9.113027e-01
+      design_step = 3.289090e-01
+      slack_step  = 8.498773e-01
+   lambda_step    = 1.587183e-01
+
+   merit_init     = 1.088718e+01
+   merit_next     = 1.077294e+01
+   pred_aug       = 1.720580e-01
+   rho            = 6.639694e-01
+
+Step accepted!
+   Mu increased -> 1.48e+00
+
+
+max thickness = 0.531429
+min thickness = 0.100000
+
+max stress    = 9.703327e-01
+min stress    = -1.848658e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 1.019054e-01
+min stress - e^s    = -2.278460e-01
+
+max curr_dual       = 2.454767e-03
+min curr_dual       = -1.469400e-01
+
+lambda*(max stress - e^s) = 3.079372e-02
+lambda*(min stress - e^s) = -2.944671e-04
+
+==========================================================
+Beginning Major Iteration 18
+
+primal vars        = 5.586492e+01
+   design vars     = 2.739987e+00
+   slack vars      = 5.579769e+01
+multipliers        = 3.562496e+00
+
+grad_norm          = 8.662220e-02 (4.776911e-03 <-- tolerance)
+   design_norm     = 5.867033e-02
+   slack_norm      = 6.372753e-02
+feas_norm          = 1.757230e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 2.131491e+00
+      design_step = 2.657258e-01
+      slack_step  = 2.114863e+00
+   lambda_step    = 3.028928e-02
+
+   merit_init     = 1.109998e+01
+   merit_next     = 1.100767e+01
+   pred_aug       = 1.225737e-01
+   rho            = 7.531456e-01
+
+Step accepted!
+   Mu increased -> 1.51e+00
+
+
+max thickness = 0.482385
+min thickness = 0.100000
+
+max stress    = 9.694780e-01
+min stress    = -1.956679e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 7.251641e-02
+min stress - e^s    = -2.307019e-01
+
+max curr_dual       = 1.045497e-03
+min curr_dual       = -1.471490e-01
+
+lambda*(max stress - e^s) = 3.130417e-02
+lambda*(min stress - e^s) = -5.478808e-04
+
+==========================================================
+Beginning Major Iteration 19
+
+primal vars        = 5.767286e+01
+   design vars     = 2.718546e+00
+   slack vars      = 5.760875e+01
+multipliers        = 3.571841e+00
+
+grad_norm          = 1.113241e-01 (4.776911e-03 <-- tolerance)
+   design_norm     = 9.683642e-02
+   slack_norm      = 5.491598e-02
+feas_norm          = 1.761964e+00 (6.324495e-04 <-- tolerance)
+
+Trust Region Step : iter 1
+   primal_step    = 9.250032e-01
+      design_step = 2.568950e-01
+      slack_step  = 8.886146e-01
+   lambda_step    = 8.351974e-02
+
+   merit_init     = 1.102908e+01
+   merit_next     = 1.091211e+01
+   pred_aug       = 1.020667e-01
+   rho            = 1.146064e+00
+
+Step accepted!
+   Mu increased -> 1.55e+00
+
+
+max thickness = 0.527103
+min thickness = 0.100000
+
+max stress    = 9.675223e-01
+min stress    = -1.693253e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 7.756805e-02
+min stress - e^s    = -2.014496e-01
+
+max curr_dual       = 3.343120e-03
+min curr_dual       = -1.515267e-01
+
+lambda*(max stress - e^s) = 2.924554e-02
+lambda*(min stress - e^s) = -4.701640e-04
+
+==========================================================
+Beginning Major Iteration 20
+
+primal vars        = 5.843787e+01
+   design vars     = 2.713688e+00
+   slack vars      = 5.837483e+01
+multipliers        = 3.534307e+00
+
+grad_norm          = 7.404498e-02 (4.776911e-03 <-- tolerance)
+   design_norm     = 5.531138e-02
+   slack_norm      = 4.922712e-02
+feas_norm          = 1.743673e+00 (6.324495e-04 <-- tolerance)
+
+max thickness = 0.652493
+min thickness = 0.100000
+
+max stress    = 9.620757e-01
+min stress    = -2.880826e-01
+
+Design saved...
+
+Dual saved...
+
+Slack saved...
+
+max stress - e^s    = 5.410956e-02
+min stress - e^s    = -3.016382e-01
+
+max curr_dual       = 6.736425e-04
+min curr_dual       = -1.249135e+00
+
+lambda*(max stress - e^s) = 3.162423e-01
+lambda*(min stress - e^s) = -3.328703e-05
+
+Optimization FAILED!
+Total number of nonlinear iterations: 20
+
