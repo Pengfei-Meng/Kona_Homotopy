@@ -54,6 +54,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.eye = IdentityMatrix()
             self.precond = self.eye.product
 
+        # elif self.precond == 'uzawa':
+        print 'uzawa is used! when mu = 0.0'
+        # uzawa_optns = get_opt(reduced_optns, {}, 'uzawa')
+        self.uzawa = UZAWA(
+            [primal_factory, state_factory, eq_factory, ineq_factory])
+        # self.uzawa_precond = self.uzawa.solve
+
 
         #------------ use svd_pc for mu > 0, use approx_adj for mu = 0 ----------
 
@@ -317,6 +324,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dLdX_olddualS = self._generate_kkt()
             old_x = self._generate_kkt()
 
+        # if self.uzawa is not None:
+        X_olddual = self._generate_kkt()
+        dLdX_olddual = self._generate_kkt()
+        dLdX_oldprimal = self._generate_kkt()
+        old_x = self._generate_kkt()            
+
 
         if self.ineq_factory is not None:
             self.info_file.write(
@@ -506,6 +519,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
                     max_newton = 10
+                    # self.krylov.max_iter = 50
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -597,7 +611,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None:
-
                         if inner_iters == 0:
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
                         else:
@@ -634,6 +647,41 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
 
                         old_x.equals(x)
+
+                    if self.mu < 1e-6:
+                        self.precond = self.uzawa.solve
+
+                        if inner_iters == 0:
+                            self.uzawa.linearize(
+                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
+                        else:
+                            # X_olddual.equals(x)
+                            # X_olddual.primal.design.equals(old_x.primal.design)
+                            # dLdX_olddual.equals_KKT_conditions(
+                            #     X_olddual, state, adj)
+
+                            # X_olddual.equals(x)
+                            # X_olddual.dual.equals(old_x.dual)
+                            # dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
+
+                            X_olddual.equals(x)
+                            X_olddual.primal.slack.equals(old_x.primal.slack)
+                            X_olddual.dual.equals(old_x.dual)
+                            # X_olddual.primal.design.equals(old_x.primal.design)
+                            dLdX_olddual.equals_KKT_conditions(
+                            X_olddual, state, adj)
+
+                            X_olddual.equals(x)
+                            X_olddual.primal.design.equals(old_x.primal.design)
+                            X_olddual.primal.slack.equals(old_x.primal.slack)
+                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
+
+                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
+
+                            # ---------- for dual part ----------
+                            
+                        old_x.equals(x)
+
 
                     # ---------- save the singular values for mu = 0.0 ----------
                     # if self.mu == 0.0:
@@ -878,6 +926,7 @@ from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.matrices.hessian import ReducedKKTMatrix
 from kona.linalg.matrices.preconds import APPROXADJOINT
 from kona.linalg.matrices.preconds import SVDPC
+from kona.linalg.matrices.preconds import UZAWA
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector

@@ -109,25 +109,25 @@ M_pc = LinearOperator((num_prime+num_dual, num_prime+num_dual), matvec=mat_vec_M
 #------------------------ Actually solving using the preconditioner --------------
 
 res_hist = []
-# (x,flag) = fgmres(K, b, M=M_pc, maxiter=500, tol=1e-6, residuals=res_hist)   #M=M_pc,
+(x,flag) = fgmres(K, b, M=M_pc, maxiter=500, tol=1e-6, residuals=res_hist)   #M=M_pc,
 
 # (x,flag) = fgmres(M_pc, b, M=M_pc, maxiter=1, tol=1e-6, residuals=res_hist)
 
-x = mat_vec_M(b)
+# x = mat_vec_M(b)
 
-print 'norm of design update', np.linalg.norm(x[:128,])
-print 'norm of slack update', np.linalg.norm(x[128:128*4,])
-print 'norm of dual update', np.linalg.norm(x[128*4:,])
+# print 'norm of design update', np.linalg.norm(x[:128,])
+# print 'norm of slack update', np.linalg.norm(x[128:128*4,])
+# print 'norm of dual update', np.linalg.norm(x[128*4:,])
 
 
-print 'norm of design input', np.linalg.norm(b[:128,])
-print 'norm of slack input', np.linalg.norm(b[128:128*4,])
-print 'norm of dual input', np.linalg.norm(b[128*4:,])
+# print 'norm of design input', np.linalg.norm(b[:128,])
+# print 'norm of slack input', np.linalg.norm(b[128:128*4,])
+# print 'norm of dual input', np.linalg.norm(b[128*4:,])
 
 
 # pdb.set_trace()
 
-# print res_hist
+print res_hist
 # print len(res_hist)
 
 # res_file = open('res_wtPc_iter500', 'w')
