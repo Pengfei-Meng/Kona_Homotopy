@@ -26,7 +26,7 @@ class Constructed_SVDA(UserSolver):
 
         #--------- constructing Q and A ------------  
         A_sigma = 1./np.array(range(1, numdesign+1))**2 
-        # A_sigma[8:] = A_sigma[8]*np.ones(len(A_sigma[8:]))
+        A_sigma[8:] = A_sigma[8]*np.ones(len(A_sigma[8:]))
         A_sigma = 10*np.diag( A_sigma )
 
         np.random.seed(0)   
@@ -45,7 +45,7 @@ class Constructed_SVDA(UserSolver):
         self.outdir = outdir
 
         self.Q_diag = 1./np.array(range(1, numdesign+1))         #np.eye(numdesign)  # 
-        # self.Q_diag[5:] = self.Q_diag[5]*np.ones( len(self.Q_diag[5:]) )
+        self.Q_diag[8:] = self.Q_diag[8]*np.ones( len(self.Q_diag[8:]) )
         self.Q = 10*np.diag( self.Q_diag )
         # self.Q = np.eye(numdesign) 
 

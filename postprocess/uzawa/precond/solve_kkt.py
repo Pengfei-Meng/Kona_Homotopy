@@ -3,6 +3,8 @@ from scipy.sparse.linalg import LinearOperator
 import pickle
 import pdb 
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 f_cnstr_jac = open('DATA/cnstr_jac_wtS','rb')
@@ -108,10 +110,23 @@ M_pc = LinearOperator((num_prime+num_dual, num_prime+num_dual), matvec=mat_vec_M
 
 #------------------------ Actually solving using the preconditioner --------------
 
-res_hist = []
-(x,flag) = fgmres(K, b, M=M_pc, maxiter=500, tol=1e-6, residuals=res_hist)   #M=M_pc,
 
-# (x,flag) = fgmres(M_pc, b, M=M_pc, maxiter=1, tol=1e-6, residuals=res_hist)
+res_hist = []
+(x,flag) = fgmres(K, b, maxiter=100, tol=1e-6, residuals=res_hist)   #M=M_pc,
+
+
+res_hist_pc = []
+(x,flag) = fgmres(K, b, M=M_pc, maxiter=100, tol=1e-6, residuals=res_hist_pc)
+
+
+fig1 = plt.figure()
+
+plt.plot(range(len(res_hist)), res_hist, 'ro', range(len(res_hist_pc)), res_hist_pc, 'bv')
+plt.ylabel('Residual History')
+plt.axis([0, len(res_hist)+1 , 0, max(res_hist) + 1.0])
+plt.show()
+
+
 
 # x = mat_vec_M(b)
 
@@ -127,7 +142,7 @@ res_hist = []
 
 # pdb.set_trace()
 
-print res_hist
+# print res_hist
 # print len(res_hist)
 
 # res_file = open('res_wtPc_iter500', 'w')

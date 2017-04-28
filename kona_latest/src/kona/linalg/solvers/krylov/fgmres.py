@@ -15,13 +15,13 @@ class FGMRES(KrylovSolver):
         self.check_LSgrad = get_opt(self.optns, False, 'check_LSgrad')
 
         # put in memory request
-        self.vec_fac.request_num_vectors(2*self.max_iter + 1)
+        self.vec_fac.request_num_vectors(2*50 + 1)   #self.max_iter
         self.eq_fac = eq_factory
         self.ineq_fac = ineq_factory
         if self.eq_fac is not None:
-            self.eq_fac.request_num_vectors(2*self.max_iter + 1)
+            self.eq_fac.request_num_vectors(2*50 + 1)
         if self.ineq_fac is not None:
-            self.ineq_fac.request_num_vectors(4*self.max_iter + 2)
+            self.ineq_fac.request_num_vectors(4*50 + 2)
 
     def _generate_vector(self):
         # if there are no constraints, just return design vectors
@@ -68,7 +68,8 @@ class FGMRES(KrylovSolver):
         norm0 = b.norm2
         # calculate and store the initial residual
         W.append(self._generate_vector())
-
+        W[0].equals(0.0)
+        # print 'W[0].norm2 after generation',  W[0].norm2
         mat_vec(x, W[0])
         # if x._memory.solver.get_rank() == 0:
         #     print 'Calling mat_vec'
@@ -121,14 +122,17 @@ class FGMRES(KrylovSolver):
             # precondition W[i] and store result in Z[i]
 
             Z.append(self._generate_vector())
-            # print 'W[i].primal.design.base.data', W[i].primal.design.base.data
-            
+            Z[i].equals(0.0)
+            # print 'Z[i].norm2 after generation',  Z[i].norm2
+            # print 'W[i].norm2, Z[i].norm2 : ',  W[i].norm2, Z[i].norm2
             precond(W[i], Z[i])
 
             # print 'fgmres: cost after precond(x, Kx): ', x._memory.cost
 
             # add to krylov subspace
             W.append(self._generate_vector())
+            W[i+1].equals(0.0)
+            # print 'W[i+1].norm2 after generation',  W[i+1].norm2
             # if W[i]._memory.solver.get_rank() == 0:
             #     print 'Calling mat_vec, subspace %d'%i
             #     print 'Z[i].norm2', Z[i].norm2

@@ -153,8 +153,11 @@ class SVDPC(BaseHessian):
             u_s = rhs_vec.primal.slack.base.data
             u_g = rhs_vec.dual.base.data
 
-            # ------------ data used in Sherman-Morrison inverse -------------
-            self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+            # ------------ data used in Sherman-Morrison inverse -------------\
+            # 1) 
+            # self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+            self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+
             self.lam_aug_inv = 1./self.lam_aug
 
             self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
@@ -163,11 +166,14 @@ class SVDPC(BaseHessian):
             self.Ag.approx.product(self.design_work0, self.dual_work1)
             self.dual_work1.times(1.0 - self.mu)
 
-            rhs_vg = - u_g - (1.0 - self.mu)*self.lam_aug_inv * u_s + self.dual_work1.base.data
+            # 2)
+            # rhs_vg = - u_g - (1.0 - self.mu)*self.lam_aug_inv * u_s + self.dual_work1.base.data
+            rhs_vg = - u_g - (1.0 - self.mu) * self.at_slack_data * self.lam_aug_inv * u_s + self.dual_work1.base.data
 
             # ----------------------------------------
-            self.A_61 = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
-
+            # 3) 
+            # self.A_61 = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+            self.A_61 = (1.0 - self.mu)**2 *self.at_slack_data* self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
             self.A_61_inv = 1.0/self.A_61
             
             self.Gamma_Nstar = np.dot(self.awa_S, self.awa_V.transpose()) 

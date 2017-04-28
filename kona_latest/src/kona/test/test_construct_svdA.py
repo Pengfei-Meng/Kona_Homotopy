@@ -17,7 +17,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 100
+        size_prob = 200
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -56,7 +56,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',   #'approx_adjoint',    # None,  #               
+                'precond'       : 'svd_pc',    #'approx_adjoint',    # None,  #               
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,

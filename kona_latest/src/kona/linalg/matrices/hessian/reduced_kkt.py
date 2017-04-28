@@ -391,39 +391,39 @@ class ReducedKKTMatrix(BaseHessian):
             out_design.equals_ax_p_by(
                 1., out_design, self.lamb*self.scale, in_design)
 
-        # # add the slack term to the dual component
-        if in_slack is not None:
-            # set slack output
-            # out_slack = -diag(at_dual_ineq) * in_slack - diag(at_slack) * in_dual_ineq
-            out_slack.equals(in_slack)
-            out_slack.times(self.at_dual_ineq)
-            self.slack_block.equals(in_dual_ineq)
-            self.slack_block.times(self.at_slack)
-            out_slack.plus(self.slack_block)
-            out_slack.times(-1.0)
-            # add the slack contribution to dual component
-            # out_dual_ineq -= in_slack
-            out_dual_ineq.minus(in_slack)
+        # # # add the slack term to the dual component
+        # if in_slack is not None:
+        #     # set slack output
+        #     # out_slack = -diag(at_dual_ineq) * in_slack - diag(at_slack) * in_dual_ineq
+        #     out_slack.equals(in_slack)
+        #     out_slack.times(self.at_dual_ineq)
+        #     self.slack_block.equals(in_dual_ineq)
+        #     self.slack_block.times(self.at_slack)
+        #     out_slack.plus(self.slack_block)
+        #     out_slack.times(-1.0)
+        #     # add the slack contribution to dual component
+        #     # out_dual_ineq -= in_slack
+        #     out_dual_ineq.minus(in_slack)
 
         # reset the approx and transpose flags at the end
         self._approx = False
 
         # testing on scaled Slack block KKT product. If not work, just use the above commented block
-        # if in_slack is not None:
-        #     # set slack output
-        #     # out_slack = -diag(at_dual_ineq.*at_slack) * in_slack - diag(at_slack) * in_dual_ineq
-        #     out_slack.equals(in_slack)
-        #     out_slack.times(self.at_dual_ineq)
-        #     out_slack.times(self.at_slack)
+        if in_slack is not None:
+            # set slack output
+            # out_slack = -diag(at_dual_ineq.*at_slack) * in_slack - diag(at_slack) * in_dual_ineq
+            out_slack.equals(in_slack)
+            out_slack.times(self.at_dual_ineq)
+            out_slack.times(self.at_slack)
 
-        #     self.slack_block.equals(in_dual_ineq)
-        #     self.slack_block.times(self.at_slack)
-        #     out_slack.plus(self.slack_block)
-        #     out_slack.times(-1.0)
+            self.slack_block.equals(in_dual_ineq)
+            self.slack_block.times(self.at_slack)
+            out_slack.plus(self.slack_block)
+            out_slack.times(-1.0)
 
-        #     self.slack_block.equals(in_slack)
-        #     self.slack_block.times(self.at_slack)
-        #     out_dual_ineq.minus(self.slack_block)     
+            self.slack_block.equals(in_slack)
+            self.slack_block.times(self.at_slack)
+            out_dual_ineq.minus(self.slack_block)     
 
     def product_reduced(self, in_vec, out_vec):
         """

@@ -1,5 +1,5 @@
 import numpy as np 
-
+import pdb
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
 from kona.linalg.matrices.hessian.basic import BaseHessian, QuasiNewtonApprox
@@ -46,7 +46,7 @@ class UZAWA(BaseHessian):
 
         self.rel_tol = get_opt(optns, 1e-2, 'rel_tol')
         self.abs_tol = get_opt(optns, 1e-3, 'abs_tol')        
-        self.max_iter = get_opt(optns, 20, 'max_iter')  
+        self.max_iter = get_opt(optns, 5, 'max_iter')  
         self.max_stored = get_opt(optns, 10, 'max_stored')  
         print 'max_iter inside UZAWA', self.max_iter
         self.W = LagrangianHessian( vector_factories )
@@ -179,7 +179,7 @@ class UZAWA(BaseHessian):
         out_slack = out_vec.slack
 
         self.W.product(in_vec, out_vec)
-        out_slack.base.data = - self.at_dual_ineq_data * in_slack.base.data
+        out_slack.base.data = - (self.at_dual_ineq_data-0.1) * self.at_slack_data * in_slack.base.data
 
     def AgT_S_product(self, in_vec, out_vec):
         # [ Ag^T ]             [ out_design ]
@@ -199,6 +199,8 @@ class UZAWA(BaseHessian):
         out_dual = out_vec
 
         self.A.product(in_design, out_dual)
+
+        in_slack.base.data = in_slack.base.data*self.at_slack_data
         out_dual.minus(in_slack)
 
     def W_hat_solve(self, in_vec, out_vec):
@@ -208,9 +210,16 @@ class UZAWA(BaseHessian):
         out_slack = out_vec.slack
 
         self.W_hat.solve(rhs_design, out_design)
-        out_slack.base.data = -1.0/self.at_dual_ineq_data * rhs_slack.base.data
+        print 'rhs_design.norm2', rhs_design.norm2
+        print 'out_design.norm2', out_design.norm2
 
-        # import pdb; pdb.set_trace()
+        out_slack.base.data = -1.0/( (self.at_dual_ineq_data-0.1)*self.at_slack_data )* rhs_slack.base.data
+        # out_slack.equals(rhs_slack)
+        # print 'in_vec.norm2', in_vec.norm2
+        # print 'out_design.norm2', out_design.norm2
+        # print 'out_slack.norm2', out_slack.norm2
+
+        #import pdb; pdb.set_trace()
 
     def solve(self, in_vec, out_vec):  
         # in_vec is RHS vector for the Sadddle-point system
@@ -219,8 +228,11 @@ class UZAWA(BaseHessian):
 
         rhs_f = in_vec.primal
         rhs_g = in_vec.dual
+
         x = out_vec.primal
         y = out_vec.dual
+
+        # print '0. rhs_f, rhs_g, x, y: ', rhs_f.norm2, rhs_g.norm2, x.norm2, y.norm2 
 
 
         iters = 0
@@ -230,6 +242,8 @@ class UZAWA(BaseHessian):
 
             self.AgT_S_product(y, self.R_work) 
 
+            print '1. self.R_p, self.R_work: ', self.R_p.norm2, self.R_work.norm2
+
             self.R_p.plus(self.R_work)
             self.R_p.times(-1.)
             self.R_p.plus(rhs_f)                    # residual   fi 
@@ -237,6 +251,8 @@ class UZAWA(BaseHessian):
             beta_p = self.R_p.norm2
             self.W_hat_solve(self.R_p, self.Z_p)    # preconditioned residual ri
             
+            print '2. beta_p, self.Z_p: ', beta_p, self.Z_p.norm2
+
             # omega
             if (self.R_p.norm2 == 0.): 
                 omega = 1.
@@ -249,11 +265,19 @@ class UZAWA(BaseHessian):
             self.Z_p.times(omega)
             x.plus(self.Z_p)
            
-            self.Ag_I_product(x, self.R_d)            
-            self.R_d.minus(rhs_g)                    # residual   gi
+            print '3. omega, x', omega, x.norm2
 
+            self.Ag_I_product(x, self.R_d)         
+            print '4. self.R_d  ', self.R_d.norm2 
+
+            self.R_d.minus(rhs_g)                    # residual   gi
+            print '5. self.R_d  ', self.R_d.norm2 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             self.C_hat.solve(self.R_d, self.Z_d)     # preconditioned residual di
+            print 'self.R_d, self.Z_d', self.R_d.norm2, self.Z_d.norm2
+            
+            # import pdb; pdb.set_trace()
+
             # self.Z_d.equals(self.R_d)
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -265,11 +289,13 @@ class UZAWA(BaseHessian):
                 self.AgT_S_product(self.Z_d, self.Az)
                 self.W_hat_solve(self.Az, self.What_Az) 
                 tau = self.R_d.inner(self.Z_d) / self.What_Az.inner(self.Az)
-
+            print '5.1 tau: ', tau
             if omega <= 1:
                 theta = (1. - np.sqrt(1-omega))/2 
             else:
                 theta = 0.25*omega
+            # tau = 1.
+            # theta = 1.
 
             self.Z_d.times(theta*tau)
             y.plus(self.Z_d)
@@ -284,7 +310,9 @@ class UZAWA(BaseHessian):
                 break
 
             iters += 1
+            import pdb; pdb.set_trace()
+
+        out_vec.primal.slack.base.data = out_vec.primal.slack.base.data * self.at_slack_data
 
         print 'norm0, norm_total: ', norm0, norm_total
-        import pdb; pdb.set_trace()
         return Converged, iters, norm_total

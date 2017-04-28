@@ -55,11 +55,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.precond = self.eye.product
 
         # elif self.precond == 'uzawa':
-        print 'uzawa is used! when mu = 0.0'
-        # uzawa_optns = get_opt(reduced_optns, {}, 'uzawa')
-        self.uzawa = UZAWA(
+        # print 'uzawa is used! when mu = 0.0'
+        # # uzawa_optns = get_opt(reduced_optns, {}, 'uzawa')
+        # self.uzawa = UZAWA(
+        #     [primal_factory, state_factory, eq_factory, ineq_factory])
+        # # self.uzawa_precond = self.uzawa.solve
+        print 'IterSolver is used! when mu = 0.0'
+        self.itersolver = IterSolver(
             [primal_factory, state_factory, eq_factory, ineq_factory])
-        # self.uzawa_precond = self.uzawa.solve
+        # self.precond = self.itersolver.solve
 
 
         #------------ use svd_pc for mu > 0, use approx_adj for mu = 0 ----------
@@ -219,6 +223,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         self.prod_work.equals(in_vec)
         self.prod_work.times(self.mu)
+        self.prod_work.primal.slack.times(self.current_x.primal.slack)
 
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
@@ -348,6 +353,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         # x0.primal.slack.base.data[:128] = 1.0
 
         x.equals(x0)
+        self.current_x.equals(x0)
 
         self.check_sign(x, 0, 0)
 
@@ -426,6 +432,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.krylov.mu = 1.0
         self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+        # unpeal the S^-1 layer for the slack term
+        t.primal.slack.times(self.current_x.primal.slack)
+
 
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -499,6 +508,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
 
+            self.current_x.equals(x)
+
             self.check_sign(x, outer_iters, 0)
 
             if not state.equals_primal_solution(x.primal):
@@ -519,7 +530,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
                     max_newton = 10
-                    # self.krylov.max_iter = 50
+                    self.krylov.max_iter = 50
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -648,39 +659,45 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                         old_x.equals(x)
 
-                    if self.mu < 1e-6:
-                        self.precond = self.uzawa.solve
 
-                        if inner_iters == 0:
-                            self.uzawa.linearize(
-                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
-                        else:
-                            # X_olddual.equals(x)
-                            # X_olddual.primal.design.equals(old_x.primal.design)
-                            # dLdX_olddual.equals_KKT_conditions(
-                            #     X_olddual, state, adj)
+                    # if self.mu < 1e-6:
+                    #     self.precond = self.itersolver.solve
+                    #     self.itersolver.linearize(x, state, adj)
 
-                            # X_olddual.equals(x)
-                            # X_olddual.dual.equals(old_x.dual)
-                            # dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
 
-                            X_olddual.equals(x)
-                            X_olddual.primal.slack.equals(old_x.primal.slack)
-                            X_olddual.dual.equals(old_x.dual)
-                            # X_olddual.primal.design.equals(old_x.primal.design)
-                            dLdX_olddual.equals_KKT_conditions(
-                            X_olddual, state, adj)
+                    # if self.mu < 1e-6:
+                    #     self.precond = self.uzawa.solve
 
-                            X_olddual.equals(x)
-                            X_olddual.primal.design.equals(old_x.primal.design)
-                            X_olddual.primal.slack.equals(old_x.primal.slack)
-                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
+                    #     if inner_iters == 0:
+                    #         self.uzawa.linearize(
+                    #             x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
+                    #     else:
+                    #         # X_olddual.equals(x)
+                    #         # X_olddual.primal.design.equals(old_x.primal.design)
+                    #         # dLdX_olddual.equals_KKT_conditions(
+                    #         #     X_olddual, state, adj)
 
-                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
+                    #         # X_olddual.equals(x)
+                    #         # X_olddual.dual.equals(old_x.dual)
+                    #         # dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
 
-                            # ---------- for dual part ----------
+                    #         X_olddual.equals(x)
+                    #         X_olddual.primal.slack.equals(old_x.primal.slack)
+                    #         X_olddual.dual.equals(old_x.dual)
+                    #         # X_olddual.primal.design.equals(old_x.primal.design)
+                    #         dLdX_olddual.equals_KKT_conditions(
+                    #         X_olddual, state, adj)
+
+                    #         X_olddual.equals(x)
+                    #         X_olddual.primal.design.equals(old_x.primal.design)
+                    #         X_olddual.primal.slack.equals(old_x.primal.slack)
+                    #         dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
+
+                    #         self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
+
+                    #         # ---------- for dual part ----------
                             
-                        old_x.equals(x)
+                    #     old_x.equals(x)
 
 
                     # ---------- save the singular values for mu = 0.0 ----------
@@ -703,7 +720,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.equals(0.0)
 
                     self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
-                    
+                    dx.primal.slack.times(self.current_x.primal.slack)
+
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
                     if self.use_frac_to_bound is True:
                         print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
@@ -727,6 +745,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x.primal.design.enforce_bounds()
                     else:
                         x.primal.enforce_bounds()
+
+                    self.current_x.equals(x)
 
                     if not state.equals_primal_solution(x.primal):
                         raise RuntimeError('Newton step failed!')
@@ -858,6 +878,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.krylov.step = 'Predictor'
 
             self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+            t.primal.slack.times(self.current_x.primal.slack)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -927,6 +948,7 @@ from kona.linalg.matrices.hessian import ReducedKKTMatrix
 from kona.linalg.matrices.preconds import APPROXADJOINT
 from kona.linalg.matrices.preconds import SVDPC
 from kona.linalg.matrices.preconds import UZAWA
+from kona.linalg.matrices.preconds import IterSolver
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector

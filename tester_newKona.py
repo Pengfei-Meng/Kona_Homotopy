@@ -606,11 +606,9 @@ optimizer.solve()
 print 'Positive Lagrangian', solver.curr_ineq[solver.curr_ineq > 1e-5]
 print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 
-
-
-# # ------------------------------------------------------
-# # Extracting explicit W-hessian, A-constraintJacobian from the problem
-# # initialize Kona memory manager
+# ------------------------------------------------------
+# Extracting explicit W-hessian, A-constraintJacobian from the problem
+# initialize Kona memory manager
 
 # km = kona.linalg.memory.KonaMemory(solver)
 # pf = km.primal_factory
@@ -657,13 +655,13 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './test/svd1'   
+# outdir = './test/svd2_-10lam'   
 # # inner_iters = 50
-# max_iter = 55
+# max_iter = 60
 
-# # fig1 = plt.figure()
-# # ax1 = fig1.add_subplot(121)
-# # ax2 = fig1.add_subplot(122)
+# fig1 = plt.figure()
+# ax1 = fig1.add_subplot(121)
+# ax2 = fig1.add_subplot(122)
 
 # for j in xrange(max_iter,max_iter+1):    # inner_iters
 #     # set the point at which products will be evaluated
@@ -671,10 +669,10 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     file_dual = outdir + '/dual_%i'%j                        # './test/' + 
 #     file_slack = outdir + '/slack_%i'%j
 
-#     file_hessian =  outdir + '/hessian_%i'%j
-#     file_A_exact = outdir + '/cnstrA_exact_%i'%j
-#     file_A_approx =  outdir + '/cnstrA_approx_%i'%j
-#     file_dLdX = outdir + '/dldx_%i'%j
+#     file_hessian =  outdir + '/%i_hessian'%j
+#     file_A_exact = outdir + '/%i_cnstrA_exact'%j
+#     file_A_approx =  outdir + '/%i_cnstrA_approx'%j
+#     file_dLdX = outdir + '/%i_dldx'%j
 
 #     design_file = open(file_design, 'r')
 #     at_design.base.data = pickle.load(design_file)
@@ -749,8 +747,6 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #         A_full_approxAdj[:, i] = out_dual.base.data
 
 
-#     pdb.set_trace()
-
 #     # # store the matrices into a file
 #     W_file = open(file_hessian, 'w')
 #     pickle.dump(W_full, W_file)
@@ -767,26 +763,28 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     pickle.dump(dJdX_data, L_file)
 #     L_file.close()
 
+#     # # ----- or just reload it from stored files ----------------
+#     W_file = open(file_hessian, 'r')
+#     W_full = pickle.load(W_file)
+#     W_file.close()
 
+#     A_file = open(file_A_exact, 'r')
+#     A_full_exactAdj = pickle.load(A_file)
+#     A_file.close()
 
+#     A_file = open(file_A_approx, 'r')
+#     A_full_approxAdj = pickle.load(A_file)
+#     A_file.close()
 
-    # # # ----- or just reload it from stored files ---------------- 
-    # A_file = open(file_A_exact, 'r')
-    # A_full_exactAdj = pickle.load(A_file)
-    # A_file.close()
-    # A_file = open(file_A_approx, 'r')
-    # A_full_approxAdj = pickle.load(A_file)
-    # A_file.close()
+#     u,sins_A,v = np.linalg.svd(A_full_exactAdj)
+#     l1 = ax1.plot(sins_A[:20], 'o--', label='corr %i'%(j))
 
-    # u,sins_A,v = np.linalg.svd(A_full_exactAdj)
-    # l1 = ax1.plot(sins_A[:20], 'o--', label='corr %i'%(j))
+#     u_a,sins_A_a,v_a = np.linalg.svd(A_full_approxAdj)
+#     l2 = ax2.plot(sins_A_a[:20], 'o--', label='corr %i'%(j))
 
-    # u_a,sins_A_a,v_a = np.linalg.svd(A_full_approxAdj)
-    # l2 = ax2.plot(sins_A_a[:20], 'o--', label='corr %i'%(j))
-
-    # A_stress = A_full_exactAdj[2*num_design:, :]
-    # u,sins_A,v = np.linalg.svd(A_stress)
-    # plt.plot(sins_A[:20], 'o--', label='corr %i'%(j))
+#     A_stress = A_full_exactAdj[2*num_design:, :]
+#     u,sins_A,v = np.linalg.svd(A_stress)
+#     plt.plot(sins_A[:20], 'o--', label='corr %i'%(j))
 
 # fig1.suptitle('SVs of A_full at mu = 0.0, explicit mat ')
 # ax1.set_title("exact product")
@@ -831,5 +829,3 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 # plt.show()
 
 # np.set_printoptions(threshold=np.nan)
-
-

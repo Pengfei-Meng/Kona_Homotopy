@@ -1,6 +1,6 @@
 import numpy as np 
 
-from kona.linalg.vectors.common import PrimalVector, StateVector, DualVector
+from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.matrices.hessian.basic import BaseHessian
@@ -10,73 +10,47 @@ class IterSolver(BaseHessian):
     def __init__(self, vector_factories, optns={}):
         super(IterSolver, self).__init__(vector_factories, optns)
         # get references to individual factories
-        self.primal_factory = None
-        self.state_factory = None
-        self.dual_factory = None
-        for factory in self.vec_fac:
-            if factory._vec_type is PrimalVector:
-                self.primal_factory = factory
-            elif factory._vec_type is StateVector:
-                self.state_factory = factory
-            elif factory._vec_type is DualVector:
-                self.dual_factory = factory
+        self.primal_factory.request_num_vectors(50)
+        self.state_factory.request_num_vectors(2)
+        if self.eq_factory is not None:
+            self.eq_factory.request_num_vectors(3)
+        if self.ineq_factory is not None:
+            self.ineq_factory.request_num_vectors(50)
         
         self.A = TotalConstraintJacobian( vector_factories )
         self._allocated = False
 
-    def linearize(self, X, state):
+    def linearize(self, X, state, adjoint):
 
-        if isinstance(X._primal, CompositePrimalVector):
-            self.at_design = X._primal._design
-            self.at_slack = X._primal._slack
+        self.at_slack_data = X.primal.slack.base.data
+        if self.eq_factory is not None:
+            self.at_dual_eq_data = X.dual.eq.base.data
+            self.at_dual_ineq_data = X.dual.ineq.base.data
         else:
-            raise ValueError('X._primal must be a Composite Primal Vector \
-                for using Iterative Solver! ')
+            self.at_dual_ineq_data = X.dual.base.data
 
         if not self._allocated:
             self.design_work = self.primal_factory.generate()
-            self.dual_work1 = self.dual_factory.generate()
-            self.dual_equ = self.dual_factory.generate()
-            self.dual_inequ = self.dual_factory.generate()
-            self.dual_work2 = self.dual_factory.generate()
+            self.dual_work1 = self.ineq_factory.generate()
+            self.dual_work2 = self.ineq_factory.generate()
 
+        self.A.linearize(X.primal.design, state)
 
-            self.slack_work = self.dual_factory.generate()
-            self.slack_term_inv = self.dual_factory.generate()
-
-        self.A.linearize(X, state)
-
-        if self.at_slack is not None:
-            self.slack_work.equals(self.at_slack)
-            self.slack_work.times(-1.0)
-
-            self.slack_term_inv.exp(self.slack_work)
-            self.slack_term_inv.times(-1.)
-            self.slack_term_inv.restrict()
 
     def solve(self, in_vec, out_vec):
 
-        in_design = in_vec._primal._design
-        in_slack = in_vec._primal._slack
-        in_dual = in_vec._dual
+        in_design = in_vec.primal.design
+        in_slack = in_vec.primal.slack
+        in_dual = in_vec.dual
 
-        out_design = out_vec._primal._design
-        out_slack = out_vec._primal._slack
-        out_dual = out_vec._dual
+        out_design = out_vec.primal.design
+        out_slack = out_vec.primal.slack
+        out_dual = out_vec.dual
 
-
-        # step 1
-        self.dual_equ.equals(in_dual)
-        self.dual_equ.restrict()
-        self.dual_equ.minus(in_dual)
-        self.dual_equ.times(-1.0)
-
-        out_dual.equals(self.dual_equ)
+        # equality: add later
 
         # step 2 
-        self.dual_inequ.equals(in_slack)
-        self.dual_inequ.times(self.slack_term_inv)
-        out_dual.plus(self.dual_inequ)
+        out_dual.base.data = - in_slack.base.data * 1.0/self.at_slack_data
 
         # step 3
         out_design.equals(in_design)
@@ -86,13 +60,10 @@ class IterSolver(BaseHessian):
 
         # step 4
         out_slack.equals(in_dual)
-        # out_slack.restrict()
 
         self.A.product(out_design, self.dual_work1)
-        # self.dual_work1.restrict()
 
         out_slack.minus(self.dual_work1)
-        out_slack.times(self.slack_term_inv)
 
 
 
