@@ -35,11 +35,9 @@ class SVDPC(BaseHessian):
             self.eq_factory.request_num_vectors(3)
         if self.ineq_factory is not None:
             self.ineq_factory.request_num_vectors(5)
-
-        svd_optns = {'lanczos_size': 32}
-        self.max_stored = get_opt(optns, 10, 'max_stored')  
-        bfgs_optns = {'max_stored': self.max_stored}
-
+        
+        svd_optns = {'lanczos_size': get_opt(optns, 20, 'lanczos_size')}  
+        bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
 
         self.svd_AWA_mu = LowRankSVD(
             self.awa_mat_vec_mu, self.ineq_factory, None, None, svd_optns)
@@ -52,12 +50,12 @@ class SVDPC(BaseHessian):
         self._allocated = False
 
     def awa_mat_vec_mu(self, in_vec, out_vec):
-        self.Ag.T.approx.product(in_vec, self.design_work)      
+        self.Ag.T.product(in_vec, self.design_work)        # approx. 
         self.design_work.times(1.0 - self.mu)
 
         self.W_hat.solve(self.design_work, self.design_work0)
 
-        self.Ag.approx.product(self.design_work0, out_vec)
+        self.Ag.product(self.design_work0, out_vec)    # approx.
         out_vec.times(1.0 - self.mu)
 
 
@@ -154,16 +152,16 @@ class SVDPC(BaseHessian):
             u_g = rhs_vec.dual.base.data
 
             # ------------ data used in Sherman-Morrison inverse -------------\
-            # 1) 
+            # 1)  Scaled Slack
             # self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
-            self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+            self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data + self.mu*self.at_slack_data
 
             self.lam_aug_inv = 1./self.lam_aug
 
             self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
 
 
-            self.Ag.approx.product(self.design_work0, self.dual_work1)
+            self.Ag.product(self.design_work0, self.dual_work1)   # approx.
             self.dual_work1.times(1.0 - self.mu)
 
             # 2)

@@ -35,41 +35,40 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         
         self.approx_adj = None
         self.svd_pc = None
+        self.uzawa = None
+        self.itersolver = None
 
         if self.precond is 'approx_adjoint':
             print 'approx_adjoint is used! '
             self.approx_adj = APPROXADJOINT(
                 [primal_factory, state_factory, eq_factory, ineq_factory])
-            # self.approx_precond = self.approx_adj.solve 
             self.precond = self.approx_adj.solve
 
         elif self.precond is 'svd_pc':
             print 'svd_pc is used! '
+            svd_optns = {
+                'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
+                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+            }
             self.svd_pc = SVDPC(
-                [primal_factory, state_factory, eq_factory, ineq_factory])
-            # self.svd_precond = self.svd_pc.solve
+                [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
             self.precond = self.svd_pc.solve
+
+        elif self.precond == 'uzawa':
+            print 'uzawa is used! when mu = 0.0'
+            self.uzawa = UZAWA(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.uzawa.solve
+
+        elif self.precond == 'iterative':
+            print 'IterSolver is used! when mu = 0.0'
+            self.itersolver = IterSolver(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.itersolver.solve
 
         else:
             self.eye = IdentityMatrix()
             self.precond = self.eye.product
-
-        # elif self.precond == 'uzawa':
-        # print 'uzawa is used! when mu = 0.0'
-        # # uzawa_optns = get_opt(reduced_optns, {}, 'uzawa')
-        # self.uzawa = UZAWA(
-        #     [primal_factory, state_factory, eq_factory, ineq_factory])
-        # # self.uzawa_precond = self.uzawa.solve
-        print 'IterSolver is used! when mu = 0.0'
-        self.itersolver = IterSolver(
-            [primal_factory, state_factory, eq_factory, ineq_factory])
-        # self.precond = self.itersolver.solve
-
-
-        #------------ use svd_pc for mu > 0, use approx_adj for mu = 0 ----------
-
-
-
 
         self.eye = IdentityMatrix()
         self.eye_precond = self.eye.product
@@ -103,9 +102,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.dmu_min = get_opt(self.optns, -0.9, 'homotopy', 'dmu_min')
         self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
         self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
+        self.precond_on_mu = get_opt(self.optns, 1.0, 'homotopy', 'mu_pc_on')
 
-        print 'self.use_frac_to_bound :', self.use_frac_to_bound
-        print 'self.init_step:', self.step
+        print 'self.use_frac_to_bound : ', self.use_frac_to_bound
+        print 'self.init_step: ', self.step
+        print 'self.precond_on_mu : ', self.precond_on_mu
         # print 'self.mu: ', self.mu
         # print 'self.inner_tol: ', self.inner_tol
 
@@ -375,13 +376,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         print 'dJdX.inner(x): ', dJdX.inner(x)
         
-        # send solution to solver
-        solver_info = current_solution(
-            num_iter=0, curr_primal=x.primal, curr_state=state, curr_adj=adj,
-            curr_dual=x.dual)
+        # # send solution to solver
+        # solver_info = current_solution(
+        #     num_iter=0, curr_primal=x.primal, curr_state=state, curr_adj=adj,
+        #     curr_dual=x.dual)
 
-        if isinstance(solver_info, str) and solver_info != '':
-            self.info_file.write('\n' + solver_info + '\n')
+        # if isinstance(solver_info, str) and solver_info != '':
+        #     self.info_file.write('\n' + solver_info + '\n')
 
         # compute convergence metrics
         opt_norm00 = dJdX.primal.norm2
@@ -409,7 +410,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         
         primal_work.equals(x.primal)
         primal_work.minus(x0.primal)
-
         rhs_vec.primal.plus(primal_work)
 
         dual_work.equals(x.dual)
@@ -422,16 +422,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             x, state, adj,
             obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-        if self.approx_adj is not None:
-            self.approx_adj.linearize(x, state, adj, self.mu)
-        if self.svd_pc is not None:
-            self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
+        # if self.approx_adj is not None:
+        #     self.approx_adj.linearize(x, state, adj, self.mu)
+        # if self.svd_pc is not None:
+        #     self.svd_pc.linearize(x, state, adj, self.mu, dJdX, dJdX, 0)
         
         self.krylov.outer_iters = 0
         self.krylov.inner_iters = 0
         self.krylov.mu = 1.0
         self.krylov.step = 'Predictor'
-        self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+        self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
         # unpeal the S^-1 layer for the slack term
         t.primal.slack.times(self.current_x.primal.slack)
 
@@ -530,7 +530,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:
                     max_newton = 10
-                    self.krylov.max_iter = 50
+                    self.svd_pc.svd_AWA_mu.subspace_size = 128
+                    # pdb.set_trace()
+                    # self.krylov.max_iter = 50
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -550,8 +552,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
                         # print 'self.inner_tol at mu = 0.0', self.inner_tol
-                        self.krylov.rel_tol = 1e-5
-
+                        # self.krylov.rel_tol = 1e-5
 
                     dJdX_hom.equals(dJdX)
                     dJdX_hom.times(1. - self.mu)
@@ -616,28 +617,21 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.approx_adj is not None:
+                    # ---------------------------------------------------------------------------
+                    # --------------------- Linearizing Preconditioners -------------------------
+                    # use other preconditioners only when mu < 0.2 and as indicated in the option
+                    if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
                         if self.mu < 0.05:                           
                             self.approx_adj.update_mat = True  
                         self.approx_adj.linearize(x, state, adj, self.mu)
 
-                    if self.svd_pc is not None:
+                    if self.svd_pc is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
                         else:
                             # BFGS Hessian approx
                             X_olddualS.equals(x)
-                            # X_olddualS.dual.equals(old_x.dual)
-                            # X_olddualS.primal.slack.equals(old_x.primal.slack)
                             X_olddualS.primal.design.equals(old_x.primal.design)
-
-                            # if not state.equals_primal_solution(X_olddualS.primal):
-                            #     raise RuntimeError(
-                            #         'Invalid predictor point! State-solve failed.')
-                            # # # compute adjoint
-                            # adj.equals_lagrangian_adjoint(
-                            #     X_olddualS, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
 
                             dLdX_olddualS.equals_KKT_conditions(
                                 X_olddualS, state, adj) 
@@ -646,59 +640,47 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             primal_work.equals(X_olddualS.primal)
                             primal_work.minus(x0.primal)
                             primal_work.times(self.mu)
-
                             dLdX_olddualS.primal.plus(primal_work)
 
                             dual_work.equals(X_olddualS.dual)
                             dual_work.minus(x0.dual)
                             dual_work.times(self.mu)
-
                             dLdX_olddualS.dual.minus(dual_work)
 
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
 
                         old_x.equals(x)
 
+                    if self.itersolver is not None and self.mu <= self.precond_on_mu:
+                        self.itersolver.linearize(x, state, adj)
 
-                    # if self.mu < 1e-6:
-                    #     self.precond = self.itersolver.solve
-                    #     self.itersolver.linearize(x, state, adj)
+                    if self.uzawa is not None and self.mu <= self.precond_on_mu:
+                        if inner_iters == 0:
+                            self.uzawa.linearize(
+                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
+                        else:
+                            # X_olddual.equals(x)
+                            # X_olddual.primal.design.equals(old_x.primal.design)
+                            # dLdX_olddual.equals_KKT_conditions(
+                            #     X_olddual, state, adj)
 
+                            # X_olddual.equals(x)
+                            # X_olddual.dual.equals(old_x.dual)
+                            # dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
 
-                    # if self.mu < 1e-6:
-                    #     self.precond = self.uzawa.solve
+                            X_olddual.equals(x)
+                            X_olddual.primal.slack.equals(old_x.primal.slack)
+                            X_olddual.dual.equals(old_x.dual)
+                            # X_olddual.primal.design.equals(old_x.primal.design)
+                            dLdX_olddual.equals_KKT_conditions(
+                            X_olddual, state, adj)
 
-                    #     if inner_iters == 0:
-                    #         self.uzawa.linearize(
-                    #             x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
-                    #     else:
-                    #         # X_olddual.equals(x)
-                    #         # X_olddual.primal.design.equals(old_x.primal.design)
-                    #         # dLdX_olddual.equals_KKT_conditions(
-                    #         #     X_olddual, state, adj)
+                            X_olddual.equals(x)
+                            X_olddual.primal.equals(old_x.primal)
+                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
 
-                    #         # X_olddual.equals(x)
-                    #         # X_olddual.dual.equals(old_x.dual)
-                    #         # dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
-
-                    #         X_olddual.equals(x)
-                    #         X_olddual.primal.slack.equals(old_x.primal.slack)
-                    #         X_olddual.dual.equals(old_x.dual)
-                    #         # X_olddual.primal.design.equals(old_x.primal.design)
-                    #         dLdX_olddual.equals_KKT_conditions(
-                    #         X_olddual, state, adj)
-
-                    #         X_olddual.equals(x)
-                    #         X_olddual.primal.design.equals(old_x.primal.design)
-                    #         X_olddual.primal.slack.equals(old_x.primal.slack)
-                    #         dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
-
-                    #         self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
-
-                    #         # ---------- for dual part ----------
-                            
-                    #     old_x.equals(x)
-
+                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
+                        old_x.equals(x)
 
                     # ---------- save the singular values for mu = 0.0 ----------
                     # if self.mu == 0.0:
@@ -719,7 +701,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # solve the system
                     dx.equals(0.0)
 
-                    self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
+                    if self.mu <= self.precond_on_mu:
+                        self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
+                    else:
+                        self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.eye_precond)
+
                     dx.primal.slack.times(self.current_x.primal.slack)
 
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
@@ -770,9 +756,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 if self.mu < 1e-6:    # 0.0:
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
-                    solver_info = current_solution(
-                        num_iter=outer_iters, curr_primal=x.primal,
-                        curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    # solver_info = current_solution(
+                    #     num_iter=outer_iters, curr_primal=x.primal,
+                    #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
                     if isinstance(solver_info, str) and solver_info != '':
                         self.info_file.write('\n' + solver_info + '\n')
                     return
@@ -790,8 +776,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             primal_work.equals(x.primal)
             primal_work.minus(x0.primal)
-            
-            # if self.ineq_factory is None:
             rhs_vec.primal.plus(primal_work)
 
             dual_work.equals(x.dual)
@@ -835,49 +819,47 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
             
-            if self.approx_adj is not None:
+            if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
                 if self.mu < 0.05:                           
                     self.approx_adj.update_mat = True  
                 self.approx_adj.linearize(x, state, adj, self.mu)
 
-            if self.svd_pc is not None:
-                # BFGS Hessian approx
-                X_olddualS.equals(x)
-                # X_olddualS.dual.equals(old_x.dual)
-                # X_olddualS.primal.slack.equals(old_x.primal.slack)
-                X_olddualS.primal.design.equals(old_x.primal.design)
+            if self.svd_pc is not None and self.mu <= self.precond_on_mu:
+                    # BFGS Hessian approx
+                    X_olddualS.equals(x)
+                    X_olddualS.primal.design.equals(old_x.primal.design)
 
-                # if not state.equals_primal_solution(X_olddualS.primal):
-                #     raise RuntimeError(
-                #         'Invalid predictor point! State-solve failed.')
-                # # # compute adjoint
-                # adj.equals_lagrangian_adjoint(
-                #     X_olddualS, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    dLdX_olddualS.equals_KKT_conditions(
+                        X_olddualS, state, adj) 
+                    dLdX_olddualS.times(1. - self.mu)
 
-                dLdX_olddualS.equals_KKT_conditions(
-                    X_olddualS, state, adj) 
-                dLdX_olddualS.times(1. - self.mu)
+                    primal_work.equals(X_olddualS.primal)
+                    primal_work.minus(x0.primal)
+                    primal_work.times(self.mu)
+                    dLdX_olddualS.primal.plus(primal_work)
 
-                primal_work.equals(X_olddualS.primal)
-                primal_work.minus(x0.primal)
-                primal_work.times(self.mu)
+                    dual_work.equals(X_olddualS.dual)
+                    dual_work.minus(x0.dual)
+                    dual_work.times(self.mu)
+                    dLdX_olddualS.dual.minus(dual_work)
 
-                dLdX_olddualS.primal.plus(primal_work)
+                    self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
+                    
+                    old_x.equals(x)
 
-                dual_work.equals(X_olddualS.dual)
-                dual_work.minus(x0.dual)
-                dual_work.times(self.mu)
-
-                dLdX_olddualS.dual.minus(dual_work)
-
-                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
+            if self.itersolver is not None and self.mu <= self.precond_on_mu:
+                self.itersolver.linearize(x, state, adj)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters
             self.krylov.mu = self.mu
             self.krylov.step = 'Predictor'
 
-            self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+            if self.mu <= self.precond_on_mu:
+                self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+            else:
+                self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
+
             t.primal.slack.times(self.current_x.primal.slack)
 
             # normalize the tangent vector
@@ -926,13 +908,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 if self.factor_matrices:
                     factor_linear_system(x.primal, state)
             else:
-                # this step is accepted so send it to user
-                solver_info = current_solution(
-                    num_iter=outer_iters, curr_primal=x.primal,
-                    curr_state=state, curr_adj=adj, curr_dual=x.dual)
-                if isinstance(solver_info, str) and solver_info != '':
-                    self.info_file.write('\n' + solver_info + '\n')
-
+                # # this step is accepted so send it to user
+                # solver_info = current_solution(
+                #     num_iter=outer_iters, curr_primal=x.primal,
+                #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                # if isinstance(solver_info, str) and solver_info != '':
+                #     self.info_file.write('\n' + solver_info + '\n')
+                a = 1
             # advance iteration counter
             outer_iters += 1
             self.info_file.write('\n')

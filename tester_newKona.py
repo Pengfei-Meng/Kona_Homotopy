@@ -559,12 +559,18 @@ optns = {
         'dmu_max' : -0.0005,                  # -0.0005,  
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
-        'use_frac_to_bound' : False,     
+        'use_frac_to_bound' : False,  
+        'mu_pc_on' : 0.05,   
     },
 
+    'svd' : {
+        'lanczos_size'    : 20, 
+        'bfgs_max_stored' : 8, 
+    }, 
+
     'rsnk' : {
-        'precond'       : 'svd_pc',        #'approx_adjoint',                
-        # rsnk algorithm settings
+        'precond'       : 'svd_pc',      # 'approx_adjoint',                            
+        # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,
         # reduced KKT matrix settings
@@ -606,6 +612,8 @@ optimizer.solve()
 print 'Positive Lagrangian', solver.curr_ineq[solver.curr_ineq > 1e-5]
 print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 
+# pdb.set_trace()
+
 # ------------------------------------------------------
 # Extracting explicit W-hessian, A-constraintJacobian from the problem
 # initialize Kona memory manager
@@ -637,27 +645,27 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 # at_slack = df.generate()
 # X = kona.linalg.vectors.composite.ReducedKKTVector(
 #     kona.linalg.vectors.composite.CompositePrimalVector(
-#         at_design, at_slack),
-#     at_dual)
+#         pf.generate(), df.generate()),
+#         df.generate())
 # dJdX = kona.linalg.vectors.composite.ReducedKKTVector(
 #        kona.linalg.vectors.composite.CompositePrimalVector(
-#            at_design, at_slack),
-#        at_dual)
+#         pf.generate(), df.generate()),
+#         df.generate())
+
 # lag_adj = sf.generate()
 
-
-# # do some matrix aliasing
-# dRdU = kona.linalg.matrices.common.dRdU
-# dCdU = kona.linalg.matrices.common.dCdU
+# # # do some matrix aliasing
+# # dRdU = kona.linalg.matrices.common.dRdU
+# # dCdU = kona.linalg.matrices.common.dCdU
 
 # # request some input/output vectors for the products
 # in_design = pf.generate()
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './test/svd2_-10lam'   
+# outdir = './test/eye'   
 # # inner_iters = 50
-# max_iter = 60
+# max_iter = 0
 
 # fig1 = plt.figure()
 # ax1 = fig1.add_subplot(121)
@@ -669,9 +677,10 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     file_dual = outdir + '/dual_%i'%j                        # './test/' + 
 #     file_slack = outdir + '/slack_%i'%j
 
-#     file_hessian =  outdir + '/%i_hessian'%j
-#     file_A_exact = outdir + '/%i_cnstrA_exact'%j
-#     file_A_approx =  outdir + '/%i_cnstrA_approx'%j
+#     file_W_exact =  outdir + '/%i_W_exact'%j
+#     file_W_approx =  outdir + '/%i_W_approx'%j
+#     file_A_exact = outdir + '/%i_A_exact'%j
+#     file_A_approx =  outdir + '/%i_A_approx'%j
 #     file_dLdX = outdir + '/%i_dldx'%j
 
 #     design_file = open(file_design, 'r')
@@ -694,12 +703,12 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     # compute states
 #     at_state.equals_primal_solution(at_design)
 
-#     # perform an adjoint solution for the Lagrangian
-#     adjoint_rhs.equals_objective_partial(at_design, at_state)
-#     dCdU(at_design, at_state).T.product(at_dual, at_adjoint)
-#     adjoint_rhs.plus(at_adjoint)
-#     adjoint_rhs.times(-1.)
-#     dRdU(at_design, at_state).T.solve(adjoint_rhs, at_adjoint)
+#     # # perform an adjoint solution for the Lagrangian
+#     # adjoint_rhs.equals_objective_partial(at_design, at_state)
+#     # dCdU(at_design, at_state).T.product(at_dual, at_adjoint)
+#     # adjoint_rhs.plus(at_adjoint)
+#     # adjoint_rhs.times(-1.)
+#     # dRdU(at_design, at_state).T.solve(adjoint_rhs, at_adjoint)
 
 #     # compute the lagrangian adjoint
 #     lag_adj.equals_lagrangian_adjoint(
@@ -718,9 +727,10 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     num_design = len(at_design.base.data)
 #     num_stress = len(at_dual.base.data)/3
 #     num_dual = num_design + num_design + num_stress
-#     W_full = np.zeros((num_design, num_design))
-#     A_full_exactAdj = np.zeros((num_dual, num_design))
-#     A_full_approxAdj = np.zeros((num_dual, num_design))
+#     W_full_exact = np.zeros((num_design, num_design))
+#     W_full_approx = np.zeros((num_design, num_design))
+#     A_full_exact = np.zeros((num_dual, num_design))
+#     A_full_approx = np.zeros((num_dual, num_design))
 
 #     dJdX_data = np.zeros(num_design + num_dual*2)
 
@@ -729,62 +739,74 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     dJdX_data[num_design+num_dual: ] = dJdX.dual.base.data
 
 
-#     # ----- either re-compute the A matrices column by column
-#     # loop over design variables and start assembling the matrices
-#     for i in xrange(num_design):
-#         print 'Evaluating design var:', i+1
-#         # set the input vector so that we only pluck out one column of the matrix
-#         in_design.equals(0.0)
-#         in_design.base.data[i] = 1.
-#         # perform the Lagrangian Hessian product and store
-#         W.multiply_W(in_design, out_design)
-#         W_full[:, i] = out_design.base.data
-#         # perform the Constraint Jacobian product and store
-#         A.product(in_design, out_dual)
-#         A_full_exactAdj[:, i] = out_dual.base.data
+#     # # ----- either re-compute the A matrices column by column
+#     # # loop over design variables and start assembling the matrices
+#     # for i in xrange(num_design):
+#     #     print 'Evaluating design var:', i+1
+#     #     # set the input vector so that we only pluck out one column of the matrix
+#     #     in_design.equals(0.0)
+#     #     in_design.base.data[i] = 1.
+#     #     # perform the Lagrangian Hessian product and store
+#     #     W.approx.multiply_W(in_design, out_design)
+#     #     W_full_approx[:, i] = out_design.base.data
 
-#         A.approx.product(in_design, out_dual)
-#         A_full_approxAdj[:, i] = out_dual.base.data
+#     #     W.multiply_W(in_design, out_design)
+#     #     W_full_exact[:, i] = out_design.base.data
+
+#     #     # perform the Constraint Jacobian product and store
+#     #     A.product(in_design, out_dual)
+#     #     A_full_exact[:, i] = out_dual.base.data
+
+#     #     A.approx.product(in_design, out_dual)
+#     #     A_full_approx[:, i] = out_dual.base.data
 
 
-#     # # store the matrices into a file
-#     W_file = open(file_hessian, 'w')
-#     pickle.dump(W_full, W_file)
+#     # # # store the matrices into a file
+#     # W_file = open(file_W_exact, 'w')
+#     # pickle.dump(W_full_exact, W_file)
+#     # W_file.close()
+
+#     # W_file = open(file_W_approx, 'w')
+#     # pickle.dump(W_full_approx, W_file)
+#     # W_file.close()
+
+#     # A_file = open(file_A_exact, 'w')
+#     # pickle.dump(A_full_exact, A_file)
+#     # A_file.close()
+
+#     # A_file = open(file_A_approx, 'w')
+#     # pickle.dump(A_full_approx, A_file)
+#     # A_file.close()
+
+#     # L_file = open(file_dLdX, 'w')
+#     # pickle.dump(dJdX_data, L_file)
+#     # L_file.close()
+
+
+
+#     # # ----- or just reload it from stored ciles ----------------
+#     W_file = open(file_W_exact, 'r')
+#     W_full_exact = pickle.load(W_file)
 #     W_file.close()
-#     A_file = open(file_A_exact, 'w')
-#     pickle.dump(A_full_exactAdj, A_file)
-#     A_file.close()
 
-#     A_file = open(file_A_approx, 'w')
-#     pickle.dump(A_full_approxAdj, A_file)
-#     A_file.close()
-
-#     L_file = open(file_dLdX, 'w')
-#     pickle.dump(dJdX_data, L_file)
-#     L_file.close()
-
-#     # # ----- or just reload it from stored files ----------------
-#     W_file = open(file_hessian, 'r')
-#     W_full = pickle.load(W_file)
+#     W_file = open(file_W_approx, 'r')
+#     W_full_approx = pickle.load(W_file)
 #     W_file.close()
 
 #     A_file = open(file_A_exact, 'r')
-#     A_full_exactAdj = pickle.load(A_file)
+#     A_full_exact = pickle.load(A_file)
 #     A_file.close()
 
 #     A_file = open(file_A_approx, 'r')
-#     A_full_approxAdj = pickle.load(A_file)
+#     A_full_approx = pickle.load(A_file)
 #     A_file.close()
 
-#     u,sins_A,v = np.linalg.svd(A_full_exactAdj)
+#     u,sins_A,v = np.linalg.svd(A_full_exact[2*num_design:, :])   
 #     l1 = ax1.plot(sins_A[:20], 'o--', label='corr %i'%(j))
 
-#     u_a,sins_A_a,v_a = np.linalg.svd(A_full_approxAdj)
+#     u_a,sins_A_a,v_a = np.linalg.svd(A_full_approx[2*num_design:, :])    
 #     l2 = ax2.plot(sins_A_a[:20], 'o--', label='corr %i'%(j))
 
-#     A_stress = A_full_exactAdj[2*num_design:, :]
-#     u,sins_A,v = np.linalg.svd(A_stress)
-#     plt.plot(sins_A[:20], 'o--', label='corr %i'%(j))
 
 # fig1.suptitle('SVs of A_full at mu = 0.0, explicit mat ')
 # ax1.set_title("exact product")
@@ -793,39 +815,39 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 # plt.xticks(np.arange(0, max_iter, 1))
 
 # fig2 = pylt.figure()
-# M = sps.csr_matrix(A_full_exactAdj[2*num_design:, :])
+# M = sps.csr_matrix(A_full_exact[2*num_design:, :])
 # pylt.spy(M, precision=1e-1, marker='.', markersize=1)
-# pylt.title('sparsity pattern for Stress A')
+# pylt.title('sparsity Stress A exact')
+
+# fig22 = pylt.figure()
+# M = sps.csr_matrix(A_full_approx[2*num_design:, :])
+# pylt.spy(M, precision=1e-1, marker='.', markersize=1)
+# pylt.title('sparsity Stress A approx')
 
 # # -------------------- Hessian ---------------------
 # fig3 = pylt.figure()
-# M = sps.csr_matrix(W_full)
+# M = sps.csr_matrix(W_full_exact)
 # pylt.spy(M, precision=1e-1, marker='.', markersize=1)
-# pylt.title('sparsity pattern Hessian 1e-1')
-
+# pylt.title('sparsity W exact 1e-1')
 
 # fig4 = pylt.figure()
-# M = sps.csr_matrix(W_full)
-# pylt.spy(M, precision=1e-2, marker='.', markersize=1)
-# pylt.title('sparsity pattern Hessian 1e-2')
+# M = sps.csr_matrix(W_full_approx)
+# pylt.spy(M, precision=1e-1, marker='.', markersize=1)
+# pylt.title('sparsity W approx 1e-1')
 
 # fig5 = pylt.figure()
-# M = sps.csr_matrix(W_full)
-# pylt.spy(M, precision=1e-3, marker='.', markersize=1)
-# pylt.title('sparsity pattern Hessian 1e-3')
+# M = sps.csr_matrix(W_full_exact)
+# pylt.spy(M, precision=1e-2, marker='.', markersize=1)
+# pylt.title('sparsity W approx 1e-2')
 
 # fig6 = pylt.figure()
-# M = sps.csr_matrix(W_full)
-# pylt.spy(M, precision=1e-4, marker='.', markersize=1)
-# pylt.title('sparsity pattern Hessian 1e-4')
-
-# fig7 = pylt.figure()
-# M = sps.csr_matrix(W_full)
-# pylt.spy(M, precision=1e-5, marker='.', markersize=1)
-# pylt.title('sparsity pattern Hessian 1e-5')
+# M = sps.csr_matrix(W_full_exact)
+# pylt.spy(M, precision=1e-3, marker='.', markersize=1)
+# pylt.title('sparsity W approx 1e-3')
 
 
+# pdb.set_trace()
 # pylt.show()
 # plt.show()
 
-# np.set_printoptions(threshold=np.nan)
+# # np.set_printoptions(threshold=np.nan)

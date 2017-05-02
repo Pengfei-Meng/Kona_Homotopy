@@ -308,14 +308,14 @@ class ReducedKKTVector(CompositeVector):
             assert isinstance(x.primal, DesignVector), \
                 "ReducedKKTVector() >> KKT point cannot include slacks!"
             design = x.primal
-        dual = x.dual
-
+        # dual = x.dual
         # evaluate primal component
         self.primal.equals_lagrangian_total_gradient(
-            x.primal, state, dual, adjoint, obj_scale, cnstr_scale)
-
+            x.primal, state, x.dual, adjoint, obj_scale, cnstr_scale)
+        
         # evaluate multiplier component
         self.dual.equals_constraints(design, state, cnstr_scale)
+        
         if isinstance(self.dual, DualVectorINEQ):
             self.dual.minus(x.primal.slack)
         elif isinstance(self.dual, CompositeDualVector):

@@ -6,6 +6,7 @@ import pdb, time
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector
+import pickle
 
 class APPROXADJOINT(BaseHessian):
     """
@@ -126,8 +127,6 @@ class APPROXADJOINT(BaseHessian):
                 self.Ag.approx.product(in_design, out_dual)
                 self.A_full[:, i] = out_dual.base.data
                 # self.A_full[128*2:, :] = out_dual.base.data[128*2:]
-
-
     
     def solve(self, in_vec, out_vec):  
         # in_vec  : to be preconditioned
@@ -142,11 +141,16 @@ class APPROXADJOINT(BaseHessian):
         rhs_full = np.hstack([v_x, v_s, v_g])
 
         # # ----------------- The Full KKT Matrix -------------------
-        KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
-                              np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq), -np.diag(self.at_slack)]),
-                              np.hstack([self.A_full, -np.eye(self.num_ineq),  np.zeros((self.num_ineq, self.num_ineq))]) ])
+        # KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
+        #                       np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq), -np.diag(self.at_slack)]),
+        #                       np.hstack([self.A_full, -np.eye(self.num_ineq),  np.zeros((self.num_ineq, self.num_ineq))]) ])
 
-        eyes_h = np.hstack([ np.ones(self.num_design), np.ones(self.num_ineq), -np.ones(self.num_ineq) ])    
+        KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
+                              np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq*self.at_slack), -np.diag(self.at_slack)]),
+                              np.hstack([self.A_full, -np.diag(self.at_slack),  np.zeros((self.num_ineq, self.num_ineq))]) ])
+
+        # eyes_h = np.hstack([ np.ones(self.num_design), np.ones(self.num_ineq), -np.ones(self.num_ineq) ])    
+        eyes_h = np.hstack([ np.ones(self.num_design), self.at_slack, -np.ones(self.num_ineq) ])   
         homo_I = np.diag(eyes_h)        
 
         #------------------------------------------------------------------         
@@ -174,22 +178,30 @@ class APPROXADJOINT(BaseHessian):
         v_s = in_vec.primal.slack.base.data
         v_g = in_vec.dual.base.data
 
-        LAM = -(1.0-self.mu)*self.at_dual_ineq + self.mu*np.ones(self.at_dual_ineq.shape)
-
-        GAM = -(1.0-self.mu)**2 * (1.0/LAM) * self.at_slack - self.mu*np.ones(self.at_slack.shape)
+        # 1) 
+        # LAM = -(1.0-self.mu)*self.at_dual_ineq + self.mu*np.ones(len(self.at_dual_ineq))
+        # GAM = -(1.0-self.mu)**2 * (1.0/LAM) * self.at_slack - self.mu*np.ones(self.at_slack.shape)
+        # Scaled Slack
+        LAM = -(1.0-self.mu)*self.at_dual_ineq*self.at_slack + self.mu*np.ones(len(self.at_dual_ineq))
+        GAM = -(1.0-self.mu)**2 * self.at_slack * (1.0/LAM) * self.at_slack - self.mu*np.ones(len(self.at_slack))
+        
         UV1 = np.dot( np.diag(1.0/GAM), self.A_full )
         UV = -(1.0-self.mu)**2 * np.dot( self.A_full.transpose(), UV1) 
 
         W = (1.0-self.mu) * self.W_full + self.mu*np.eye(self.num_design) + UV
 
 
-        # rhs_x
-        rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * 1.0/LAM * v_s) 
+        # 2) rhs_x
+        # rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * 1.0/LAM * v_s) 
+        # Scaled Slack
+        rhs_x_1 =  1.0/GAM * (v_g + (1.0-self.mu) * self.at_slack * 1.0/LAM * v_s) 
         rhs_x = v_x - np.dot( self.A_full.transpose(), rhs_x_1 )
 
         p_x = sp.linalg.lu_solve(sp.linalg.lu_factor(W), rhs_x)
 
-        rhs_g_1 = v_g + (1.0-self.mu) * 1./LAM * v_s - np.dot( self.A_full, p_x)
+        # 3) 
+        # rhs_g_1 = v_g + (1.0-self.mu) * 1./LAM * v_s - np.dot( self.A_full, p_x)
+        rhs_g_1 = v_g + (1.0-self.mu) * self.at_slack * 1./LAM * v_s - np.dot( self.A_full, p_x)
         p_g = 1.0/GAM * rhs_g_1 
         
         p_s = 1.0/LAM * ( (1.0-self.mu) * self.at_slack * p_g + v_s )     
