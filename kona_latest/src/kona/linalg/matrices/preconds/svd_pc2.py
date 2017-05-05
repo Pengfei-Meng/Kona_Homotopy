@@ -53,7 +53,8 @@ class SVDPC(BaseHessian):
         self.Ag.T.product(in_vec, self.design_work)        # approx. 
         self.design_work.times(1.0 - self.mu)
 
-        self.W_hat.solve(self.design_work, self.design_work0)
+        # self.W_hat.solve(self.design_work, self.design_work0)
+        self.design_work0.equals(self.design_work)
 
         self.Ag.product(self.design_work0, out_vec)    # approx.
         out_vec.times(1.0 - self.mu)
@@ -158,8 +159,8 @@ class SVDPC(BaseHessian):
 
             self.lam_aug_inv = 1./self.lam_aug
 
-            self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
-
+            # self.W_hat.solve(rhs_vec.primal.design, self.design_work0)
+            self.design_work0.equals(rhs_vec.primal.design)
 
             self.Ag.product(self.design_work0, self.dual_work1)   # approx.
             self.dual_work1.times(1.0 - self.mu)
@@ -196,8 +197,8 @@ class SVDPC(BaseHessian):
 
             self.design_work2.base.data = self.design_work.base.data + u_x 
 
-            self.W_hat.solve(self.design_work2, pcd_vec.primal.design)
-            
+            # self.W_hat.solve(self.design_work2, pcd_vec.primal.design)
+            pcd_vec.primal.design.equals(self.design_work2)
 
             Lambda_g_p_s = (1-self.mu) * self.at_slack_data * p_g  + u_s 
 

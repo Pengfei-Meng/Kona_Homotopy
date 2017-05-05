@@ -229,6 +229,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
 
+        if self.mu < 1e-6:
+            self.prod_work.equals(in_vec)
+            self.prod_work.times(0.1)
+            out_vec.primal.design.plus(self.prod_work.primal.design)
+
     def check_sign(self, x, outer, inner):
 
         slack_ind = x.primal.slack.base.data < -1e-6
@@ -528,10 +533,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu < 1e-6:
+                if self.mu < 1e-6:    
                     max_newton = 10
-                    self.svd_pc.svd_AWA_mu.subspace_size = 128
-                    # pdb.set_trace()
+                    if self.svd_pc is not None:
+                        self.svd_pc.svd_AWA_mu.subspace_size = 128
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0

@@ -554,8 +554,24 @@ solver = kona_opt.FSTopoSolver(
 # ------------------------------------------------
 # -------------------------------------------------
 
-dir_data = '../test/eye/'
+case = 'tiny'                                 # tiny, small, medium
+dir_data = '../test/eye_' + case + '/'
+
 j = 0
+
+if case is 'tiny':
+    num_design = 16*8 
+elif case is 'small': 
+    num_design = 32*16
+elif case is 'medium':  
+    num_design = 64*32
+                              
+num_ineq = 3*num_design
+
+num_kkt = num_design + 2*num_ineq
+
+scaled_slack = True
+
 
 f_jacobian = open(dir_data+'%i_A_exact'%j,'rb')  # '/design_%i'%j  
 Ag_exact = pickle.load(f_jacobian)
@@ -595,21 +611,6 @@ f_dual   = open(dir_data+'dual_%i'%j,'rb')
 at_dual = pickle.load(f_dual)
 f_dual.close()
 
-
-num_design = 128
-num_ineq = 128*3
-# KKT_full = np.vstack([np.hstack([W_full,  np.zeros((num_design, num_ineq)),  Ag.transpose()]), 
-#                       np.hstack([np.zeros((num_ineq, num_design)),  -np.diag(at_dual), -np.diag(at_slack)]),
-#                       np.hstack([Ag, -np.eye(num_ineq),  np.zeros((num_ineq, num_ineq))]) ])
-
-
-scaled_slack = True
-# -------------------- dimensions -------------------
- 
-num_stress = 128
-num_bound = 128*2 
-
-num_kkt = num_design + 2*num_ineq
 
 # -----------------  LinearOperator and Solve -------------
 def mat_vec_kkt(in_vec):
@@ -819,4 +820,3 @@ print of0, opt0_x, opt0_s, feas0
 print of1, opt1_x, opt0_s, feas1
 
 print np.linalg.norm(dLdX)
-pdb.set_trace()

@@ -591,7 +591,7 @@ num_kkt = num_design + 2*num_ineq
 
 scaled_slack = True
 
-
+# W_approx = np.eye(num_design)
 
 # -----------------  LinearOperator and Solve -------------
 def kkt_condition(at_design, at_slack, at_dual): 
@@ -679,6 +679,27 @@ def mat_vec_kkt(in_vec):
 
     out_vec = np.concatenate( (out_design, out_slack, out_dual), axis=0)
     return out_vec
+
+
+def mat_vec_M(in_vec):
+    in_design = in_vec[ : num_design] 
+    in_slack = in_vec[num_design :  num_design+num_ineq ] 
+    in_dual  = in_vec[num_design + num_ineq : ] 
+
+    out_design = np.zeros_like(in_design)
+    out_slack  = np.zeros_like(in_slack)
+    out_dual   = np.zeros_like(in_dual)
+
+    out_dual = - in_slack * 1.0/at_slack
+
+    out_design_rhs = in_design - np.dot(Ag_exact.transpose(), out_dual)
+    out_design = sp.linalg.lu_solve(sp.linalg.lu_factor(W_approx), out_design_rhs) 
+
+    out_slack = (in_dual - np.dot(Ag_exact, out_design))*(-1.0)/at_slack
+
+    out_vec = np.concatenate( (out_design, out_slack, out_dual), axis=0)
+    return out_vec
+
 
 def mat_vec_SVD(in_vec):
     u_x = in_vec[ : num_design] 
@@ -786,6 +807,3 @@ print np.linalg.norm(of1), np.linalg.norm(of1[: num_design]),  np.linalg.norm(of
 x_init = np.concatenate( (at_design, at_slack, at_dual), axis=0)
 x_new = np.concatenate( (at_design_new, at_slack_new, at_dual_new), axis=0)
 
-
-
-pdb.set_trace()

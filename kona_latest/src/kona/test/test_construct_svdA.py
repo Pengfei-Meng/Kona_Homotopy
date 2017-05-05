@@ -17,12 +17,12 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 200
+        size_prob = 100
 
         self.num_design = size_prob
         self.num_ineq = size_prob
         np.random.seed(0) 
-        self.init_x = np.random.rand(size_prob)   #np.ones(size_prob)    #
+        self.init_x = np.random.rand(size_prob)    
 
         self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
 
@@ -96,8 +96,8 @@ class InequalityTestCase(unittest.TestCase):
 
         self.kona_obj = self.solver.eval_obj(self.solver.curr_design, self.solver.curr_state)
         self.kona_x = self.solver.curr_design
-        #print 'self.solver.curr_dual', self.solver.curr_dual
-        #print 'self.solver.curr_slack', self.solver.curr_slack
+        print 'postive dual:   ', self.solver.curr_dual[self.solver.curr_dual > 1e-5]
+        print 'negative slack: ', self.solver.curr_slack[self.solver.curr_slack < -1e-5]
 
     def objfunc(self, xdict):
         self.iteration += 1
