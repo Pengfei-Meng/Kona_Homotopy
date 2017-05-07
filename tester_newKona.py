@@ -550,11 +550,11 @@ optns = {
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 3,
+        'inner_maxiter' : 10,
         'init_step' : 0.05,                           
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
-        'max_factor' : 30.0,                  
+        'max_factor' : 40.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
         'dmu_min' : -0.9,   
@@ -564,12 +564,12 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 20, 
-        'bfgs_max_stored' : 8, 
+        'lanczos_size'    : 60, 
+        'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc',     # 'approx_adjoint',                            
+        'precond'       : 'svd_pc',     #'approx_adjoint',                                    
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,

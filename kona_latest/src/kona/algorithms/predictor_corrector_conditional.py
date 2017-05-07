@@ -229,10 +229,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
 
-        if self.mu < 1e-6:
-            self.prod_work.equals(in_vec)
-            self.prod_work.times(0.1)
-            out_vec.primal.design.plus(self.prod_work.primal.design)
+        # self.prod_work.equals(in_vec)
+        # self.prod_work.times(0.01)
+        # out_vec.primal.design.plus(self.prod_work.primal.design)
 
     def check_sign(self, x, outer, inner):
 
@@ -322,11 +321,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         state = self.state_factory.generate()
         state_work = self.state_factory.generate()
         state_save = self.state_factory.generate()
+        state_work_svd = self.state_factory.generate()
         adj = self.state_factory.generate()
         adj_save = self.state_factory.generate()
+        adj_work = self.state_factory.generate()
 
         primal_work = self._generate_primal()
-
+        design_work = self.primal_factory.generate()
         dual_work = self._generate_dual()
         dual_work2 = self._generate_dual()
 
@@ -638,8 +639,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             X_olddualS.equals(x)
                             X_olddualS.primal.design.equals(old_x.primal.design)
 
+                            # -------------------------------------
+                            if not state_work_svd.equals_primal_solution(X_olddualS.primal):
+                                raise RuntimeError(
+                                    'Invalid predictor point! State-solve failed.')
+
+                            # # compute adjoint
+                            adj_work.equals_lagrangian_adjoint(
+                                X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                            # -------------------------------------
+
                             dLdX_olddualS.equals_KKT_conditions(
-                                X_olddualS, state, adj) 
+                                X_olddualS, state_work_svd, adj_work) 
                             dLdX_olddualS.times(1. - self.mu)
 
                             primal_work.equals(X_olddualS.primal)
@@ -834,8 +845,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     X_olddualS.equals(x)
                     X_olddualS.primal.design.equals(old_x.primal.design)
 
+                    # -------------------------------------
+                    if not state_work_svd.equals_primal_solution(X_olddualS.primal):
+                        raise RuntimeError(
+                            'Invalid predictor point! State-solve failed.')
+
+                    # # compute adjoint
+                    adj_work.equals_lagrangian_adjoint(
+                        X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+
                     dLdX_olddualS.equals_KKT_conditions(
-                        X_olddualS, state, adj) 
+                        X_olddualS, state_work_svd, adj_work) 
                     dLdX_olddualS.times(1. - self.mu)
 
                     primal_work.equals(X_olddualS.primal)

@@ -144,6 +144,8 @@ class APPROXADJOINT(BaseHessian):
         # KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
         #                       np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq), -np.diag(self.at_slack)]),
         #                       np.hstack([self.A_full, -np.eye(self.num_ineq),  np.zeros((self.num_ineq, self.num_ineq))]) ])
+        # if self.mu < 1e-6:
+        # self.W_full =  self.W_full + 0.01*np.eye(self.num_design)
 
         KKT_full = np.vstack([np.hstack([self.W_full,  np.zeros((self.num_design, self.num_ineq)),  self.A_full.transpose()]), 
                               np.hstack([np.zeros((self.num_ineq, self.num_design)),  -np.diag(self.at_dual_ineq*self.at_slack), -np.diag(self.at_slack)]),
