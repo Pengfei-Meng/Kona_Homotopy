@@ -17,7 +17,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 100
+        size_prob = 300
 
         self.num_design = size_prob
         self.num_ineq = size_prob

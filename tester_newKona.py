@@ -542,15 +542,15 @@ solver = kona_opt.FSTopoSolver(
 # Optimizer
 optns = {
     'max_iter' : 300,
-    'opt_tol' : 1e-4,
-    'feas_tol' : 1e-4,        
+    'opt_tol' : 1e-3,
+    'feas_tol' : 1e-3,        
     'info_file' : prefix+'/kona_info.dat',
     'hist_file' : prefix+'/kona_hist.dat',
 
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 10,
+        'inner_maxiter' : 3,
         'init_step' : 0.05,                           
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
@@ -560,16 +560,16 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 1.0,   
+        'mu_pc_on' : 1.0,              # when using svd_pc, mu_pc_on must < 1.0
     },
 
     'svd' : {
-        'lanczos_size'    : 60, 
+        'lanczos_size'    : 40, 
         'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc',     #'approx_adjoint',                                    
+        'precond'       : 'approx_adjoint',     # 'svd_pc',    #                                      
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,
@@ -659,9 +659,9 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './test/eye_10obj'   
+# outdir = './test/adj_0reg'   
 # # inner_iters = 50
-# max_iter = 0
+# max_iter = 5
 
 # for j in xrange(max_iter,max_iter+1):    # inner_iters
 #     # set the point at which products will be evaluated
@@ -687,7 +687,7 @@ print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
 #     slack_vec = pickle.load(slack_file)
 #     slack_file.close()
 #     at_slack.base.data = slack_vec
-#     pdb.set_trace()
+     
 #     X.primal.design.equals(at_design)
 #     X.primal.slack.equals(at_slack)
 #     X.dual.equals(at_dual)

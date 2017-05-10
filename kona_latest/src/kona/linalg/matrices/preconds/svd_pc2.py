@@ -143,7 +143,7 @@ class SVDPC(BaseHessian):
                 self.awa_V[:, j] = self.svd_AWA_mu.V[j].base.data
 
 
-    def solve(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T, 2nd Type with mu
+    def solve_2nd(self, rhs_vec, pcd_vec):    # BFGS W,   SVD on A W^{-1} A^T, 2nd Type with mu
 
         if self.mu >= 0.9:
             pcd_vec.equals(rhs_vec)
@@ -206,7 +206,7 @@ class SVDPC(BaseHessian):
             
             pcd_vec.primal.slack.base.data = p_s
 
-            
+
 
     def solve_I(self, rhs_vec, pcd_vec):
         u_x = rhs_vec.primal.design.base.data

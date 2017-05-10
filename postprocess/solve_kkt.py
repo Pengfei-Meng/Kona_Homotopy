@@ -33,6 +33,8 @@ import fstopo.problems.kona_opt as kona_opt
 
 # Import Kona Optimization Library
 import kona
+from kona.linalg.vectors.composite import ReducedKKTVector
+from kona.linalg.vectors.composite import CompositePrimalVector
 
 
 def create_multi_problem(rho, Cmats, qval, qxval, h, G, epsilon,
@@ -555,8 +557,8 @@ solver = kona_opt.FSTopoSolver(
 # -------------------------------------------------
 
 case = 'tiny'                                 # tiny, small, medium
-dir_data = '../test/eye_' + case + '/'
-
+# dir_data = '../test/eye_' + case + '/'
+dir_data = '../test/adj_0reg/'
 j = 0
 
 if case is 'tiny':
@@ -578,8 +580,8 @@ Ag_exact = pickle.load(f_jacobian)
 f_jacobian.close()
 
 
-f_jacobian = open(dir_data+'%i_A_approx'%j,'rb')  # '/design_%i'%j 
-# f_jacobian = open(dir_data+'A_approx','rb')  # '/design_%i'%j 
+f_jacobian = open(dir_data+'%i_A_approx'%j,'rb')   
+# f_jacobian = open(dir_data+'A_approx','rb')   
 Ag_approx = pickle.load(f_jacobian)
 f_jacobian.close()
 
@@ -596,7 +598,8 @@ f_dldx = open(dir_data+'%i_dldx'%j,'rb')
 dLdX = pickle.load(f_dldx)
 f_dldx.close()
 
-# # ----------- A_approx, W_approx from inside approx adjoint PC -------------
+As_exact = Ag_exact[-num_design:,:]
+As_approx = Ag_approx[-num_design:,:]
 
 
 f_design   = open(dir_data+'design_%i'%j,'rb')
@@ -611,6 +614,88 @@ f_dual   = open(dir_data+'dual_%i'%j,'rb')
 at_dual = pickle.load(f_dual)
 f_dual.close()
 
+
+# # ----------- A_approx, W_approx from inside approx adjoint PC -------------
+# ------------- load all design, slack, dual points ---------------
+j = 0
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_0 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_0 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_0 = pickle.load(f_dual)
+f_dual.close()
+
+j = 1
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_1 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_1 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_1 = pickle.load(f_dual)
+f_dual.close()
+
+
+j = 2
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_2 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_2 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_2 = pickle.load(f_dual)
+f_dual.close()
+
+j = 3
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_3 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_3 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_3 = pickle.load(f_dual)
+f_dual.close()
+
+j = 4
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_4 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_4 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_4 = pickle.load(f_dual)
+f_dual.close()
+
+
+j = 5
+f_design   = open(dir_data+'design_%i'%j,'rb')
+at_design_5 = pickle.load(f_design)
+f_design.close()
+
+f_slack   = open(dir_data+'slack_%i'%j,'rb')
+at_slack_5 = pickle.load(f_slack)
+f_slack.close()
+
+f_dual   = open(dir_data+'dual_%i'%j,'rb')
+at_dual_5 = pickle.load(f_dual)
+f_dual.close()
 
 # -----------------  LinearOperator and Solve -------------
 def mat_vec_kkt(in_vec):
@@ -646,10 +731,11 @@ def mat_vec_M(in_vec):
 
     out_dual = - in_slack * 1.0/at_slack
 
-    out_design_rhs = in_design - np.dot(Ag_approx.transpose(), out_dual)
-    out_design = sp.linalg.lu_solve(sp.linalg.lu_factor(W_approx), out_design_rhs) 
+    out_design_rhs = in_design - np.dot(Ag_exact.transpose(), out_dual)
+    out_design = out_design_rhs
+    # out_design = sp.linalg.lu_solve(sp.linalg.lu_factor(W_approx), out_design_rhs) 
 
-    out_slack = (in_dual - np.dot(Ag_approx, out_design))*(-1.0)/at_slack
+    out_slack = (in_dual - np.dot(Ag_exact, out_design))*(-1.0)/at_slack
 
     out_vec = np.concatenate( (out_design, out_slack, out_dual), axis=0)
     return out_vec
@@ -710,113 +796,226 @@ def mat_vec_SVD(in_vec):
     return out_vec
 
 
+def mat_vec_SVD_1st(in_vec):
+    u_x = in_vec[ : num_design] 
+    u_s = in_vec[num_design :  num_design+num_ineq ] 
+    u_g  = in_vec[num_design + num_ineq : ] 
+
+    out_design = np.zeros_like(u_x)
+    out_slack  = np.zeros_like(u_s)
+    out_dual   = np.zeros_like(u_g)
+
+    # 1)  rhs_vx 
+    sigma = - 1.0/at_slack * at_dual
+    sigma_l = sigma[:num_design]
+    sigma_u = sigma[num_design:2*num_design]
+    sigma_s = sigma[-num_design:]
+
+    work1 = sigma * (-u_g + 1.0/at_dual * u_s )
+    rhs_vx = u_x - np.dot(Ag_exact.transpose(), work1)
+
+    # # 2) decompose LHS matrix
+    # M_full, gam_full, N_full = np.linalg.svd(As_exact, full_matrices=False)
+
+    K_As = 40
+    # M = M_full[:, :K_As]     
+    # gam = gam_full[:K_As]
+    # N = N_full[:K_As, :]
+    # As_svd = np.dot(M, np.dot(np.diag(gam), N))
+
+    # AsT_SigS_As_svd = np.dot(As_svd.transpose(), np.dot(np.diag(sigma_s), As_svd))
+
+
+    # 2) decompose LHS, svd on whole AsT_SigS_As
+    AsT_SigS_As = np.dot(As_exact.transpose(), np.dot(np.diag(sigma_s), As_exact))
+    
+    M_full, gam_full, N_full = np.linalg.svd(AsT_SigS_As, full_matrices=False)
+    M = M_full[:, :K_As]     
+    gam = gam_full[:K_As]
+    N = N_full[:K_As, :]
+    AsT_SigS_As_svd = np.dot(M, np.dot(np.diag(gam), N))
+
+    # 3) LHS matrix
+    LHS = np.diag( np.diag(W_approx) + sigma_l + sigma_u )  + AsT_SigS_As_svd 
+    v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
+
+
+    # 4) solve v_g
+    rhs_g = - u_g + 1.0/at_dual * u_s + np.dot(Ag_exact, v_x)
+    v_g = np.dot(np.diag(sigma), rhs_g)
+
+    # 5) solve v_s 
+    if scaled_slack is True:
+        v_s = -1.0/at_dual * v_g - 1.0/(at_dual*at_slack)*u_s
+    else:
+        v_s = 1.0/sigma * v_g - 1.0/at_dual*u_s    
+
+    out_vec = np.concatenate( (v_x, v_s, v_g), axis=0)
+    return out_vec
+
+
+def mat_vec_approx_adjoint(in_vec):
+
+    KKT_full = np.vstack([np.hstack([W_approx,  np.zeros((num_design, num_ineq)),  Ag_exact.transpose()]), 
+                          np.hstack([np.zeros((num_ineq, num_design)),  -np.diag(at_dual*at_slack), -np.diag(at_slack)]),
+                          np.hstack([Ag_exact, -np.diag(at_slack),  np.zeros((num_ineq, num_ineq))]) ])
+
+    out_vec = sp.linalg.lu_solve(sp.linalg.lu_factor(KKT_full), in_vec)
+
+    return out_vec
+
+
 
 K = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_kkt  )
 
 # M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_M  )
-M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD  )
+# M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD  )
+# M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD_1st  )
+M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_approx_adjoint  )
 
 
 #------------------------ Actually solving using the preconditioner --------------
+x = np.zeros(dLdX.shape)
+x_pc = np.zeros(dLdX.shape)
 
 res_hist = []
-(x,flag) = fgmres(K, -dLdX,  maxiter=20, tol=1e-6, residuals=res_hist)      
+(x,flag) = fgmres(K, -dLdX,  maxiter=20, tol=1e-4, residuals=res_hist)      
 
 res_hist_pc = []
-(x_pc,flag) = fgmres(K, -dLdX, M=M_pc, maxiter=20, tol=1e-6, residuals=res_hist_pc)
+(x_pc,flag) = fgmres(K, -dLdX, M=M_pc, maxiter=20, tol=1e-4, residuals=res_hist_pc)
 
 # res_hist = res_hist/res_hist[0]
 # res_hist_pc = res_hist_pc/res_hist_pc[0]
-# print 'Condition of W: ', np.linalg.cond(W)
-fig1 = plt.figure()
+# # print 'Condition of W: ', np.linalg.cond(W)
+# fig1 = plt.figure()
 
-plt.semilogy(range(len(res_hist)), res_hist, 'ro', range(len(res_hist_pc)), res_hist_pc, 'bv')
-plt.ylabel('Residual History')
-plt.axis([0, len(res_hist)+1 , 0, max(res_hist) +0.1])
-plt.show()
+# plt.semilogy(range(len(res_hist)), res_hist, 'ro', range(len(res_hist_pc)), res_hist_pc, 'bv')
+# plt.ylabel('Residual History')
+# # plt.axis([0, len(res_hist)+1 , 0, max(res_hist) +0.1])
+# plt.show()
+
+
+dx = x_pc
+
+res0 = mat_vec_kkt(dx) + dLdX
+print 'Final relative residual: ', np.linalg.norm(res0)/np.linalg.norm(dLdX)
 
 if scaled_slack is True: 
-    x_pc[num_design : num_design + num_ineq]  *= at_slack
+    dx[num_design : num_design + num_ineq]  = dx[num_design : num_design + num_ineq] * at_slack
 
-at_design_new = at_design + x_pc[:num_design]
-at_slack_new = at_slack + x_pc[num_design : num_design + num_ineq]
-at_dual_new = at_dual + x_pc[num_design + num_ineq : ]
+at_design_new = at_design + dx[ : num_design] 
+at_slack_new = at_slack + dx[num_design :  num_design+num_ineq ] 
+at_dual_new = at_dual + dx[num_design + num_ineq : ] 
 
-print 'norm of design input, update ', np.linalg.norm(at_design), np.linalg.norm(x[ :num_design ])         
-print 'norm of slack input, update ', np.linalg.norm(at_slack), np.linalg.norm(x[num_design : num_design + num_ineq])     
-print 'norm of dual input, update ', np.linalg.norm(at_dual), np.linalg.norm(x[num_design + num_ineq: ])         
-
-
-def kkt_condition(at_design, at_slack, at_dual): 
-
-    km = kona.linalg.memory.KonaMemory(solver)
-    pf = km.primal_factory
-    sf = km.state_factory
-    df = km.ineq_factory
-
-    # request some work vectors
-    pf.request_num_vectors(15)
-    sf.request_num_vectors(15)
-    df.request_num_vectors(15)
-
-    # trigger memory allocations
-    km.allocate_memory()
-
-    # request vectors for the linearization point
-    at_design_kona = pf.generate()
-    at_slack_kona = df.generate()
-    at_dual_kona = df.generate()
-
-    at_state = sf.generate()
-    state_work = sf.generate()
-    at_adjoint = sf.generate()
-    adjoint_rhs = sf.generate()
-    lag_adj = sf.generate()
-
-    X = kona.linalg.vectors.composite.ReducedKKTVector(
-        kona.linalg.vectors.composite.CompositePrimalVector(
-            pf.generate(), df.generate()),
-            df.generate())
-    dJdX = kona.linalg.vectors.composite.ReducedKKTVector(
-           kona.linalg.vectors.composite.CompositePrimalVector(
-            pf.generate(), df.generate()),
-            df.generate())
-     
-    at_design_kona.base.data = at_design
-    at_dual_kona.base.data = at_dual
-    at_slack_kona.base.data = at_slack
-
-    X.primal.design.equals(at_design_kona)
-    X.primal.slack.equals(at_slack_kona)
-    X.dual.equals(at_dual_kona)
-
-    # compute states
-    at_state.equals_primal_solution(at_design_kona)
-
-    # compute the lagrangian adjoint
-    lag_adj.equals_lagrangian_adjoint(
-        X, at_state, state_work, obj_scale=1.0, cnstr_scale=1.0)
-        
-    # compute initial KKT conditions
-    dJdX.equals_KKT_conditions(
-        X, at_state, lag_adj, obj_scale=1.0, cnstr_scale=1.0)
+at_design_new[at_design_new < 0.1] = 0.1
+# at_slack_new[at_slack_new < 0.0] = 0.0
+# at_dual_new[at_dual_new > 0.0] = 0.0
 
 
-    # print 'dJdX.primal.norm2: ', dJdX.primal.norm2
-    # print 'dJdX.dual.norm2: ', dJdX.dual.norm2
-    # pdb.set_trace()
-    return dJdX.norm2, dJdX.primal.design.norm2, dJdX.primal.slack.norm2, dJdX.dual.norm2
+class KKT_COND:
+    def __init__(self, design, slack, dual):
+        km = kona.linalg.memory.KonaMemory(solver)
+        self.primal_factory = km.primal_factory
+        self.state_factory = km.state_factory
+        self.ineq_factory = km.ineq_factory
 
-    # dJdX_data = np.zeros(num_design + num_dual*2)
+        # request some work vectors
+        self.primal_factory.request_num_vectors(15)
+        self.state_factory.request_num_vectors(15)
+        self.ineq_factory.request_num_vectors(15)
 
-    # dJdX_data[:num_design] = dJdX.primal.design.base.data
-    # dJdX_data[num_design : num_design+num_dual] = dJdX.primal.slack.base.data
-    # dJdX_data[num_design+num_dual: ] = dJdX.dual.base.data
+        self.design = design
+        self.slack = slack
+        self.dual = dual
+
+        # trigger memory allocations
+        km.allocate_memory()
+
+    def _generate_kkt(self):
+        prim = self.primal_factory.generate()
+        slak = self.ineq_factory.generate()        
+        dual = self.ineq_factory.generate()
+        return ReducedKKTVector(CompositePrimalVector(prim, slak), dual)
 
 
-of0, opt0_x, opt0_s, feas0 = kkt_condition(at_design, at_slack, at_dual)
-of1, opt1_x, opt0_s, feas1 = kkt_condition(at_design_new, at_slack_new, at_dual_new)
-print of0, opt0_x, opt0_s, feas0
-print of1, opt1_x, opt0_s, feas1
+    def kkt_condition(self): 
+        # request vectors for the linearization point
+        at_state = self.state_factory.generate()
+        state_work = self.state_factory.generate()
+        lag_adj = self.state_factory.generate()
 
-print np.linalg.norm(dLdX)
+        X = self._generate_kkt()
+        dJdX = self._generate_kkt()
+         
+        X.primal.design.base.data = self.design
+        X.primal.slack.base.data = self.slack
+        X.dual.base.data = self.dual
+
+        # compute states
+        at_state.equals_primal_solution(X.primal)
+
+        # compute the lagrangian adjoint
+        lag_adj.equals_lagrangian_adjoint(
+            X, at_state, state_work, obj_scale=1.0, cnstr_scale=1.0)
+            
+        # compute initial KKT conditions
+        dJdX.equals_KKT_conditions(
+            X, at_state, lag_adj, obj_scale=1.0, cnstr_scale=1.0)
+
+        print  dJdX.primal.norm2, dJdX.primal.slack.norm2, dJdX.dual.norm2
+        # return dJdX.primal.norm2, dJdX.primal.slack.norm2, dJdX.dual.norm2
+
+
+X0 = KKT_COND(at_design, at_slack, at_dual)
+X1 = KKT_COND(at_design_new, at_slack_new, at_dual_new)
+
+X0_f = KKT_COND(at_design_0, at_slack_0, at_dual_0)
+X1_f = KKT_COND(at_design_1, at_slack_1, at_dual_1)
+X2_f = KKT_COND(at_design_2, at_slack_2, at_dual_2)
+X3_f = KKT_COND(at_design_3, at_slack_3, at_dual_3)
+X4_f = KKT_COND(at_design_4, at_slack_4, at_dual_4)
+X5_f = KKT_COND(at_design_5, at_slack_5, at_dual_5)
+
+
+X0.kkt_condition()
+X1.kkt_condition()
+
+print '-----------------------'
+X0_f.kkt_condition()
+X1_f.kkt_condition()
+X2_f.kkt_condition()
+X3_f.kkt_condition()
+X4_f.kkt_condition()
+X5_f.kkt_condition()
+
+
+pdb.set_trace()
+
+# # -------------- Calculate the feasible dx for design
+# # -------------- Then recalculate dx for slack and dual ---------------
+# tent_new_design = at_design + dx[:num_design]
+
+# tent_new_design[ tent_new_design < 0.1 ] = 0.1
+# tent_new_design[ tent_new_design > 10.0 ] = 10.0
+
+# dx_feas = tent_new_design - at_design
+
+# # -------------- Now calculate ds_feas,  dg_feas ----------------
+# u_x = -dLdX[ : num_design] 
+# u_s = -dLdX[num_design :  num_design+num_ineq ] 
+# u_g  = -dLdX[num_design + num_ineq : ] 
+
+# sigma = - 1.0/at_slack * at_dual
+
+# rhs_g = - u_g + 1.0/at_dual * u_s + np.dot(Ag_exact, dx_feas)
+# dg_feas = np.dot(np.diag(sigma), rhs_g)
+
+
+# if scaled_slack is True:
+#     ds_feas = -1.0/at_dual * dg_feas - 1.0/(at_dual*at_slack)*u_s
+# else:
+#     ds_feas = 1.0/sigma * dg_feas - 1.0/at_dual*u_s    
+
+# dx = np.concatenate( (dx_feas, ds_feas, dg_feas), axis=0)
+
+# ---------------------------------------------------------------------

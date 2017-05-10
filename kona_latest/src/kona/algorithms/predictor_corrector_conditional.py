@@ -536,8 +536,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
                     max_newton = 10
-                    if self.svd_pc is not None:
-                        self.svd_pc.svd_AWA_mu.subspace_size = 128
+                    # if self.svd_pc is not None:
+                    #     self.svd_pc.svd_AWA_mu.subspace_size = 128
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0

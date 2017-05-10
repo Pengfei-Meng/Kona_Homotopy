@@ -78,7 +78,7 @@ class ReducedKKTMatrix(BaseHessian):
 
         # request vector memory for future allocation
         self.primal_factory.request_num_vectors(4)
-        self.state_factory.request_num_vectors(7)
+        self.state_factory.request_num_vectors(10)
         if self.eq_factory is not None:
             self.eq_factory.request_num_vectors(3)
         if self.ineq_factory is not None:
