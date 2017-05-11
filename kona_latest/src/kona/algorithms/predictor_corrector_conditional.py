@@ -535,7 +535,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
-                    max_newton = 10
+                    max_newton = 20
                     # if self.svd_pc is not None:
                     #     self.svd_pc.svd_AWA_mu.subspace_size = 128
                     # self.krylov.max_iter = 50
@@ -713,6 +713,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
+
+                    if self.mu < 1e-6:
+                        dJdX_hom.times(0.4)
 
                     # solve the system
                     dx.equals(0.0)

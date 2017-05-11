@@ -560,7 +560,7 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 1.0,              # when using svd_pc, mu_pc_on must < 1.0
+        'mu_pc_on' : 0.05,              # when using svd_pc, mu_pc_on must < 1.0
     },
 
     'svd' : {
@@ -569,7 +569,7 @@ optns = {
     }, 
 
     'rsnk' : {
-        'precond'       : 'approx_adjoint',     # 'svd_pc',    #                                      
+        'precond'       : 'svd_pc',      #'approx_adjoint',                                  
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,

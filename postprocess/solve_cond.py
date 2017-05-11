@@ -9,10 +9,10 @@ import scipy.sparse as sps
 # reducing its condition numbers
 
 case = 'tiny'                                 # tiny, small, medium
-dir_data = '../test/eye_' + case + '/'
-# dir_data = '../test/eye_10obj/'  
+# dir_data = '../test/eye_' + case + '/'
+dir_data = '../test/adj_0reg/'
 
-j = 0
+j = 5
 
 if case is 'tiny':
     num_design = 16*8 
@@ -50,20 +50,20 @@ f_dldx.close()
 
 
 #-------------- Plotting ----------------
-# fig1 = plt.figure()
-# ax1 = fig1.add_subplot(121)
-# ax2 = fig1.add_subplot(122)
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(121)
+ax2 = fig1.add_subplot(122)
 
-# u,sins_A,v = np.linalg.svd(Ag_exact[2*num_design:, :])   
-# l1 = ax1.plot(sins_A[:20], 'o--', label='corr %i'%(j))
+u,sins_A,v = np.linalg.svd(Ag_exact[2*num_design:, :])   
+l1 = ax1.plot(sins_A[:80], 'o--', label='corr %i'%(j))
 
-# u_a,sins_A_a,v_a = np.linalg.svd(Ag_approx[2*num_design:, :])    
-# l2 = ax2.plot(sins_A_a[:20], 'o--', label='corr %i'%(j))
+u_a,sins_A_a,v_a = np.linalg.svd(Ag_approx[2*num_design:, :])    
+l2 = ax2.plot(sins_A_a[:80], 'o--', label='corr %i'%(j))
 
-# fig1.suptitle('SVs of A_full at mu = 0.0, explicit mat ')
-# ax1.set_title("exact product")
-# ax2.set_title("approx product")
-# plt.legend(bbox_to_anchor=(1.05, 1), loc=1, borderaxespad=0.)
+fig1.suptitle('SVs of A_full at mu = 0.0, explicit mat ')
+ax1.set_title("exact product")
+ax2.set_title("approx product")
+plt.legend(bbox_to_anchor=(1.05, 1), loc=1, borderaxespad=0.)
 
 
 fig2 = pylt.figure()
@@ -102,15 +102,15 @@ M = sps.csr_matrix(W_exact)
 pylt.spy(M, precision=1e-3, marker='.', markersize=1)
 pylt.title(case + ' Sparsity W exact 1e-3')
 
-fig6 = pylt.figure()
-M = sps.csr_matrix(W_exact)
-pylt.spy(M, precision=1e-4, marker='.', markersize=1)
-pylt.title(case + ' Sparsity W exact 1e-4')
+# fig6 = pylt.figure()
+# M = sps.csr_matrix(W_exact)
+# pylt.spy(M, precision=1e-4, marker='.', markersize=1)
+# pylt.title(case + ' Sparsity W exact 1e-4')
 
-fig6 = pylt.figure()
-M = sps.csr_matrix(W_exact)
-pylt.spy(M, precision=1e-5, marker='.', markersize=1)
-pylt.title(case + ' Sparsity W exact 1e-5')
+# fig6 = pylt.figure()
+# M = sps.csr_matrix(W_exact)
+# pylt.spy(M, precision=1e-5, marker='.', markersize=1)
+# pylt.title(case + ' Sparsity W exact 1e-5')
 
 pylt.show()
 plt.show()
