@@ -560,16 +560,16 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 1.0,              # when using svd_pc, mu_pc_on must < 1.0
+        'mu_pc_on' : 0.05,                 # when using svd_pc_stress, mu_pc_on = 0.02
     },
 
     'svd' : {
-        'lanczos_size'    : 100, 
+        'lanczos_size'    : 40, 
         'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'approx_adjoint',     #'svd_pc',       svd_pc_stress                       
+        'precond'       : 'svd_pc_stress',     #'approx_adjoint',     #'svd_pc',                             
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,

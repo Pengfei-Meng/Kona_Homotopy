@@ -26,7 +26,7 @@ class SVDPC_STRESS(BaseHessian):
 
     def __init__(self, vector_factories, optns={}):    
 
-        super(SVDPC, self).__init__(vector_factories, None)
+        super(SVDPC_STRESS, self).__init__(vector_factories, None)
 
         self.primal_factory.request_num_vectors(20)
         self.state_factory.request_num_vectors(2)
