@@ -56,8 +56,8 @@ class LowRankSVD(object):
         # reset the linearization flag
         self._allocated = False
         # request vector memory for future allocation
-        self.fwd_factory.request_num_vectors(2*128 + 1)    # self.subspace_size
-        self.rev_factory.request_num_vectors(2*128)
+        self.fwd_factory.request_num_vectors(2*self.subspace_size + 1)   
+        self.rev_factory.request_num_vectors(2*self.subspace_size)
 
     def linearize(self):
         if not self._allocated:

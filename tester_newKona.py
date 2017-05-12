@@ -485,7 +485,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'test'
+    prefix = 'results'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -542,8 +542,8 @@ solver = kona_opt.FSTopoSolver(
 # Optimizer
 optns = {
     'max_iter' : 300,
-    'opt_tol' : 1e-3,
-    'feas_tol' : 1e-3,        
+    'opt_tol' : 1e-4,
+    'feas_tol' : 1e-4,        
     'info_file' : prefix+'/kona_info.dat',
     'hist_file' : prefix+'/kona_hist.dat',
 
@@ -560,16 +560,16 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 0.05,              # when using svd_pc, mu_pc_on must < 1.0
+        'mu_pc_on' : 1.0,              # when using svd_pc, mu_pc_on must < 1.0
     },
 
     'svd' : {
-        'lanczos_size'    : 40, 
+        'lanczos_size'    : 100, 
         'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc',      #'approx_adjoint',                                  
+        'precond'       : 'approx_adjoint',     #'svd_pc',       svd_pc_stress                       
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,
@@ -609,8 +609,8 @@ optimizer.solve()
 
 # print 'inequality multipliers: \n', solver.curr_ineq  
 # print solver.curr_slack 
-print 'Positive Lagrangian', solver.curr_ineq[solver.curr_ineq > 1e-5]
-print 'Negative Slack', solver.curr_slack[solver.curr_slack < -1e-5]
+print 'Number of Positive Lagrangian', len(solver.curr_ineq[solver.curr_ineq > 1e-5])
+print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-5])
 
 # pdb.set_trace()
 

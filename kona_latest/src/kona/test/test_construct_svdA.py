@@ -17,7 +17,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         self.outdir = './temp'
-        size_prob = 300
+        size_prob = 100
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -45,7 +45,7 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 3,
                 'init_step' : 100.0,        
-                'nominal_dist' : 10.0,            
+                'nominal_dist' : 4.0,            
                 'nominal_angle' : 20.0*np.pi/180., 
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
@@ -53,10 +53,16 @@ class InequalityTestCase(unittest.TestCase):
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
                 'use_frac_to_bound' : False,
+                'mu_pc_on' : 1.0,      
+            }, 
+
+            'svd' : {
+                'lanczos_size'    : 20, 
+                'bfgs_max_stored' : 10, 
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',    #'approx_adjoint',    # None,  #               
+                'precond'       : 'svd_pc',     #'approx_adjoint',    # None,  #               
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,

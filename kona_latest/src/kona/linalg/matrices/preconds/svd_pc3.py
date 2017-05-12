@@ -15,9 +15,10 @@ from kona.linalg.matrices.hessian import LimitedMemoryBFGS
 import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
-class SVDPC(BaseHessian):
+class SVDPC_STRESS(BaseHessian):
     """
     On top of svd_pc2.py 
+    Specially designed for Structural problem, with lower, upper bound constraints, stress constraints
     use 1st type of system reduction with mu, apply SVD approximation on AsT_SigS_As
     this way separate bound constraints and stress constraint Jacobian
     It has been separtedly proved effective in  ~/postprocess/solve_kkt.py
@@ -38,7 +39,6 @@ class SVDPC(BaseHessian):
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
 
         self.Ag = TotalConstraintJacobian( vector_factories )
-        self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
         self.svd_AsT_SigS_As_mu = LowRankSVD(
             self.asa_mat_vec_mu, self.primal_factory, None, None, svd_optns)
 
@@ -56,20 +56,8 @@ class SVDPC(BaseHessian):
         self.Ag.T.product(self.dual_work2, out_vec)
         out_vec.times(1.0 - self.mu)
 
-        # self.Ag.product(in_vec, self.dual_work1)
-        # self.dual_work1.times(1.0 - self.mu)
 
-        # work_0 = self.sig_aug_inv * self.dual_work1.base.data 
-         
-        # self.dual_work2.base.data = work_0
-        # self.dual_work2.base.data[:2*self.num_design] = 0.0
-
-        # self.Ag.T.product(self.dual_work2, out_vec)
-        # out_vec.times(1.0 - self.mu)
-
-        # pdb.set_trace()
-
-    def linearize(self, X, state, adjoint, mu, dLdX_homo, dLdX_homo_oldual, inner_iters):
+    def linearize(self, X, state, adjoint, mu):
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
@@ -130,22 +118,6 @@ class SVDPC(BaseHessian):
         # ------- LBFGS approx on (1-mu)W + mu*I -------- 
         self.Ag.linearize(X.primal.design, state)
 
-        # self.W_hat.norm_init = 1.0  
-
-        # if inner_iters == 0:
-        #     self.W_hat.restart()
-
-        # else:
-        #     self.design_old.minus(X.primal.design)
-        #     self.design_old.times(-1.0)
-
-        #     self.dldx.equals(dLdX_homo.primal.design)
-        #     self.dldx.minus(dLdX_homo_oldual.primal.design)
-
-        #     self.W_hat.add_correction(self.design_old, self.dldx)
-
-        # self.design_old.equals(X.primal.design)
-
         # -------- SVD on  svd_AsT_SigS_As_mu --------
         # if self.mu < 0.5:
         self.svd_AsT_SigS_As_mu.linearize()
@@ -162,12 +134,7 @@ class SVDPC(BaseHessian):
 
     def solve(self, rhs_vec, pcd_vec):    
 
-        # BFGS W,   SVD on As Sigma_s^{-1} As^T, 1st Type with mu   
         # using scaled slack version,  Lambda_aug, I'' contains Slack component
-
-        # if self.mu >= 0.5:
-        #     pcd_vec.equals(rhs_vec)
-        # else:
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
         u_g = rhs_vec.dual.base.data         
@@ -181,8 +148,10 @@ class SVDPC(BaseHessian):
 
         rhs_vx = u_x + self.design_work.base.data
 
-        # LHS  v_x, svd on whole AsT_SigS_As
-        LHS = np.diag( 0.1*np.ones(self.num_design) + self.sig_aug_inv_lower + self.sig_aug_inv_upper ) + self.svd_ASA 
+        # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.01 for small case
+        W_approx = 0.1*np.ones(self.num_design)
+
+        LHS = np.diag( W_approx + self.sig_aug_inv_lower + self.sig_aug_inv_upper ) + self.svd_ASA 
         v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
 
         # solve v_g
