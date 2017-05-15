@@ -149,7 +149,12 @@ class SVDPC_STRESS(BaseHessian):
         rhs_vx = u_x + self.design_work.base.data
 
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.01 for small case
-        W_approx = 0.1*np.ones(self.num_design)
+        # if self.mu < 1e-6:
+        #     fac = 0.005
+        # else:
+        #     fac = 0.01
+        fac = 0.025
+        W_approx = fac*np.ones(self.num_design)
 
         LHS = np.diag( W_approx + self.sig_aug_inv_lower + self.sig_aug_inv_upper ) + self.svd_ASA 
         v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 

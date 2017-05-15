@@ -551,25 +551,25 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.05,                           
+        'init_step' : 0.2,                 # Tiny: 0.05               
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
-        'max_factor' : 40.0,                  
+        'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 0.05,                 # when using svd_pc_stress, mu_pc_on = 0.02
+        'mu_pc_on' : 0.2,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
     },
 
     'svd' : {
-        'lanczos_size'    : 40, 
+        'lanczos_size'    : 25,            # Tiny: 25
         'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc_stress',     #'approx_adjoint',     #'svd_pc',                             
+        'precond'       : 'svd_pc_stress',     #'approx_adjoint',   #'svd_pc',                             
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,
@@ -581,7 +581,7 @@ optns = {
         'feas_scale'    : 1.0,
         # FLECS solver settings
         'krylov_file'   : prefix+'/kona_krylov.dat',
-        'subspace_size' : 20,                                    
+        'subspace_size' : 40,                                    
         'check_res'     : False,
         'rel_tol'       : 1e-4,        
     },
@@ -613,7 +613,6 @@ print 'Number of Positive Lagrangian', len(solver.curr_ineq[solver.curr_ineq > 1
 print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-5])
 
 # pdb.set_trace()
-
 # ------------------------------------------------------
 # Extracting explicit W-hessian, A-constraintJacobian from the problem
 # initialize Kona memory manager
@@ -659,9 +658,9 @@ print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './test/adj_0reg'   
+# outdir = './results/temp'   
 # # inner_iters = 50
-# max_iter = 5
+# max_iter = 0
 
 # for j in xrange(max_iter,max_iter+1):    # inner_iters
 #     # set the point at which products will be evaluated

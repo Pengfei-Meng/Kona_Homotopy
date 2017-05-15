@@ -365,7 +365,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         x.equals(x0)
         self.current_x.equals(x0)
 
-        self.check_sign(x, 0, 0)
+        # self.check_sign(x, 0, 0)
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
@@ -395,19 +395,19 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.info_file.write('\n' + solver_info + '\n')
 
         # compute convergence metrics
-        opt_norm00 = dJdX.primal.norm2
-        feas_norm00 = dJdX.dual.norm2
+        opt_norm0 = dJdX.primal.norm2
+        feas_norm0 = dJdX.dual.norm2
 
-        opt_tol = self.primal_tol*opt_norm00
-        feas_tol = max(self.cnstr_tol*feas_norm00, 1e-6)
+        opt_tol = self.primal_tol*opt_norm0
+        feas_tol = max(self.cnstr_tol*feas_norm0, 1e-6)
         self._write_header(opt_tol, feas_tol)
 
         # write the initial point
-        obj00 = objective_value(x.primal, state)
-        lag00 = obj_fac * obj00 + cnstr_fac * x0.dual.inner(dJdX.dual)
-        cost00 = self.primal_factory._memory.cost
-        mu00 = self.mu
-        self._write_outer(0, cost00, obj00, lag00, opt_norm00, feas_norm00, mu00)
+        obj0 = objective_value(x.primal, state)
+        lag0 = obj_fac * obj0 + cnstr_fac * x0.dual.inner(dJdX.dual)
+        cost0 = self.primal_factory._memory.cost
+        mu0 = self.mu
+        self._write_outer(0, cost0, obj0, lag0, opt_norm0, feas_norm0, mu0)
         self.hist_file.write('\n')
         # ---------------------------------------------------------------- 
 
@@ -508,7 +508,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             self.current_x.equals(x)
 
-            self.check_sign(x, outer_iters, 0)
+            # self.check_sign(x, outer_iters, 0)
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -528,8 +528,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
                     max_newton = 20
-                    # if self.svd_pc is not None:
-                    #     self.svd_pc.svd_AWA_mu.subspace_size = 128
+                    if self.svd_pc_stress is not None:
+                        self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 50
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0
@@ -647,8 +647,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
-                    if self.itersolver is not None and self.mu <= self.precond_on_mu:
-                        self.itersolver.linearize(x, state, adj)
+                    # if self.itersolver is not None and self.mu <= self.precond_on_mu:
+                    #     self.itersolver.linearize(x, state, adj)
 
                     if self.uzawa is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
@@ -678,8 +678,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
 
-                    if self.mu < 1e-6:
-                        dJdX_hom.times(0.4)
+                    # if self.mu < 1e-6:
+                    #     dJdX_hom.times(0.4)
 
                     # solve the system
                     dx.equals(0.0)
@@ -701,13 +701,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         newton_step = 1.0
 
+                    if self.mu < 1e-6:
+                        newton_step = 0.4
 
                     dx.times(newton_step)
 
                     dx_newt.plus(dx)
                     # update the design
                     x.plus(dx)
-                    self.check_sign(x, outer_iters, inner_iters)
+                    # self.check_sign(x, outer_iters, inner_iters)
 
                     if self.ineq_factory is not None:
                         x.primal.design.enforce_bounds()
@@ -726,9 +728,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # solver_info = current_solution(
-                    #     num_iter=inner_iters, curr_primal=x.primal,
-                    #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    # if (self.mu < 2e-4) and (self.mu > 1e-6): 
+                    #     solver_info = current_solution(
+                    #         num_iter=inner_iters, curr_primal=x.primal,
+                    #         curr_state=state, curr_adj=adj, curr_dual=x.dual)
 
                     # advance iter counter
                     inner_iters += 1
@@ -831,8 +834,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
                 self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
-            if self.itersolver is not None and self.mu <= self.precond_on_mu:
-                self.itersolver.linearize(x, state, adj)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters

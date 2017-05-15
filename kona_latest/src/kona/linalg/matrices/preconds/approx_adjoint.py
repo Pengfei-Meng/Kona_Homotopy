@@ -100,8 +100,8 @@ class APPROXADJOINT(BaseHessian):
 
         self.W_full = np.eye(self.num_design)
         self.A_full = np.zeros((self.num_ineq, self.num_design))
-        self.A_full[:128, :] = np.eye(self.num_design)
-        self.A_full[128:128*2, :] = -1.0*np.eye(self.num_design)
+        self.A_full[:self.num_design, :] = np.eye(self.num_design)
+        self.A_full[self.num_design:self.num_design*2, :] = -1.0*np.eye(self.num_design)
         # self.A_full[128*2:, :] = np.eye(self.num_design)
 
 

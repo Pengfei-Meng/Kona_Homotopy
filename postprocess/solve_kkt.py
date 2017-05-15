@@ -614,9 +614,10 @@ class KKT_COND:
 
 # -------------------------------------------------
 
-case = 'tiny'                                 # tiny, small, medium
+case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
-dir_data = '../test/adj_0reg/'
+# dir_data = '../test/adj_0reg/'
+dir_data = '../results/temp/'
 j = 0
 
 if case is 'tiny':
@@ -630,7 +631,7 @@ num_ineq = 3*num_design
 
 num_kkt = num_design + 2*num_ineq
 
-scaled_slack = False
+scaled_slack = True
 
 
 f_jacobian = open(dir_data+'%i_A_exact'%j,'rb')   
@@ -675,85 +676,85 @@ f_dual.close()
 
 # # ----------- A_approx, W_approx from inside approx adjoint PC -------------
 # ------------- load all design, slack, dual points ---------------
-j = 0
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_0 = pickle.load(f_design)
-f_design.close()
+# j = 0
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_0 = pickle.load(f_design)
+# f_design.close()
 
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_0 = pickle.load(f_slack)
-f_slack.close()
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_0 = pickle.load(f_slack)
+# f_slack.close()
 
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_0 = pickle.load(f_dual)
-f_dual.close()
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_0 = pickle.load(f_dual)
+# f_dual.close()
 
-j = 1
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_1 = pickle.load(f_design)
-f_design.close()
+# j = 1
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_1 = pickle.load(f_design)
+# f_design.close()
 
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_1 = pickle.load(f_slack)
-f_slack.close()
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_1 = pickle.load(f_slack)
+# f_slack.close()
 
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_1 = pickle.load(f_dual)
-f_dual.close()
-
-
-j = 2
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_2 = pickle.load(f_design)
-f_design.close()
-
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_2 = pickle.load(f_slack)
-f_slack.close()
-
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_2 = pickle.load(f_dual)
-f_dual.close()
-
-j = 3
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_3 = pickle.load(f_design)
-f_design.close()
-
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_3 = pickle.load(f_slack)
-f_slack.close()
-
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_3 = pickle.load(f_dual)
-f_dual.close()
-
-j = 4
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_4 = pickle.load(f_design)
-f_design.close()
-
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_4 = pickle.load(f_slack)
-f_slack.close()
-
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_4 = pickle.load(f_dual)
-f_dual.close()
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_1 = pickle.load(f_dual)
+# f_dual.close()
 
 
-j = 5
-f_design   = open(dir_data+'design_%i'%j,'rb')
-at_design_5 = pickle.load(f_design)
-f_design.close()
+# j = 2
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_2 = pickle.load(f_design)
+# f_design.close()
 
-f_slack   = open(dir_data+'slack_%i'%j,'rb')
-at_slack_5 = pickle.load(f_slack)
-f_slack.close()
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_2 = pickle.load(f_slack)
+# f_slack.close()
 
-f_dual   = open(dir_data+'dual_%i'%j,'rb')
-at_dual_5 = pickle.load(f_dual)
-f_dual.close()
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_2 = pickle.load(f_dual)
+# f_dual.close()
+
+# j = 3
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_3 = pickle.load(f_design)
+# f_design.close()
+
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_3 = pickle.load(f_slack)
+# f_slack.close()
+
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_3 = pickle.load(f_dual)
+# f_dual.close()
+
+# j = 4
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_4 = pickle.load(f_design)
+# f_design.close()
+
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_4 = pickle.load(f_slack)
+# f_slack.close()
+
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_4 = pickle.load(f_dual)
+# f_dual.close()
+
+
+# j = 5
+# f_design   = open(dir_data+'design_%i'%j,'rb')
+# at_design_5 = pickle.load(f_design)
+# f_design.close()
+
+# f_slack   = open(dir_data+'slack_%i'%j,'rb')
+# at_slack_5 = pickle.load(f_slack)
+# f_slack.close()
+
+# f_dual   = open(dir_data+'dual_%i'%j,'rb')
+# at_dual_5 = pickle.load(f_dual)
+# f_dual.close()
 
 # -----------------  LinearOperator and Solve -------------
 def mat_vec_kkt(in_vec):
@@ -814,9 +815,11 @@ def mat_vec_SVD_2nd(in_vec):
     # Ag_Winv_AgT = np.dot(Ag,  Ag.transpose() )
 
     M_full, gam_full, N_full = np.linalg.svd(Ag_Winv_AgT, full_matrices=False)
-    M = M_full[:, :128]    # 76
-    gam = gam_full[:128]
-    N = N_full[:128, :]
+
+    K_A = 40
+    M = M_full[:, :K_A]    # 76
+    gam = gam_full[:K_A]
+    N = N_full[:K_A, :]
     # pdb.set_trace()
     sigma = - 1.0/at_slack * at_dual
 
@@ -941,17 +944,19 @@ M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD_1st  )
 x = np.zeros(dLdX.shape)
 x_pc = np.zeros(dLdX.shape)
 
+fac = 1.0
+
 res_hist = []
-(x,flag) = fgmres(K, -dLdX,  maxiter=20, tol=1e-6, residuals=res_hist)      
+(x,flag) = fgmres(K, -dLdX,  maxiter=40, tol=1e-6, residuals=res_hist)      
 
 res_hist_pc = []
-(x_pc,flag) = fgmres(K, -0.4*dLdX, M=M_pc, maxiter=20, tol=1e-6, residuals=res_hist_pc)
+(x_pc,flag) = fgmres(K, -fac*dLdX, M=M_pc, maxiter=40, tol=1e-4, residuals=res_hist_pc)
 
 
 dx = x_pc
 
-res0 = mat_vec_kkt(dx) + dLdX
-print 'Final relative residual: ', np.linalg.norm(res0)/np.linalg.norm(dLdX)
+res0 = mat_vec_kkt(dx) + fac*dLdX
+print 'Final relative residual: ', np.linalg.norm(res0)/np.linalg.norm(fac*dLdX)
 
 if scaled_slack is True: 
     dx[num_design : num_design + num_ineq]  = dx[num_design : num_design + num_ineq] * at_slack
@@ -969,24 +974,24 @@ at_design_new[at_design_new < 0.1] = 0.1
 X0 = KKT_COND(at_design, at_slack, at_dual)
 X1 = KKT_COND(at_design_new, at_slack_new, at_dual_new)
 
-X0_f = KKT_COND(at_design_0, at_slack_0, at_dual_0)
-X1_f = KKT_COND(at_design_1, at_slack_1, at_dual_1)
-X2_f = KKT_COND(at_design_2, at_slack_2, at_dual_2)
-X3_f = KKT_COND(at_design_3, at_slack_3, at_dual_3)
-X4_f = KKT_COND(at_design_4, at_slack_4, at_dual_4)
-X5_f = KKT_COND(at_design_5, at_slack_5, at_dual_5)
+# X0_f = KKT_COND(at_design_0, at_slack_0, at_dual_0)
+# X1_f = KKT_COND(at_design_1, at_slack_1, at_dual_1)
+# X2_f = KKT_COND(at_design_2, at_slack_2, at_dual_2)
+# X3_f = KKT_COND(at_design_3, at_slack_3, at_dual_3)
+# X4_f = KKT_COND(at_design_4, at_slack_4, at_dual_4)
+# X5_f = KKT_COND(at_design_5, at_slack_5, at_dual_5)
 
 
 X0.kkt_condition()
 X1.kkt_condition()
 
-print '-----------------------'
-X0_f.kkt_condition()
-X1_f.kkt_condition()
-X2_f.kkt_condition()
-X3_f.kkt_condition()
-X4_f.kkt_condition()
-X5_f.kkt_condition()
+# print '-----------------------'
+# X0_f.kkt_condition()
+# X1_f.kkt_condition()
+# X2_f.kkt_condition()
+# X3_f.kkt_condition()
+# X4_f.kkt_condition()
+# X5_f.kkt_condition()
 
 
 # make some plots, Newton step, linear
