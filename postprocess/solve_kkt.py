@@ -617,8 +617,8 @@ class KKT_COND:
 case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
 # dir_data = '../test/adj_0reg/'
-dir_data = '../results/temp/'
-j = 0
+dir_data = '../results/lam-0.01/'
+j = 1
 
 if case is 'tiny':
     num_design = 16*8 
@@ -816,7 +816,7 @@ def mat_vec_SVD_2nd(in_vec):
 
     M_full, gam_full, N_full = np.linalg.svd(Ag_Winv_AgT, full_matrices=False)
 
-    K_A = 40
+    K_A = 80
     M = M_full[:, :K_A]    # 76
     gam = gam_full[:K_A]
     N = N_full[:K_A, :]
@@ -878,7 +878,7 @@ def mat_vec_SVD_1st(in_vec):
     # # 2) decompose LHS matrix
     # M_full, gam_full, N_full = np.linalg.svd(As_exact, full_matrices=False)
 
-    K_As = 40
+    K_As = 100
     # M = M_full[:, :K_As]     
     # gam = gam_full[:K_As]
     # N = N_full[:K_As, :]
@@ -897,7 +897,8 @@ def mat_vec_SVD_1st(in_vec):
     AsT_SigS_As_svd = np.dot(M, np.dot(np.diag(gam), N))
 
     # 3) LHS matrix
-    LHS = np.diag( np.diag(W_approx) + sigma_l + sigma_u )  + AsT_SigS_As_svd 
+    W_diag = 0.001*np.ones(num_design)       # np.diag(W_approx)   
+    LHS = np.diag( W_diag + sigma_l + sigma_u )  + AsT_SigS_As_svd 
     v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
 
 
@@ -944,13 +945,13 @@ M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD_1st  )
 x = np.zeros(dLdX.shape)
 x_pc = np.zeros(dLdX.shape)
 
-fac = 1.0
+fac = 0.4
 
 res_hist = []
-(x,flag) = fgmres(K, -dLdX,  maxiter=40, tol=1e-6, residuals=res_hist)      
+(x,flag) = fgmres(K, -dLdX,  maxiter=20, tol=1e-4, residuals=res_hist)      
 
 res_hist_pc = []
-(x_pc,flag) = fgmres(K, -fac*dLdX, M=M_pc, maxiter=40, tol=1e-4, residuals=res_hist_pc)
+(x_pc,flag) = fgmres(K, -fac*dLdX, M=M_pc, maxiter=20, tol=1e-4, residuals=res_hist_pc)
 
 
 dx = x_pc

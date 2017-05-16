@@ -551,7 +551,7 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.2,                 # Tiny: 0.05               
+        'init_step' : 0.05,                 # Tiny: 0.05               
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
         'max_factor' : 50.0,                  
@@ -560,7 +560,7 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 0.2,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
+        'mu_pc_on' : 0.05,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
     },
 
     'svd' : {
@@ -581,7 +581,7 @@ optns = {
         'feas_scale'    : 1.0,
         # FLECS solver settings
         'krylov_file'   : prefix+'/kona_krylov.dat',
-        'subspace_size' : 40,                                    
+        'subspace_size' : 20,                                    
         'check_res'     : False,
         'rel_tol'       : 1e-4,        
     },
@@ -658,9 +658,9 @@ print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './results/temp'   
+# outdir = './results/lam-0.01'   
 # # inner_iters = 50
-# max_iter = 0
+# max_iter = 1
 
 # for j in xrange(max_iter,max_iter+1):    # inner_iters
 #     # set the point at which products will be evaluated

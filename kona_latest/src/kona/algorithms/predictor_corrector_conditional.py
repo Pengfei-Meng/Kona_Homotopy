@@ -527,9 +527,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
-                    max_newton = 20
-                    if self.svd_pc_stress is not None:
-                        self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 50
+                    max_newton = 10
+                    # if self.svd_pc_stress is not None:
+                    #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 100
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0
@@ -701,8 +701,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         newton_step = 1.0
 
-                    if self.mu < 1e-6:
-                        newton_step = 0.4
+                    # if self.mu < 1e-6:
+                    #     newton_step = 0.1
 
                     dx.times(newton_step)
 
@@ -729,9 +729,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
                     # if (self.mu < 2e-4) and (self.mu > 1e-6): 
-                    #     solver_info = current_solution(
-                    #         num_iter=inner_iters, curr_primal=x.primal,
-                    #         curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    solver_info = current_solution(
+                        num_iter=inner_iters, curr_primal=x.primal,
+                        curr_state=state, curr_adj=adj, curr_dual=x.dual)
 
                     # advance iter counter
                     inner_iters += 1
@@ -742,7 +742,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
                     solver_info = current_solution(
-                        num_iter=outer_iters, curr_primal=x.primal,
+                        num_iter=100, curr_primal=x.primal,
                         curr_state=state, curr_adj=adj, curr_dual=x.dual)
                     if isinstance(solver_info, str) and solver_info != '':
                         self.info_file.write('\n' + solver_info + '\n')
@@ -895,7 +895,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 # # this step is accepted so send it to user
                 solver_info = current_solution(
-                    num_iter=outer_iters, curr_primal=x.primal,
+                    num_iter=100, curr_primal=x.primal,
                     curr_state=state, curr_adj=adj, curr_dual=x.dual)
                 if isinstance(solver_info, str) and solver_info != '':
                     self.info_file.write('\n' + solver_info + '\n')

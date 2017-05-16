@@ -8,11 +8,12 @@ import scipy.sparse as sps
 # to load the Hessian, Stress A explicitly, test manual methods for 
 # reducing its condition numbers
 
-case = 'tiny'                                 # tiny, small, medium
+case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
-dir_data = '../test/adj_0reg/'
+# dir_data = '../test/adj_0reg/'
+dir_data = '../results/lam-0.01/'
 
-j = 5
+j = 1
 
 if case is 'tiny':
     num_design = 16*8 
@@ -55,10 +56,10 @@ ax1 = fig1.add_subplot(121)
 ax2 = fig1.add_subplot(122)
 
 u,sins_A,v = np.linalg.svd(Ag_exact[2*num_design:, :])   
-l1 = ax1.plot(sins_A[:80], 'o--', label='corr %i'%(j))
+l1 = ax1.plot(sins_A, 'o--', label='corr %i'%(j))
 
 u_a,sins_A_a,v_a = np.linalg.svd(Ag_approx[2*num_design:, :])    
-l2 = ax2.plot(sins_A_a[:80], 'o--', label='corr %i'%(j))
+l2 = ax2.plot(sins_A_a, 'o--', label='corr %i'%(j))
 
 fig1.suptitle('SVs of A_full at mu = 0.0, explicit mat ')
 ax1.set_title("exact product")

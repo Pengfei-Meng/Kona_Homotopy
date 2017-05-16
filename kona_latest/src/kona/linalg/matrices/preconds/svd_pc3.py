@@ -45,15 +45,13 @@ class SVDPC_STRESS(BaseHessian):
         self._allocated = False
 
     def asa_mat_vec_mu(self, in_vec, out_vec):
-        self.Ag.product(in_vec, self.dual_work1)
+        self.Ag.approx.product(in_vec, self.dual_work1)
         self.dual_work1.times(1.0 - self.mu)
 
-        work_0 = self.sig_aug_inv_stress * self.dual_work1.base.data[-self.num_design:]
-
         self.dual_work2.equals(0.0)
-        self.dual_work2.base.data[-self.num_design:] = work_0
+        self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
 
-        self.Ag.T.product(self.dual_work2, out_vec)
+        self.Ag.T.approx.product(self.dual_work2, out_vec)
         out_vec.times(1.0 - self.mu)
 
 
@@ -108,12 +106,12 @@ class SVDPC_STRESS(BaseHessian):
         self.lam_aug_inv = 1./self.lam_aug
 
         # I''Lam'^{-1} S' - I'
-        self.sig_aug = (1.0 - self.mu)**2 *self.at_slack_data* self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
-        self.sig_aug_inv = 1.0/self.sig_aug
+        self.sig_aug_inv = (1.0 - self.mu)**2 *self.at_slack_data* self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+        self.sig_aug = 1.0/self.sig_aug_inv
 
-        self.sig_aug_inv_lower = self.sig_aug_inv[: self.num_design]
-        self.sig_aug_inv_upper = self.sig_aug_inv[self.num_design : 2*self.num_design ]
-        self.sig_aug_inv_stress = self.sig_aug_inv[2*self.num_design : ]
+        self.sig_aug_lower = self.sig_aug[: self.num_design]
+        self.sig_aug_upper = self.sig_aug[self.num_design : 2*self.num_design ]
+        self.sig_aug_stress = self.sig_aug[2*self.num_design : ]
 
         # ------- LBFGS approx on (1-mu)W + mu*I -------- 
         self.Ag.linearize(X.primal.design, state)
@@ -140,32 +138,31 @@ class SVDPC_STRESS(BaseHessian):
         u_g = rhs_vec.dual.base.data         
 
         # rhs_vx
-        rhs_vx_1 = u_g + (1-self.mu) * self.at_slack_data * self.lam_aug_inv * u_s 
-        rhs_vx_2 = self.sig_aug_inv * rhs_vx_1
+        rhs_vx_1 = - u_g - (1-self.mu) * self.at_slack_data * self.lam_aug_inv * u_s 
+        rhs_vx_2 = self.sig_aug * rhs_vx_1
 
         self.dual_work1.base.data = rhs_vx_2
-        self.Ag.T.product(self.dual_work1, self.design_work)
+        self.Ag.T.approx.product(self.dual_work1, self.design_work)
+        self.design_work.times(1-self.mu)
 
-        rhs_vx = u_x + self.design_work.base.data
+        rhs_vx = u_x - self.design_work.base.data
 
-        # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.01 for small case
-        # if self.mu < 1e-6:
-        #     fac = 0.005
-        # else:
-        #     fac = 0.01
-        fac = 0.025
+        # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
+        fac = 0.01     # 0.001
         W_approx = fac*np.ones(self.num_design)
 
-        LHS = np.diag( W_approx + self.sig_aug_inv_lower + self.sig_aug_inv_upper ) + self.svd_ASA 
+        W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
+
+        LHS = np.diag( W + (1-self.mu)**2 * (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
         v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
 
         # solve v_g
         self.design_work2.base.data = v_x
-        self.Ag.product(self.design_work2, self.dual_work2)
+        self.Ag.approx.product(self.design_work2, self.dual_work2)
         self.dual_work2.times(1.0 - self.mu)
 
-        rhs_vg = u_g + (1-self.mu)*self.at_slack_data * self.lam_aug_inv * u_s - self.dual_work2.base.data
-        v_g = - self.sig_aug_inv * rhs_vg
+        rhs_vg = - u_g - (1-self.mu)*self.at_slack_data * self.lam_aug_inv * u_s + self.dual_work2.base.data
+        v_g = self.sig_aug * rhs_vg
 
         # solve v_s 
         v_s = self.lam_aug_inv * ((1-self.mu)*self.at_slack_data * v_g + u_s )
