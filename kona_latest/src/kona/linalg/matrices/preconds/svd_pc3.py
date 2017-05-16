@@ -46,13 +46,13 @@ class SVDPC_STRESS(BaseHessian):
 
     def asa_mat_vec_mu(self, in_vec, out_vec):
         self.Ag.approx.product(in_vec, self.dual_work1)
-        self.dual_work1.times(1.0 - self.mu)
+        # self.dual_work1.times(1.0 - self.mu)
 
         self.dual_work2.equals(0.0)
         self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
 
         self.Ag.T.approx.product(self.dual_work2, out_vec)
-        out_vec.times(1.0 - self.mu)
+        # out_vec.times(1.0 - self.mu)
 
 
     def linearize(self, X, state, adjoint, mu):
@@ -74,12 +74,6 @@ class SVDPC_STRESS(BaseHessian):
             self.dual_work1 = self.ineq_factory.generate()
             self.dual_work2 = self.ineq_factory.generate()
             self.dual_work3 = self.ineq_factory.generate()
-
-            # approximate BFGS Hessian
-            self.dldx_old = self.primal_factory.generate()
-            self.dldx = self.primal_factory.generate()
-            self.design_old = self.primal_factory.generate()
-            # ------------------------
 
             self._allocated = True
 
@@ -113,11 +107,10 @@ class SVDPC_STRESS(BaseHessian):
         self.sig_aug_upper = self.sig_aug[self.num_design : 2*self.num_design ]
         self.sig_aug_stress = self.sig_aug[2*self.num_design : ]
 
-        # ------- LBFGS approx on (1-mu)W + mu*I -------- 
+
         self.Ag.linearize(X.primal.design, state)
 
         # -------- SVD on  svd_AsT_SigS_As_mu --------
-        # if self.mu < 0.5:
         self.svd_AsT_SigS_As_mu.linearize()
         self.asa_S = self.svd_AsT_SigS_As_mu.S
         self.asa_U = np.zeros((self.num_design, len( self.svd_AsT_SigS_As_mu.U ) ))
@@ -148,12 +141,12 @@ class SVDPC_STRESS(BaseHessian):
         rhs_vx = u_x - self.design_work.base.data
 
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
-        fac = 0.01     # 0.001
+        fac = 0.1     # 0.001
         W_approx = fac*np.ones(self.num_design)
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
 
-        LHS = np.diag( W + (1-self.mu)**2 * (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
+        LHS = np.diag( W + (1-self.mu)**2 * (self.sig_aug_lower + self.sig_aug_upper) ) + (1-self.mu)**2 * self.svd_ASA 
         v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
 
         # solve v_g
