@@ -135,8 +135,8 @@ class SVDPC_STRESS(BaseHessian):
         rhs_vx_2 = self.sig_aug * rhs_vx_1      
 
         self.dual_work1.base.data = rhs_vx_2
-        self.Ag.T.product(self.dual_work1, self.design_work)
-        # self.design_work.times(1.0-self.mu)
+        self.Ag.T.product(self.dual_work1, self.design_work) 
+        # self.design_work.times(1.0-self.mu)                    # !!! Adding this line is fatal, but why???????
 
         rhs_vx = u_x - self.design_work.base.data
 
@@ -147,8 +147,8 @@ class SVDPC_STRESS(BaseHessian):
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
 
-        # LHS = np.diag( W + (1.0-self.mu)**2 * (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
-        LHS = np.diag( W_approx + (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
+        LHS = np.diag( W + (1.0-self.mu)**2 * (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
+        # LHS = np.diag( W_approx + (self.sig_aug_lower + self.sig_aug_upper) ) + self.svd_ASA 
         v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(LHS), rhs_vx) 
 
         # solve v_g
