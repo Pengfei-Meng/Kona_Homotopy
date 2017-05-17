@@ -612,7 +612,7 @@ optimizer.solve()
 print 'Number of Positive Lagrangian', len(solver.curr_ineq[solver.curr_ineq > 1e-5])
 print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-5])
 
-pdb.set_trace()
+# pdb.set_trace()
 # ------------------------------------------------------
 # Extracting explicit W-hessian, A-constraintJacobian from the problem
 # initialize Kona memory manager

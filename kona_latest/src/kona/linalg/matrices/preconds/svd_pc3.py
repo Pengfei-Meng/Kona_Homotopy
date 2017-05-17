@@ -136,13 +136,13 @@ class SVDPC_STRESS(BaseHessian):
 
         self.dual_work1.base.data = rhs_vx_2
         self.Ag.T.product(self.dual_work1, self.design_work) 
-        self.design_work.times(1.0-self.mu)                    # !!! Adding this line is fatal for tiny case ???????
+        # self.design_work.times(1.0-self.mu)                    # !!! Adding this line is fatal for tiny case ???????
 
         rhs_vx = u_x - self.design_work.base.data
 
 
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
-        fac = 0.0001     # 0.001
+        fac = 0.0001     # 0.0001
         W_approx = fac*np.ones(self.num_design)
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
