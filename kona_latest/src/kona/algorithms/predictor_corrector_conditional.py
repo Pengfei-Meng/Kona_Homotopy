@@ -678,8 +678,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
 
-                    if self.mu < 1e-6:
-                        dJdX_hom.times(0.05)
+                    # if self.mu < 1e-6:
+                    #     dJdX_hom.times(0.4)
 
                     # solve the system
                     dx.equals(0.0)

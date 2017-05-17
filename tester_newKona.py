@@ -560,11 +560,11 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 0.04,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
+        'mu_pc_on' : 1.0,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
     },
 
     'svd' : {
-        'lanczos_size'    : 50,            # Tiny: 25
+        'lanczos_size'    : 25,            # Tiny: 25
         'bfgs_max_stored' : 10, 
     }, 
 
