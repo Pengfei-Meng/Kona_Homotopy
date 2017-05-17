@@ -11,9 +11,9 @@ import scipy.sparse as sps
 case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
 # dir_data = '../test/adj_0reg/'
-dir_data = '../results/lam-0.01/'
+dir_data = '../results/nt0.3_ini0.05/'
 
-j = 1
+j = 0
 
 if case is 'tiny':
     num_design = 16*8 

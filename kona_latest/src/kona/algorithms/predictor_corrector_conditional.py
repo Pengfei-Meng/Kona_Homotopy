@@ -527,9 +527,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
-                    max_newton = 20
-                    # if self.svd_pc_stress is not None:
-                    #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 100
+                    max_newton = 10
+                    if self.svd_pc_stress is not None:
+                        self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 100
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0
@@ -679,7 +679,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dJdX_hom.times(-1.)
 
                     if self.mu < 1e-6:
-                        dJdX_hom.times(0.4)
+                        dJdX_hom.times(0.3)
 
                     # solve the system
                     dx.equals(0.0)

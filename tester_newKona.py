@@ -560,11 +560,11 @@ optns = {
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : False,  
-        'mu_pc_on' : 0.05,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
+        'mu_pc_on' : 0.04,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
     },
 
     'svd' : {
-        'lanczos_size'    : 25,            # Tiny: 25
+        'lanczos_size'    : 50,            # Tiny: 25
         'bfgs_max_stored' : 10, 
     }, 
 
@@ -612,7 +612,7 @@ optimizer.solve()
 print 'Number of Positive Lagrangian', len(solver.curr_ineq[solver.curr_ineq > 1e-5])
 print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-5])
 
-# pdb.set_trace()
+pdb.set_trace()
 # ------------------------------------------------------
 # Extracting explicit W-hessian, A-constraintJacobian from the problem
 # initialize Kona memory manager
@@ -658,9 +658,9 @@ print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './results/lam-0.01'   
+# outdir = './results/nt0.3_ini0.05'   
 # # inner_iters = 50
-# max_iter = 1
+# max_iter = 0
 
 # for j in xrange(max_iter,max_iter+1):    # inner_iters
 #     # set the point at which products will be evaluated
