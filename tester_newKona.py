@@ -551,7 +551,7 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.1,                 # Tiny: 0.05, 0.1 also works               
+        'init_step' : 0.2,                 # Tiny: 0.05, 0.1 also works    Small: 0.2 converge!            
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
         'max_factor' : 50.0,                  
@@ -564,7 +564,7 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 80,            # Tiny: 25, 20 works too;  Small: 80
+        'lanczos_size'    : 160,            # Tiny: 20;  Small: 80!  Medium: 
         'bfgs_max_stored' : 10, 
     }, 
 
