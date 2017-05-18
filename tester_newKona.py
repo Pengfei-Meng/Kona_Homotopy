@@ -564,7 +564,7 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 40,            # Tiny: 25, 20 works too;  Small: 
+        'lanczos_size'    : 80,            # Tiny: 25, 20 works too;  Small: 80
         'bfgs_max_stored' : 10, 
     }, 
 

@@ -155,7 +155,7 @@ class SVDPC_STRESS(BaseHessian):
 
 
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
-        fac = 0.1     # 0.0001
+        fac = 0.0001     # 0.0001
         W_approx = fac*np.ones(self.num_design)
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
