@@ -551,7 +551,7 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.05,                 # Tiny: 0.05               
+        'init_step' : 0.1,                 # Tiny: 0.05, 0.1 also works               
         'nominal_dist' : 1.0,
         'nominal_angle' : 5.0*np.pi/180.,      
         'max_factor' : 50.0,                  
@@ -559,12 +559,12 @@ optns = {
         'dmu_max' : -0.0005,                  
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
-        'use_frac_to_bound' : False,  
+        'use_frac_to_bound' : True,  
         'mu_pc_on' : 1.0,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
     },
 
     'svd' : {
-        'lanczos_size'    : 25,            # Tiny: 25
+        'lanczos_size'    : 40,            # Tiny: 25, 20 works too;  Small: 
         'bfgs_max_stored' : 10, 
     }, 
 
@@ -658,7 +658,7 @@ print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-
 # out_design = pf.generate()
 # out_dual = df.generate()
 
-# outdir = './results/nt0.3_ini0.05'   
+# outdir = './results/temp'   
 # # inner_iters = 50
 # max_iter = 0
 

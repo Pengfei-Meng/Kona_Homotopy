@@ -223,7 +223,7 @@ class ReducedKKTVector(CompositeVector):
 
     # init_dual = 0.0    #-0.1
     init_eq = 0.0
-    init_ineq = -0.1
+    init_ineq = 0.0
 
     def __init__(self, primal_vec, dual_vec):
         if isinstance(primal_vec, DesignVector):

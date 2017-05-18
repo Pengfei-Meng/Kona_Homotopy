@@ -170,7 +170,7 @@ class SVDPC_STRESS(BaseHessian):
             self.Ag.product(self.design_work2, self.dual_work2)
         else:
             self.Ag.approx.product(self.design_work2, self.dual_work2)
-            
+
         self.dual_work2.times(1.0 - self.mu)
 
         rhs_vg = - u_g - (1-self.mu)*self.at_slack_data * self.lam_aug_inv * u_s + self.dual_work2.base.data

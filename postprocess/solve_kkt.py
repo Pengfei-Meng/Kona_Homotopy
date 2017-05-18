@@ -617,7 +617,7 @@ class KKT_COND:
 case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
 # dir_data = '../test/adj_0reg/'
-dir_data = '../results/nt0.3_ini0.05/'
+dir_data = '../results/temp/'
 j = 0
 
 if case is 'tiny':
@@ -878,7 +878,7 @@ def mat_vec_SVD_1st(in_vec):
     # # 2) decompose LHS matrix
     # M_full, gam_full, N_full = np.linalg.svd(As_exact, full_matrices=False)
 
-    K_As = 100
+    K_As = 80
     # M = M_full[:, :K_As]     
     # gam = gam_full[:K_As]
     # N = N_full[:K_As, :]
@@ -945,7 +945,7 @@ M_pc = LinearOperator((num_kkt, num_kkt), matvec=mat_vec_SVD_1st  )
 x = np.zeros(dLdX.shape)
 x_pc = np.zeros(dLdX.shape)
 
-fac = 0.1
+fac = 1.0
 
 res_hist = []
 (x,flag) = fgmres(K, -dLdX,  maxiter=20, tol=1e-4, residuals=res_hist)      

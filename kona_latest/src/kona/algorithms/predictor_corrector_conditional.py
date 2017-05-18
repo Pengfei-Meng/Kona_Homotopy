@@ -266,7 +266,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
             # --------- fraction to boundary rule ----------
-            thresh_0 = 1e-2
+            thresh_0 = 1e-6
 
             slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
             if any(slack_steps > thresh_0):
@@ -292,9 +292,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # --------- if a certain element of ineq_steps (0, 1e-6) 
             # --------- meaning this lam is hitting 0, inactive constraints. 
 
-            print 'max_mu_step, ', max_mu_step
-            print 'max_slack_step, ', max_slack_step
-            print 'max_ineq_step, ', max_ineq_step
+            # print 'max_mu_step, ', max_mu_step
+            # print 'max_slack_step, ', max_slack_step
+            # print 'max_ineq_step, ', max_ineq_step
 
             return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
 
@@ -487,7 +487,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             max_mu_step = (tent_mu - self.mu)/dmu
 
             if self.use_frac_to_bound is True:
-                print '\n Predictor outer %d '%outer_iters
+                # print '\n Predictor outer %d '%outer_iters
                 self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
                 t.primal.slack.base.data[ind_active_s0] = 0.0
                 t.dual.base.data[ind_inactive_lam0] = 0.0 
@@ -529,7 +529,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 if self.mu < 1e-6:    
                     max_newton = 10
                     # if self.svd_pc_stress is not None:
-                    #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 100
+                    #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 80
                     # self.krylov.max_iter = 50
 
                 inner_iters = 0
@@ -693,7 +693,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
                     if self.use_frac_to_bound is True:
-                        print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
+                        # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
                         newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
                         dx.primal.slack.base.data[ind_active_s0] = 0.0
                         dx.dual.base.data[ind_inactive_lam0] = 0.0 
@@ -742,7 +742,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
                     solver_info = current_solution(
-                        num_iter=100, curr_primal=x.primal,
+                        num_iter=outer_iters, curr_primal=x.primal,
                         curr_state=state, curr_adj=adj, curr_dual=x.dual)
                     if isinstance(solver_info, str) and solver_info != '':
                         self.info_file.write('\n' + solver_info + '\n')
@@ -895,7 +895,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 # # this step is accepted so send it to user
                 solver_info = current_solution(
-                    num_iter=100, curr_primal=x.primal,
+                    num_iter=outer_iters, curr_primal=x.primal,
                     curr_state=state, curr_adj=adj, curr_dual=x.dual)
                 if isinstance(solver_info, str) and solver_info != '':
                     self.info_file.write('\n' + solver_info + '\n')

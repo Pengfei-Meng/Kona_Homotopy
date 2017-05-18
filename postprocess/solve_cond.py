@@ -11,7 +11,7 @@ import scipy.sparse as sps
 case = 'small'                                 # tiny, small, medium
 # dir_data = '../test/eye_' + case + '/'
 # dir_data = '../test/adj_0reg/'
-dir_data = '../results/nt0.3_ini0.05/'
+dir_data = '../results/temp/'
 
 j = 0
 
