@@ -734,3 +734,111 @@ subroutine computeAggregateTransProduct( &
   end do
 
 end subroutine computeAggregateTransProduct
+
+
+subroutine computeStressConstraintJacobianAmat( &
+     xi, eta, n, ne, ntw, conn, X, U, &
+     tconn, tweights, h, G, A)
+  ! Compute the stress constraint jacobian, evaluated at the given
+  ! displacements, and store it in the given
+  ! compressed sparse row data format.
+  !
+  ! Input:
+  ! xi, eta:  the xi/eta locations within all elements
+  ! n:        the number of nodes
+  ! ne:       the number of elements
+  ! ntw:      the maximum size of the thickness filter
+  ! conn:     the connectivity of the underlying mesh
+  ! X:        the nodal locations in the mesh
+  ! U:        the nodal displacements
+  ! tconn:    the thickness/material filter connectivity
+  ! tweights: the thickness/material filter weights
+  ! h:        the values of the linear terms
+  ! G:        the values of the quadratic terms
+  !
+  ! Output:
+  ! A:   the stress constraint Jacobian explicit matrix
+
+  use precision
+  implicit none
+
+  ! Input and output parameters
+  real(kind=dtype), intent(in) :: xi, eta
+  integer, intent(in) :: n, ne, ntw, conn(4,ne)
+  real(kind=dtype), intent(in) :: X(2,n), U(2,n)
+  integer, intent(in) :: tconn(ntw,ne)
+  real(kind=dtype), intent(in) :: tweights(ntw,ne), h(3), G(3,3)
+  real(kind=dtype), intent(inout) :: A(ne, n, 2)
+
+  ! Temporary data used internally
+  integer :: i, j, k
+  real(kind=dtype) :: zero = 0.0_dtype
+  real(kind=dtype) :: neg_one = -1.0_dtype
+  real(kind=dtype) :: two = 2.0_dtype
+  real(kind=dtype) :: Xd(2,2), Ud(2, 2), Jd(2,2), invdet
+  real(kind=dtype) :: ns(4), nxi(4), neta(4), B(3,8), e(3), etmp(3)
+  real(kind=dtype) :: row(8)
+
+  A(:,:,:) = zero
+  ! Evaluate the shape functions
+  call evalShapeFunctions(xi, eta, ns, nxi, neta)
+
+  ! Loop over elements
+  do i = 1, ne
+     ! Evaluate the filtered strain required for the derivative of the
+     ! failure constraint with respect to the state variables
+     e(:) = 0.0_dtype
+     do k = 1, ntw
+        if (tconn(k,i) > 0) then
+           ! Evalaute the gradient of the position/displacements
+           call getElemGradient(tconn(k,i), n, ne, conn, X, nxi, neta, Xd)
+           call getElemGradient(tconn(k,i), n, ne, conn, U, nxi, neta, Ud)
+
+           ! Compute the inverse of Xd
+           invdet = 1.0_dtype/(Xd(1,1)*Xd(2,2) - Xd(1,2)*Xd(2,1))
+           Jd(1,1) =  invdet*Xd(2,2)
+           Jd(2,1) = -invdet*Xd(2,1)
+           Jd(1,2) = -invdet*Xd(1,2)
+           Jd(2,2) =  invdet*Xd(1,1)
+
+           ! Evaluate the stress/strain
+           call evalStrain(Jd, Ud, etmp)
+
+           ! Add the result to the local strain
+           e = e + tweights(k,i)*etmp
+        end if
+     end do
+
+     ! Loop over parts of the filter and add the contribution from
+     ! each element
+     do k = 1, ntw
+        if (tconn(k,i) > 0) then
+           ! Evaluate the element gradient of position/displacement
+           call getElemGradient(tconn(k,i), n, ne, conn, X, nxi, neta, Xd)
+           call getElemGradient(tconn(k,i), n, ne, conn, U, nxi, neta, Ud)
+
+           ! Compute the inverse of Xd
+           invdet = 1.0_dtype/(Xd(1,1)*Xd(2,2) - Xd(1,2)*Xd(2,1))
+           Jd(1,1) =  invdet*Xd(2,2)
+           Jd(2,1) = -invdet*Xd(2,1)
+           Jd(1,2) = -invdet*Xd(1,2)
+           Jd(2,2) =  invdet*Xd(1,1)
+
+           ! Evaluate strain derivatives w.r.t. displacement
+           call evalBmat(Jd, nxi, neta, B)
+
+           ! Calculate the non-zero values of the jacobian row
+           row = neg_one*matmul(transpose(B), h) - two*matmul(transpose(B), matmul(G, e))
+           
+           ! Add the row contribution to the i-th element constraint
+           do j = 1, 4
+              A(i, conn(j,tconn(k,i)), 1) = A(i, conn(j,tconn(k,i)), 1) + tweights(k,i)*row(2*j-1)
+              A(i, conn(j,tconn(k,i)), 2) = A(i, conn(j,tconn(k,i)), 2) + tweights(k,i)*row(2*j)
+           end do
+
+        end if
+     end do
+  end do
+
+end subroutine computeStressConstraintJacobianAmat
+
