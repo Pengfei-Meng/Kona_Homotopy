@@ -526,8 +526,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu < 1e-6:    
-                    max_newton = 10
+                # if self.mu < 1e-6:    
+                #     max_newton = 10
                     # if self.svd_pc_stress is not None:
                     #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 80
                     # self.krylov.max_iter = 50

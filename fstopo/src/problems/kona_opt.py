@@ -1,5 +1,5 @@
 import numpy as np
-import pickle
+import pickle, time
 import pdb
 from kona.user import BaseVector, UserSolver
 
@@ -137,8 +137,8 @@ class FSTopoSolver(UserSolver):
         # General setup
         self.prob = prob
         self.force = force
-        self.x_min = lower
-        self.x_max = upper
+        self.x_min = lower 
+        self.x_max = upper 
         self.init_design_vector = x
         self.prefix = prefix
 
@@ -174,6 +174,19 @@ class FSTopoSolver(UserSolver):
         self.use_FD = False
         self.eps_FD = 1e-8
 
+        # internal optimization bookkeeping
+        self.iterations = 0
+        self.totalTime = 0.
+        self.startTime = time.clock()
+
+        file = open(self.prefix+'/kona_timings.dat', 'w')
+        file.write('# FSTOPO Homotopy iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective Val', 'max(abs(-S*Lam))', 'negative S', 'postive Lam')
+        file.write(titles)
+        file.close()
+
+
     def get_rank(self):
         return 0
 
@@ -185,21 +198,25 @@ class FSTopoSolver(UserSolver):
         # loop over design variables
         lower_enforced = False
         upper_enforced = False
-        for i in xrange(len(design_vec)):
-            # enforce lower bound
-            if design_vec[i] < self.x_min[i]:
-                print 'lower bound', i
-                design_vec[i] = self.x_min[i] 
-                lower_enforced = True
-            # enforce upper bound
-            if design_vec[i] > self.x_max[i]:
-                print 'upper bound', i
-                design_vec[i] = self.x_max[i]
-                upper_enforced = True
-        if lower_enforced:
-            print 'Lower bound enforced!'
-        if upper_enforced:
-            print 'Upper bound enforced!'
+        
+        design_vec[ design_vec < 0.1 ] = self.x_min
+        design_vec[ design_vec > 10.0 ] = self.x_max
+
+        # for i in xrange(len(design_vec)):
+        #     # enforce lower bound
+        #     if design_vec[i] < self.x_min[i]:
+        #         # print 'lower bound', i
+        #         design_vec[i] = self.x_min[i] 
+        #         lower_enforced = True
+        #     # enforce upper bound
+        #     if design_vec[i] > self.x_max[i]:
+        #         # print 'upper bound', i
+        #         design_vec[i] = self.x_max[i]
+        #         upper_enforced = True
+        #if lower_enforced:
+            # print 'Lower bound enforced!'
+        #if upper_enforced:
+            # print 'Upper bound enforced!'
 
     def restrict_dual(self, dual_vec):
         pass
@@ -211,15 +228,19 @@ class FSTopoSolver(UserSolver):
         at_design = self.init_design()
         state_work = self.allocate_state(1)[0]
 
-        self.solve_nonlinear(at_design, state_work)
-
+        cost = self.solve_nonlinear(at_design, state_work)
         at_slack = self.eval_ineq_cnstr(at_design, state_work)
-        return BaseVector(size=len(at_slack), val=at_slack)
+        # at_slack, cost = 0.1*np.ones(self.num_ineq), 0
+        return (at_slack, cost)
 
     def current_solution(self, num_iter, curr_design, curr_state, curr_adj, curr_eq,
             curr_ineq,curr_slack):
                          
         self.curr_design = curr_design
+        self.curr_ineq = curr_ineq
+        self.curr_adj = curr_adj
+        self.curr_slack = curr_slack
+
         min_design = min(self.curr_design)
         max_design = max(self.curr_design)
         if self.prob.ptype == 1:
@@ -241,27 +262,65 @@ class FSTopoSolver(UserSolver):
         output += '\n' + \
                   'max stress    = %e\n'%max(dual_work_stress) + \
                   'min stress    = %e\n'%min(dual_work_stress)
+        # self.prob.writeSolution(
+        #     curr_state.data, curr_adj.data, MGVec(curr_design[:,np.newaxis]),
+        #     filename=self.prefix + '/iter_%i.dat'%num_iter)
         self.prob.writeSolution(
             curr_state.data, curr_adj.data, MGVec(curr_design[:,np.newaxis]),
-            filename=self.prefix + '/iter_%i.dat'%num_iter)
+            filename=self.prefix + '/iter_last.dat')
 
-        design_file = open('design', 'w')
-        pickle.dump(
-            curr_design, design_file)
-        design_file.close()
-        output += '\nDesign saved...\n'
-        dual_file = open('dual', 'w')
-        pickle.dump(
-            curr_ineq,
-            dual_file)
-        dual_file.close()
-        output += '\nDual saved...\n'
-        slack_file = open('slack', 'w')
-        pickle.dump(
-            curr_slack,
-            slack_file)
-        slack_file.close()
-        output += '\nSlack saved...\n'
+
+        # ----------------------------------------------------------
+        # time the iteration
+        self.endTime = time.clock()
+        duration = self.endTime - self.startTime
+        self.totalTime += duration
+        self.startTime = self.endTime
+
+        objVal, _ = self.eval_obj(curr_design, curr_state)
+
+        # max_constr_violation = min(self.eval_ineq_cnstr(curr_design, curr_state))
+        slack_lamda = max(abs(curr_slack*curr_ineq))
+        slack_lamda_l = abs(curr_slack*curr_ineq)
+        neg_S = sum(curr_slack < -1e-5)
+        pos_Lam = sum(curr_ineq > 1e-5)
+
+
+        # checking strict complementariy condition
+        indx = (slack_lamda_l < 1e-5) & ( abs(curr_slack) < 1e-3 ) & ( abs(curr_ineq) < 1e-3 )
+        if sum(indx) > 0:
+            print 'Strict Complementarity not satisfied! Inner iteration: ',  num_iter
+            print 'slack: ', curr_slack[indx]
+            print 'dual: ', curr_ineq[indx]
+
+        # else:
+        #     print 'Strict Complementarity Satisfied! '
+
+
+        # write timing to file
+        timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}      {4:4.6f}   {5:3d}   {6:3d}\n'.format(
+            num_iter, duration, self.totalTime, objVal, slack_lamda, neg_S, pos_Lam)
+        file = open(self.prefix + '/kona_timings.dat', 'a')
+        file.write(timing)
+        file.close()
+
+        # design_file = open(self.prefix + '/design_%i'%num_iter, 'w')
+        # pickle.dump(
+        #     curr_design, design_file)
+        # design_file.close()
+        # output += '\nDesign saved...\n'
+        # dual_file = open(self.prefix + '/dual_%i'%num_iter, 'w')
+        # pickle.dump(
+        #     curr_ineq,
+        #     dual_file)
+        # dual_file.close()
+        # output += '\nDual saved...\n'
+        # slack_file = open(self.prefix + '/slack_%i'%num_iter, 'w')
+        # pickle.dump(
+        #     curr_slack,
+        #     slack_file)
+        # slack_file.close()
+        # output += '\nSlack saved...\n'
 
         return output
 
@@ -272,12 +331,14 @@ class FSTopoSolver(UserSolver):
     def eval_obj(self, at_design, at_state):
         
         mass = self.prob.computeMass(MGVec(at_design[:,np.newaxis]))
+
         return (mass, 0)
 
     def eval_dFdX(self, at_design, at_state):
         designV = MGVec(at_design[:,np.newaxis])
         storeV = MGVec()
         self.prob.computeMassDeriv(designV, storeV)
+
         return storeV.x.flatten()
 
     def eval_dFdU(self, at_design, at_state, store_here):
@@ -525,7 +586,6 @@ class FSTopoSolver(UserSolver):
         in_x_lower = in_vec[:len(at_design)]
         in_x_upper = in_vec[len(at_design):2*len(at_design)]
         in_stress = in_vec[2*len(at_design):]
-        
         if self.use_FD:
             out_vec.equals_value(0.0)
 
@@ -579,7 +639,7 @@ class FSTopoSolver(UserSolver):
             fstopo.sparse.applyvecbcs(
                 self.prob.bcnodes, self.prob.bcvars.T,
                 out_vec.data.x.T)
-
+        
     ############################################################################
     # SOLVE ROUTINES
     ############################################################################
@@ -613,7 +673,7 @@ class FSTopoSolver(UserSolver):
         # Solve the system of equations
         result.data.zero()
         niters = fgmres_solve(
-            kmat, self.force, result.data, rtol=1e-20, atol=1e-7)
+            kmat, self.force, result.data, rtol=1e-16, atol=1e-8)    #rtol=1e-20, atol=1e-7
 
         # Apply BCs to the Solution
         fstopo.sparse.applyvecbcs(
@@ -626,13 +686,11 @@ class FSTopoSolver(UserSolver):
         else:
             converged = True
 
-        print 'cost from solve_nonlinear: ', niters
-
         cost = niters
         if converged:
             # You can return the number of preconditioner calls here.
             # This is used by Kona to track computational cost.
-            return cost
+            return cost      # 9
         else:
             # Must return negative cost to Kona when your system solve fails to
             # converge. This is important because it helps Kona determine when
@@ -655,6 +713,7 @@ class FSTopoSolver(UserSolver):
         # check RHS vector to make sure it's not all Zero
         norm = np.sqrt(self.state_work.dot(self.state_work))
         if norm == 0.:
+            # print 'rhs norm is 0, so cost is zero for solve_linear'
             return 0
         else:
             cost = fgmres_solve(
@@ -663,7 +722,10 @@ class FSTopoSolver(UserSolver):
             fstopo.sparse.applyvecbcs(
                 self.prob.bcnodes, self.prob.bcvars.T,
                 result.data.x.T)
-            return cost
+
+            # print 'cost for solve_linear: ', cost
+            return cost       # 6
+
 
     def solve_adjoint(self, at_design, at_state, rhs_vec, tol, result):
         return self.solve_linear(at_design, at_state, rhs_vec, tol, result)
