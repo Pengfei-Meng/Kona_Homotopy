@@ -20,6 +20,7 @@ import fstopo.problems.kona_opt as kona_opt
 
 # Import Kona Optimization Library
 import kona
+import pprint
 
 
 def create_multi_problem(rho, Cmats, qval, qxval, h, G, epsilon,
@@ -551,24 +552,24 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.05,                  # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
+        'init_step' : 0.05,                               # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 20.0*np.pi/180.,   # Can be changed   
+        'nominal_angle' : 20.0*np.pi/180.,  # 1) Can be changed   
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : True,  
-        'mu_pc_on' : 0.01,                 # ok for small case, make it cheaper    
+        'mu_pc_on' : 1.0,                 # 2) ok for small case, make it cheaper    
     },
 
     'svd' : {
-        'lanczos_size'    : 80,            # Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'bfgs_max_stored' : 10, 
-        'mu_exact'        : 1e-3,         # Tiny: 1e-6;  Small: 0.005
-        'sig_exact'       : 0.005, 
-        'w_value'         : 0.0001, 
+        'mu_exact'        : 1e-6,          # 4) Tiny: 1e-6;  Small: 1e-3
+        'sig_exact'       : 1.0, 
+        'w_value'         : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
     }, 
 
     'rsnk' : {
@@ -604,6 +605,13 @@ optns = {
     },
 
 }
+
+
+file = open(prefix+'/kona_optns.dat', 'w')
+file.write(optns['homotopy'])
+file.write(optns['svd'])
+file.close()
+
 
 # algorithm = kona.algorithms.PredictorCorrectorCnstrINEQ
 algorithm = kona.algorithms.PredictorCorrectorCnstrCond
