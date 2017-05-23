@@ -60,6 +60,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             svd_optns = {
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
                 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+                'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
+                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'mu_exact'),
+                'w_value'         : get_opt(self.optns, 0.1, 'svd', 'w_value'), 
             }
             self.svd_pc_stress = SVDPC_STRESS(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
@@ -526,8 +529,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                # if self.mu < 1e-6:    
-                #     max_newton = 10
+                if self.mu < 1e-6:    
+                    max_newton = self.inner_maxiter*2
                     # if self.svd_pc_stress is not None:
                     #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 80
                     # self.krylov.max_iter = 50

@@ -37,6 +37,9 @@ class SVDPC_STRESS(BaseHessian):
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
+        self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
+        self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
+        self.w_value = get_opt(optns, 0.1, 'w_value')
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AsT_SigS_As_mu = LowRankSVD(
@@ -46,24 +49,22 @@ class SVDPC_STRESS(BaseHessian):
 
     def asa_mat_vec_mu(self, in_vec, out_vec):
 
-        # if self.mu < 0.005:
-        #     self.Ag.product(in_vec, self.dual_work1)
-        # else:
-        #     self.Ag.approx.product(in_vec, self.dual_work1)
-        self.Ag.approx.product(in_vec, self.dual_work1)
+        if self.mu < self.mu_exact:
+            self.Ag.product(in_vec, self.dual_work1)
+        else:
+            self.Ag.approx.product(in_vec, self.dual_work1)
             
-        # if self.mu < 0.005:
-        self.dual_work2.equals(0.0)
-        self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
-        # else:
-        #     self.dual_work2.equals(self.dual_work1)
+        if self.mu < self.sig_exact:
+            self.dual_work2.equals(0.0)
+            self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
+        else:
+            self.dual_work2.equals(self.dual_work1)
         
+        if self.mu < self.mu_exact:
+            self.Ag.T.product(self.dual_work2, out_vec)
+        else:
+           self.Ag.T.approx.product(self.dual_work2, out_vec)
 
-        # if self.mu < 0.005:
-        #     self.Ag.T.product(self.dual_work2, out_vec)
-        # else:
-        #    self.Ag.T.approx.product(self.dual_work2, out_vec)
-        self.Ag.T.approx.product(self.dual_work2, out_vec)
 
     def linearize(self, X, state, adjoint, mu):
 
@@ -146,20 +147,17 @@ class SVDPC_STRESS(BaseHessian):
 
         self.dual_work1.base.data = rhs_vx_2
 
-        # if self.mu < 0.005:
-        #     self.Ag.T.product(self.dual_work1, self.design_work) 
-        # else:
-        #     self.Ag.T.approx.product(self.dual_work1, self.design_work) 
-        self.Ag.T.approx.product(self.dual_work1, self.design_work) 
+        if self.mu < self.mu_exact:
+            self.Ag.T.product(self.dual_work1, self.design_work) 
+        else:
+            self.Ag.T.approx.product(self.dual_work1, self.design_work) 
 
         self.design_work.times(1.0-self.mu)                     
 
         rhs_vx = u_x - self.design_work.base.data
 
-
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
-        fac = 0.1    # 0.0001
-        W_approx = fac*np.ones(self.num_design)
+        W_approx = self.w_value*np.ones(self.num_design)      # 0.0001
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
 
@@ -169,11 +167,10 @@ class SVDPC_STRESS(BaseHessian):
         # solve v_g
         self.design_work2.base.data = v_x
 
-        # if self.mu < 0.005:
-        #     self.Ag.product(self.design_work2, self.dual_work2)
-        # else:
-        #     self.Ag.approx.product(self.design_work2, self.dual_work2)
-        self.Ag.approx.product(self.design_work2, self.dual_work2)
+        if self.mu < self.mu_exact:
+            self.Ag.product(self.design_work2, self.dual_work2)
+        else:
+            self.Ag.approx.product(self.design_work2, self.dual_work2)
 
         self.dual_work2.times(1.0 - self.mu)
 

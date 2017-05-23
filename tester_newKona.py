@@ -485,7 +485,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results'
+    prefix = 'results2'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -551,21 +551,24 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 3,
-        'init_step' : 0.8,                 # Tiny: 0.05, 0.1 also works    Small: 0.2 converge!            
+        'init_step' : 0.05,                  # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 5.0*np.pi/180.,      
+        'nominal_angle' : 20.0*np.pi/180.,   # Can be changed   
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : True,  
-        'mu_pc_on' : 1.0,                 # Tiny: svd_pc_stress, mu_pc_on = 0.05
+        'mu_pc_on' : 0.01,                 # ok for small case, make it cheaper    
     },
 
     'svd' : {
-        'lanczos_size'    : 320,            # Tiny: 20;  Small: 80!  Medium: 
+        'lanczos_size'    : 80,            # Tiny: 20;  Small: 80!  Medium: 320
         'bfgs_max_stored' : 10, 
+        'mu_exact'        : 1e-3,         # Tiny: 1e-6;  Small: 0.005
+        'sig_exact'       : 0.005, 
+        'w_value'         : 0.0001, 
     }, 
 
     'rsnk' : {
