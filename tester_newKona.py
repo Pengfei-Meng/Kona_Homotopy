@@ -21,6 +21,7 @@ import fstopo.problems.kona_opt as kona_opt
 # Import Kona Optimization Library
 import kona
 import pprint
+import json
 
 
 def create_multi_problem(rho, Cmats, qval, qxval, h, G, epsilon,
@@ -486,7 +487,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results2'
+    prefix = 'results3'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -554,7 +555,7 @@ optns = {
         'inner_maxiter' : 3,
         'init_step' : 0.05,                               # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 20.0*np.pi/180.,  # 1) Can be changed   
+        'nominal_angle' : 5.0*np.pi/180.,  # 1) Can be changed   
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
@@ -607,10 +608,8 @@ optns = {
 }
 
 
-file = open(prefix+'/kona_optns.dat', 'w')
-file.write(optns['homotopy'])
-file.write(optns['svd'])
-file.close()
+with open(prefix+'/kona_optns.txt', 'w') as file:
+    pprint.pprint(optns, file)
 
 
 # algorithm = kona.algorithms.PredictorCorrectorCnstrINEQ
