@@ -22,6 +22,7 @@ from fstopo.material import *
 import fstopo.sparse
 import fstopo.kona
 import copy
+import kona
 
 
 # import kona
@@ -492,7 +493,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results'
+    prefix = 'results2'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -535,12 +536,38 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%ssnopt_new'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
+# initialize the FSTOPO solver wrapper
+solver = kona_opt.FSTopoSolver(
+    prob, force, x, lower=lb.x, upper=ub.x,
+    num_aggr=0, ks_rho=35., cnstr_scale=False, prefix=prefix)
 
+
+# ----------- Kona Preparation to assemble Total Constraint Jacobian ----------
+km = kona.linalg.memory.KonaMemory(solver)
+pf = km.primal_factory
+sf = km.state_factory
+df = km.ineq_factory
+
+# request some work vectors
+pf.request_num_vectors(2)
+sf.request_num_vectors(1)
+df.request_num_vectors(1)
+
+A = kona.linalg.matrices.hessian.TotalConstraintJacobian([pf, sf, df])
+km.allocate_memory()
+
+# # request vectors for the linearization point
+at_design = pf.generate()
+at_state_kona = sf.generate()
+
+# # request some input/output vectors for the products
+in_design = pf.generate()
+out_dual = df.generate()
 
 # ------------------------  snopt_fstopo  --------------------------
 outdir = prefix
@@ -599,8 +626,6 @@ def objfunc(xdict):
         kmat, force, at_state, rtol=1e-16, atol=1e-8)     
 
     # -------------- 2) evaluate constraints ----------- 
-    # x_lower =  MGVec(x[:,np.newaxis] - x_min[:,np.newaxis]) 
-    # x_upper =  MGVec(x_max[:,np.newaxis] - x[:,np.newaxis])
     stress = MGVec(n=len(x), nb=1)
 
     # evaluate stresses
@@ -630,7 +655,7 @@ def objfunc(xdict):
     return funcs, fail
 
 def sens(xdict, funcs):
-    global iteration, sens_counter
+    global iteration, sens_counter, totalTime_sn, startTime_sn, endTime_sn, duration_sn 
 
     x = xdict['xvars']
     designV = MGVec(x[:,np.newaxis]) 
@@ -641,32 +666,41 @@ def sens(xdict, funcs):
     funcsSens['obj'] = {'xvars': storeV.x.flatten() }
 
     # ------------- evaluate constraint Jacobian ------------
-    dlbdx = np.eye(num_design)
-    dubdx = -np.eye(num_design)
-    dstressdx = np.zeros((num_design, num_design))
+    # dlbdx = np.eye(num_design)
+    # dubdx = -np.eye(num_design)
+    # dstressdx = np.zeros((num_design, num_design))
     
-    fstopo.kona.computestressconstraintjacobianamat(
-        prob.xi, prob.eta, prob.conn.T,
-        prob.X.T, at_state.x.T,
-        prob.tconn.T, prob.tweights.T,
-        prob.h.T, prob.G.T)
+    at_design.base.data = x
+    at_state_kona.equals_primal_solution(at_design)
+    A.linearize(at_design, at_state_kona)
+    A_full_approx = np.zeros((num_ineq, num_design))
 
-    funcsSens['con'] = {'xvars': dstressdx }
+    # loop over design variables and start assembling the matrices
+    for i in xrange(num_design):
+        # print 'Evaluating design var:', i+1
+        # set the input vector so that we only pluck out one column of the matrix
+        in_design.equals(0.0)
+        in_design.base.data[i] = 1.
+        A.product(in_design, out_dual)
+        A_full_approx[:, i] = out_dual.base.data
+
+
+    funcsSens['con'] = {'xvars': A_full_approx[2*num_design:, :] }
     fail = False
 
     # ---------- recording ----------
     iteration += 1
     sens_counter += 1
-    # self.endTime_sn = time.clock()
-    # self.duration_sn = self.endTime_sn - self.startTime_sn
-    # self.totalTime_sn += self.duration_sn
-    # self.startTime_sn = self.endTime_sn
+    endTime_sn = time.clock()
+    duration_sn = endTime_sn - startTime_sn
+    totalTime_sn += duration_sn
+    startTime_sn = endTime_sn
 
-    # timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}     \n'.format(
-    #     self.sens_counter, self.duration_sn, self.totalTime_sn,  funcs['obj'] )
-    # file = open(self.outdir+'/SNOPT_timings.dat', 'a')
-    # file.write(timing)
-    # file.close()
+    timing = '  {0:3d}        {1:4.2f}        {2:4.2f}     \n'.format(
+        sens_counter, duration_sn, totalTime_sn )
+    file = open(outdir+'/SNOPT_timings.dat', 'a')
+    file.write(timing)
+    file.close()
 
 
     return funcsSens, fail
@@ -679,6 +713,15 @@ fun_obj_counter = 0
 sens_counter = 0
 
 # -------------- begin optimization -------------------
+startTime_sn = time.clock()
+totalTime_sn = 0
+endTime_sn = 0
+file = open(outdir+'/SNOPT_timings.dat', 'w')
+file.write('# SNOPT iteration timing history\n')
+titles = '# {0:s}    {1:s}    {2:s}   \n'.format(
+    'Iter', 'Time (s)', 'Total Time (s)')
+file.write(titles)
+file.close()
 
 
 optOptions = {'Print file': outdir + '/SNOPT_print.out',
@@ -717,23 +760,23 @@ else:
 
 sol = opt(optProb, sens=sens, storeHistory=histFileName)   
 
-# Check Solution
-pyopt_obj = objectives['obj'].value
+
+# ----------- thickness plotting ----------------
+pyopt_obj = sol.objectives['obj'].value
 pyopt_x = np.array(map(lambda x:  sol.variables['xvars'][x].value, xrange(num_design)))
 
 
-    
-# startTime_sn = time.clock()
-# totalTime_sn = 0
-# endTime_sn = 0
-# file = open(self.outdir+'/SNOPT_timings.dat', 'w')
-# file.write('# SNOPT iteration timing history\n')
-# titles = '# {0:s}    {1:s}    {2:s}    {3:s}  \n'.format(
-#     'Iter', 'Time (s)', 'Total Time (s)', 'Objective')
-# file.write(titles)
-# file.close()
+MGv = MGVec(pyopt_x[:,np.newaxis])
+
+kmat = prob.getKMat()
+prob.assembleKMat(MGv, kmat)
+kmat.factor()
+
+# Solve the system of equations
+niters = fgmres_solve(
+    kmat, force, at_state, rtol=1e-16, atol=1e-8)     
 
 
-
-
-
+prob.writeSolution(
+    at_state, at_state, MGVec(pyopt_x[:,np.newaxis]),
+    filename=prefix + '/iter_last.dat')
