@@ -273,7 +273,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
             if any(slack_steps > thresh_0):
-
                 max_slack_step = min(slack_steps[slack_steps > thresh_0])
             else:
                 max_slack_step = max_mu_step
@@ -290,15 +289,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 max_ineq_step = max_mu_step
 
-            ind_inactive_lam0 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
-
+            ind_inactive_1 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
+            ind_inactive_2 = np.where( (x.dual.base.data == 0.0) & (t.dual.base.data > 0) ) 
+            ind_inactive_lam0 = np.append(ind_inactive_1, ind_inactive_2)
+ 
             # --------- if a certain element of ineq_steps (0, 1e-6) 
             # --------- meaning this lam is hitting 0, inactive constraints. 
-
-            # print 'max_mu_step, ', max_mu_step
-            # print 'max_slack_step, ', max_slack_step
-            # print 'max_ineq_step, ', max_ineq_step
-
             return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
 
 
@@ -364,6 +360,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # initialize the problem at the starting point
         x0.equals_init_guess()
+        # x0.dual.equals(-0.1)
+        # x0.dual.base.data[128:128*2] = 0.0
 
         x.equals(x0)
         self.current_x.equals(x0)
@@ -489,15 +487,19 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # -----------------------------
             max_mu_step = (tent_mu - self.mu)/dmu
 
-            if self.use_frac_to_bound is True:
-                # print '\n Predictor outer %d '%outer_iters
-                self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
-                t.primal.slack.base.data[ind_active_s0] = 0.0
-                t.dual.base.data[ind_inactive_lam0] = 0.0 
+            if self.mu < 1.0: 
+                if self.use_frac_to_bound is True:
+                    # print '\n Predictor outer %d '%outer_iters
+                    self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
+                    t.primal.slack.base.data[ind_active_s0] = 0.0
+                    t.dual.base.data[ind_inactive_lam0] = 0.0 
 
+                else:
+                    self.step = max_mu_step
             else:
                 self.step = max_mu_step
-            
+            # self.step = max_mu_step
+
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
 
@@ -681,9 +683,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # define the RHS vector for the homotopy system
                     dJdX_hom.times(-1.)
 
-                    # if self.mu < 1e-6:
-                    #     dJdX_hom.times(0.4)
-
                     # solve the system
                     dx.equals(0.0)
 
@@ -695,17 +694,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.primal.slack.times(self.current_x.primal.slack)
 
                     # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    if self.use_frac_to_bound is True:
-                        # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
-                        newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
-                        dx.primal.slack.base.data[ind_active_s0] = 0.0
-                        dx.dual.base.data[ind_inactive_lam0] = 0.0 
+                    # if self.use_frac_to_bound is True:
+                    #     # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
+                    #     newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
+                    #     dx.primal.slack.base.data[ind_active_s0] = 0.0
+                    #     dx.dual.base.data[ind_inactive_lam0] = 0.0 
 
-                    else:
-                        newton_step = 1.0
-
-                    # if self.mu < 1e-6:
-                    #     newton_step = 0.1
+                    # else:
+                    #     newton_step = 1.0
+                    newton_step = 1.0
 
                     dx.times(newton_step)
 
@@ -897,6 +894,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     factor_linear_system(x.primal, state)
             else:
                 # # this step is accepted so send it to user
+                x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+                x.dual.base.data[x.dual.base.data > 0.0] = 0.0
                 solver_info = current_solution(
                     num_iter=outer_iters, curr_primal=x.primal,
                     curr_state=state, curr_adj=adj, curr_dual=x.dual)
