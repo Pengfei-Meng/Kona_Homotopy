@@ -243,24 +243,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
 
-    def check_sign(self, x, outer, inner):
-
-        slack_ind = x.primal.slack.base.data < -1e-6
-
-        if np.any(slack_ind):
-            slack = x.primal.slack.base.data[slack_ind] 
-            # print '\n Negative Slack Outer %d, Inner %d Slack %d'%(outer, inner, len(slack))
-            # print slack
-            # x.primal.slack.base.data[slack_ind] = 1e-6   # clipping to 0 doesn't work
-
-
-        dual_ind = x.dual.base.data > 1e-6
-
-        if np.any(dual_ind):
-            dual = x.dual.base.data[dual_ind]
-            # print '\n Positive Dual Outer %d, Inner %d Dual %d'%(outer, inner, len(dual))
-            # print dual
-            # x.dual.base.data[dual_ind] = -1e-6           # clipping to 0 doesn't work
 
     def find_step(self, max_mu_step, x, t):
 
@@ -360,13 +342,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # initialize the problem at the starting point
         x0.equals_init_guess()
-        # x0.dual.equals(-0.1)
-        # x0.dual.base.data[128:128*2] = 0.0
 
         x.equals(x0)
         self.current_x.equals(x0)
-
-        # self.check_sign(x, 0, 0)
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
@@ -498,7 +476,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.step = max_mu_step
             else:
                 self.step = max_mu_step
-            # self.step = max_mu_step
 
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
@@ -512,8 +489,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.enforce_bounds()
 
             self.current_x.equals(x)
-
-            # self.check_sign(x, outer_iters, 0)
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -533,9 +508,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
                     max_newton = self.inner_maxiter*2
-                    # if self.svd_pc_stress is not None:
-                    #     self.svd_pc_stress.svd_AsT_SigS_As_mu.subspace_size = 80
-                    # self.krylov.max_iter = 50
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -554,8 +526,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
-                        # print 'self.inner_tol at mu = 0.0', self.inner_tol
-                        # self.krylov.rel_tol = 1e-5
+
 
                     dJdX_hom.equals(dJdX)
                     dJdX_hom.times(1. - self.mu)
@@ -652,8 +623,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
-                    # if self.itersolver is not None and self.mu <= self.precond_on_mu:
-                    #     self.itersolver.linearize(x, state, adj)
 
                     if self.uzawa is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
@@ -693,23 +662,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     dx.primal.slack.times(self.current_x.primal.slack)
 
-                    # -- 2) new slack >= 0.0, new multipliers <= 0.0  
-                    # if self.use_frac_to_bound is True:
-                    #     # print 'Corrector outer: %d inner: %d '%(outer_iters, inner_iters)
-                    #     newton_step, ind_active_s0, ind_inactive_lam0  = self.find_step(1.0, x, dx)
-                    #     dx.primal.slack.base.data[ind_active_s0] = 0.0
-                    #     dx.dual.base.data[ind_inactive_lam0] = 0.0 
-
-                    # else:
-                    #     newton_step = 1.0
-                    newton_step = 1.0
-
-                    dx.times(newton_step)
 
                     dx_newt.plus(dx)
                     # update the design
                     x.plus(dx)
-                    # self.check_sign(x, outer_iters, inner_iters)
+
 
                     if self.ineq_factory is not None:
                         x.primal.design.enforce_bounds()
@@ -728,7 +685,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # # if (self.mu < 2e-4) and (self.mu > 1e-6): 
                     # solver_info = current_solution(
                     #     num_iter=inner_iters, curr_primal=x.primal,
                     #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
