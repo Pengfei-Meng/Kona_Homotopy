@@ -552,10 +552,10 @@ optns = {
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
-        'inner_maxiter' : 3,
-        'init_step' : 0.05,                               # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
+        'inner_maxiter' : 2,
+        'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 20.0*np.pi/180.,  # 1) Can be changed   
+        'nominal_angle' : 50.0*np.pi/180.,  # 1) Can be changed    
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
