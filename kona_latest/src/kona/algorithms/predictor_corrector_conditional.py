@@ -507,7 +507,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
-                    max_newton = self.inner_maxiter*2
+                    max_newton = self.inner_maxiter*4
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -685,9 +685,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # solver_info = current_solution(
-                    #     num_iter=inner_iters, curr_primal=x.primal,
-                    #     curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    if self.mu < 1e-6:
+                        solver_info = current_solution(
+                            num_iter=inner_iters, curr_primal=x.primal,
+                            curr_state=state, curr_adj=adj, curr_dual=x.dual)
 
                     # advance iter counter
                     inner_iters += 1

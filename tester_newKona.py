@@ -566,11 +566,11 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 320,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'bfgs_max_stored' : 10, 
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-6;  Small: 1e-3
         'sig_exact'       : 1.0, 
-        'w_value'         : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
+        'w_value'         : 0.0001,           # 5) Tiny: 0.1;   Small: 0.0001
     }, 
 
     'rsnk' : {
