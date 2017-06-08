@@ -146,6 +146,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         )
 
     def _write_outer(self, outer, cost, obj, lag, opt_norm, feas_norm, mu):
+        dummy0 = 0.0
+        dummy_fmt = '%.4e'%dummy0
+
         if obj < 0.:
             obj_fmt = '%.3e'%obj
         else:
@@ -156,15 +159,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             lag_fmt = ' %.3e'%lag
         self.hist_file.write(
             '%7i' % outer + ' ' * 5 +
-            '-'*5 + ' ' * 5 +
+            '%5i' % dummy0  + ' ' * 5 +
             '%5i' % cost + ' ' * 5 +
             obj_fmt + ' ' * 5 +
             lag_fmt + ' ' * 5 +
             '%.4e' % opt_norm + ' ' * 5 +
             '%.4e' % feas_norm + ' ' * 5 +
-            '-'*10 + ' ' * 5 +
-            '-'*10 + ' ' * 5 +
-            '-'*10 + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
             '%1.4f' % mu + ' ' * 5 +
             # '-'*10 + ' ' * 5 +
             # '-'*10 + ' ' * 5 +
@@ -412,7 +415,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
         # unpeal the S^-1 layer for the slack term
         t.primal.slack.times(self.current_x.primal.slack)
-
+        
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
         t.times(1./tnorm)
@@ -499,15 +502,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # # compute adjoint
             adj.equals_lagrangian_adjoint(
                 x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+            
             if self.mu < self.mu_correction:              
-
+                
                 corrector = True
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < 1e-6:    
-                    max_newton = self.inner_maxiter*4
+                    max_newton = self.inner_maxiter*10
 
                 inner_iters = 0
                 dx_newt.equals(0.0)

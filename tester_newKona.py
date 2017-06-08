@@ -487,7 +487,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results3'
+    prefix = 'results4'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 

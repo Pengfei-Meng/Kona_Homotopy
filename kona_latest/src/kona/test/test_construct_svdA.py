@@ -1,6 +1,7 @@
 import numpy as np
 import unittest
 import pprint
+import os
 
 import kona
 from kona import Optimizer 
@@ -16,8 +17,11 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './temp'
-        size_prob = 100
+        self.outdir = './output3/temp'
+        if not os.path.isdir(self.outdir):
+            os.mkdir(self.outdir)
+
+        size_prob = 500
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -43,26 +47,26 @@ class InequalityTestCase(unittest.TestCase):
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
-                'inner_maxiter' : 3,
-                'init_step' : 100.0,        
-                'nominal_dist' : 4.0,            
-                'nominal_angle' : 20.0*np.pi/180., 
+                'inner_maxiter' : 2,
+                'init_step' : 150.0,        
+                'nominal_dist' : 30.0,            
+                'nominal_angle' : 30.0*np.pi/180., 
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
-                'use_frac_to_bound' : False,
+                'use_frac_to_bound' : True,
                 'mu_pc_on' : 1.0,      
             }, 
 
             'svd' : {
-                'lanczos_size'    : 20, 
+                'lanczos_size'    : 5, 
                 'bfgs_max_stored' : 10, 
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc',     #'approx_adjoint',    # None,  #               
+                'precond'       : None,   #'svd_pc',                  
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -94,7 +98,9 @@ class InequalityTestCase(unittest.TestCase):
             },
         }
 
-        pprint.pprint(optns['homotopy'])
+        # pprint.pprint(optns['homotopy'])
+        with open(self.outdir+'/kona_optns.txt', 'w') as file:
+            pprint.pprint(optns, file)
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
         optimizer = kona.Optimizer(self.solver, algorithm, optns)
@@ -227,7 +233,18 @@ class InequalityTestCase(unittest.TestCase):
         
         diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
 
-        print 'SNOPT  relative difference, ', diff
+
+        err_diff = 'Kona and SNOPT solution X maximum relative difference, ' + str(diff)
+        kona_obj = 'Kona objective value at the solution, ' + str(self.kona_obj)
+        pyopt_obj = 'SNOPT objective value at the solution, ' + str(self.pyopt_obj)
+
+        with open(self.outdir+'/kona_optns.txt', 'a') as file:
+            pprint.pprint(err_diff, file)
+            pprint.pprint(kona_obj, file)
+            pprint.pprint(pyopt_obj, file)
+
+
+        print err_diff
 
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)

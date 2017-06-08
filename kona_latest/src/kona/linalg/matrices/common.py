@@ -175,7 +175,7 @@ class dRdU(KonaMatrix):
             self._memory.cost += cost
         else:
             self._memory.cost -= cost
-
+        
         return converged
 
     def precond(self, in_vec, out_vec):
@@ -184,14 +184,14 @@ class dRdU(KonaMatrix):
         assert isinstance(out_vec, StateVector), \
             "Invalid output vector: must be StateVector!"
         if not self._transposed:
-            self._solver.apply_precond(
+            cost = self._solver.apply_precond(
                 self._design.base.data, self._state.base,
                 in_vec.base, out_vec.base)
         else:
-            self._solver.apply_precond_T(
+            cost = self._solver.apply_precond_T(
                 self._design.base.data, self._state.base,
                 in_vec.base, out_vec.base)
-        self._memory.cost += 1
+        self._memory.cost += cost
 
 class dCEQdX(KonaMatrix):
     """

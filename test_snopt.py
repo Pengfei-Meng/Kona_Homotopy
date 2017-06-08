@@ -493,7 +493,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results2'
+    prefix = 'results4'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -536,7 +536,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssnopt_new'%(os.path.sep)
+prefix += '%smedium_snopt'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -625,6 +625,7 @@ def objfunc(xdict):
     niters = fgmres_solve(
         kmat, force, at_state, rtol=1e-16, atol=1e-8)     
 
+    km.cost += niters
     # -------------- 2) evaluate constraints ----------- 
     stress = MGVec(n=len(x), nb=1)
 
@@ -655,7 +656,7 @@ def objfunc(xdict):
     return funcs, fail
 
 def sens(xdict, funcs):
-    global iteration, sens_counter, totalTime_sn, startTime_sn, endTime_sn, duration_sn 
+    global iteration, sens_counter, totalTime_sn, startTime_sn, endTime_sn, duration_sn
 
     x = xdict['xvars']
     designV = MGVec(x[:,np.newaxis]) 
@@ -671,7 +672,7 @@ def sens(xdict, funcs):
     # dstressdx = np.zeros((num_design, num_design))
     
     at_design.base.data = x
-    at_state_kona.equals_primal_solution(at_design)
+    at_state_kona.equals_primal_solution(at_design)         # cost 9
     A.linearize(at_design, at_state_kona)
     A_full_approx = np.zeros((num_ineq, num_design))
 
@@ -681,8 +682,8 @@ def sens(xdict, funcs):
         # set the input vector so that we only pluck out one column of the matrix
         in_design.equals(0.0)
         in_design.base.data[i] = 1.
-        A.product(in_design, out_dual)
-        A_full_approx[:, i] = out_dual.base.data
+        A.product(in_design, out_dual)                      # cost 7*128
+        A_full_approx[:, i] = out_dual.base.data        
 
 
     funcsSens['con'] = {'xvars': A_full_approx[2*num_design:, :] }
@@ -696,8 +697,8 @@ def sens(xdict, funcs):
     totalTime_sn += duration_sn
     startTime_sn = endTime_sn
 
-    timing = '  {0:3d}        {1:4.2f}        {2:4.2f}     \n'.format(
-        sens_counter, duration_sn, totalTime_sn )
+    timing = '  {0:3d}     {1:5d}      {2:4.2f}      {3:4.2f}     \n'.format(
+        sens_counter, km.cost,  duration_sn, totalTime_sn )
     file = open(outdir+'/SNOPT_timings.dat', 'a')
     file.write(timing)
     file.close()
@@ -712,14 +713,15 @@ iteration = 0
 fun_obj_counter = 0
 sens_counter = 0
 
+
 # -------------- begin optimization -------------------
 startTime_sn = time.clock()
 totalTime_sn = 0
 endTime_sn = 0
 file = open(outdir+'/SNOPT_timings.dat', 'w')
 file.write('# SNOPT iteration timing history\n')
-titles = '# {0:s}    {1:s}    {2:s}   \n'.format(
-    'Iter', 'Time (s)', 'Total Time (s)')
+titles = '# {0:s}    {1:s}    {2:s}    {3:s} \n'.format(
+    'nCon',  'Cost',  'Time (s)', 'Total Time (s)')
 file.write(titles)
 file.close()
 
