@@ -201,7 +201,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             hom_fmt + ' ' * 5 +
             '%.4e' % hom_opt + ' ' * 5 +
             '%.4e' % hom_feas + ' ' * 5 +
-            '%1.7f' % self.mu + ' ' * 5 +
+            '%.16e' % self.mu + ' ' * 17 +
             # '%1.4f' % min_slack + ' ' * 5 +
             # '%1.4f' % max_lamda + ' ' * 5 +
             # '%1.4f' % min_cnstr + ' ' * 5 +            
@@ -281,8 +281,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # --------- if a certain element of ineq_steps (0, 1e-6) 
             # --------- meaning this lam is hitting 0, inactive constraints. 
             return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
-
-
+            
     def solve(self):
         self.info_file.write(
             '\n' +
@@ -342,7 +341,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
-
+        # EPS = np.finfo(np.float64).eps
+        EPS = 1e-7
         # initialize the problem at the starting point
         x0.equals_init_guess()
 
@@ -509,8 +509,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu < 1e-6:    
-                    max_newton = self.inner_maxiter*10
+                if self.mu < EPS:     
+                    max_newton = self.inner_maxiter*3
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -525,7 +525,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.mu < 1e-6 and inner_iters == 0:
+                    if self.mu < EPS and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
@@ -688,7 +688,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.mu < 1e-6:
+                    if self.mu < EPS:
                         solver_info = current_solution(
                             num_iter=inner_iters, curr_primal=x.primal,
                             curr_state=state, curr_adj=adj, curr_dual=x.dual)
@@ -698,7 +698,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     total_iters += 1
 
                 # if we finished the corrector step at mu=0, we're done!
-                if self.mu < 1e-6:    # 0.0:
+                if self.mu < EPS:    
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
                     solver_info = current_solution(
