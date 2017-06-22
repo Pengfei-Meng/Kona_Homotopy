@@ -22,13 +22,14 @@ class InequalityTestCase(unittest.TestCase):
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        num_design = 100
+        num_design = 1
         lb = -1
         ub = 1
 
-        np.random.seed(1) 
+        # np.random.seed(1) 
 
         init_x = lb + (ub - lb) * np.random.random(num_design)  
+        # init_x = np.array([0.7])
         print 'init_x', init_x
 
         self.solver = NONCONVEX(num_design, init_x, lb, ub, self.outdir)
@@ -38,7 +39,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # Optimizer
         optns = {
-            'max_iter' : 300,
+            'max_iter' : 2000,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -50,14 +51,14 @@ class InequalityTestCase(unittest.TestCase):
 
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 
-                'inner_tol' : 0.1,
-                'inner_maxiter' : 2,
-                'init_step' : 3.0,                 
-                'nominal_dist' : 10.0,               
-                'nominal_angle' : 10.0*np.pi/180.,   
-                'max_factor' : 20.0,                  
+                'inner_tol' : 0.1,                         # Hessian : num_design 
+                'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
+                'init_step' : 0.05,                       # 0.5         0.05
+                'nominal_dist' : 2.5,                     # 20           40
+                'nominal_angle' : 10.0*np.pi/180.,          # 50           50
+                'max_factor' : 50.0,                  
                 'min_factor' : 0.001,                   
-                'dmu_max' : -0.0005,       
+                'dmu_max' : -0.0005,        # -0.0005
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
                 'use_frac_to_bound' : True,
@@ -118,14 +119,31 @@ class InequalityTestCase(unittest.TestCase):
         x_true = np.zeros(self.solver.num_design)
         x_true[self.solver.D < 0] = 1.0 
 
-        x_kona = abs(self.kona_x)
+        x_kona = np.rint(abs(self.kona_x))
 
         # self.solver.D
-        diff = abs(np.rint(sum(x_kona - x_true)))
+        diff = sum(abs(x_kona - x_true))
         print 'self.solver.D: ', self.solver.D
-        print 'kona_solution: ', x_kona
-        print 'x_true: ', x_true
+        print 'kona_solution: ', self.kona_x
+        print 'true_solution: ', x_true
         print 'number of wrong solutions: ',  diff
+
+        D_str = 'self.solver.D: ' + str(self.solver.D)
+        kona_sol = 'kona_solution: ' + str(self.kona_x)
+        x_kona = 'kona_solution: ' + str(x_kona)
+        true_sol = 'true solution: ' + str(x_true)
+        err_diff = 'number of wrong solutions: ' + str(diff)
+
+
+
+        with open(self.outdir+'/kona_optns.txt', 'a') as file:
+            pprint.pprint(D_str, file)
+            pprint.pprint(kona_sol, file)
+            pprint.pprint(x_kona, file)
+            pprint.pprint(true_sol, file)
+            pprint.pprint(err_diff, file)
+
+
 
 if __name__ == "__main__":
     unittest.main()

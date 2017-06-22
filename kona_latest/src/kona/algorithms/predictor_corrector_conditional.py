@@ -29,6 +29,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
         self.mat_vec = self.hessian.product
 
+        # self.W = LagrangianHessian( 
+        #     [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
+        # self.Wv = self.W.product
+
         # hessian preconditiner settings
         ############################################################
         self.precond = get_opt(self.optns, None, 'rsnk', 'precond')
@@ -201,7 +205,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             hom_fmt + ' ' * 5 +
             '%.4e' % hom_opt + ' ' * 5 +
             '%.4e' % hom_feas + ' ' * 5 +
-            '%.16e' % self.mu + ' ' * 17 +
+            '%.6e' % self.mu + ' ' * 10 +
             # '%1.4f' % min_slack + ' ' * 5 +
             # '%1.4f' % max_lamda + ' ' * 5 +
             # '%1.4f' % min_cnstr + ' ' * 5 +            
@@ -236,6 +240,23 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         return ReducedKKTVector(primal, dual)
 
     def _mat_vec(self, in_vec, out_vec):
+
+        # design_work = self.primal_factory.generate()
+        # design_work2 = self.primal_factory.generate()
+
+        # self.W.multiply_W(in_vec.primal.design, design_work)
+
+        # design_work.times(1. - self.mu)
+
+        # design_work2.equals(in_vec.primal.design)
+        # design_work2.times(self.mu)
+        # design_work.plus(design_work2)
+
+        # print 'self.mu,  in_vec.design, out_vec.design, out/in ', self.mu,  in_vec.primal.design.norm2, \
+        #     design_work.norm2, design_work.norm2/in_vec.primal.design.norm2
+        # ---------------------------------------
+        # out_vec.equals(0.0)
+
         self.hessian.product(in_vec, out_vec)
         out_vec.times(1. - self.mu)
 
@@ -245,8 +266,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
-
-
+        # if self.mu < 0.76:
+        #     pdb.set_trace()
+        # print '_mat_vec: ', self.mu,  in_vec.primal.design.norm2,  out_vec.primal.design.norm2
     def find_step(self, max_mu_step, x, t):
 
             # active constraints:    s = 0 ,   lam < 0
@@ -341,8 +363,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
-        # EPS = np.finfo(np.float64).eps
-        EPS = 1e-7
+        EPS = np.finfo(np.float64).eps
+        # EPS = 1e-7
         # initialize the problem at the starting point
         x0.equals_init_guess()
 
@@ -407,7 +429,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.hessian.linearize(
             x, state, adj,
             obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+        # self.W.linearize(x, state, adj)
         self.krylov.outer_iters = 0
         self.krylov.inner_iters = 0
         self.krylov.mu = 1.0
@@ -420,7 +442,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         tnorm = np.sqrt(t.inner(t) + 1.0)
         t.times(1./tnorm)
         dmu = -1./tnorm
-        print 'dmu:', dmu
+        # print 'dmu:', dmu
 
         # START OUTER ITERATIONS
         #########################
@@ -483,7 +505,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             x.equals_ax_p_by(1.0, x, self.step, t)
             self.mu += self.step*dmu
 
-            self.info_file.write('\nmu after pred  = %.10f\n'%self.mu)
+            self.info_file.write('\nmu after pred  = %.14f\n'%self.mu)
 
             # solve states
             if self.ineq_factory is not None:
@@ -510,7 +532,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < EPS:     
-                    max_newton = self.inner_maxiter*3
+                    max_newton = self.inner_maxiter*5
 
                 inner_iters = 0
                 dx_newt.equals(0.0)
@@ -587,7 +609,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.hessian.linearize(
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+                    # self.W.linearize(x, state, adj)
                     # ---------------------------------------------------------------------------
                     # --------------------- Linearizing Preconditioners -------------------------
                     # use other preconditioners only when mu < 0.2 and as indicated in the option
@@ -758,7 +780,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.hessian.linearize(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-            
+            # self.W.linearize(x, state, adj)
             if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
                 if self.mu < 0.05:                           
                     self.approx_adj.update_mat = True  
@@ -811,7 +833,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             tnorm = np.sqrt(t.inner(t) + 1.0)
             t.times(1./tnorm)
             dmu = -1./tnorm
-            print 'dmu:', dmu
+            # print 'dmu:', dmu
             # compute distance to curve
             self.info_file.write('\n')
             dcurve = dx_newt.norm2
@@ -882,3 +904,4 @@ from kona.linalg.matrices.preconds import IterSolver
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import CompositeDualVector
+from kona.linalg.matrices.hessian import LagrangianHessian
