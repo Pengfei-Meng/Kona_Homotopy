@@ -5,17 +5,17 @@ import pdb
 
 
 # # Plotting SVD results
-case = 'tiny'
+case = 'medium'
 
-num_design, nlcost = 128, 9
+# num_design, nlcost = 128, 9
 # num_design, nlcost = 512, 10
-# num_design, nlcost = 2048, 12
+num_design, nlcost = 2048, 12
 
-xax = 'time'
-# xax = 'cost'
+# xax = 'time'
+xax = 'cost'
 
 pcd = 'svd'
-dir_konahist = '../results4/' + case + '_' + pcd + '/'
+dir_konahist = '../results5/' + case + '_' + pcd + '/'
 fname = dir_konahist + 'kona_hist.dat'
 dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('cost', 'i4'), ('objective', 'float64'), ('optimality', 'float'), ('feasibility', 'float64')])
 kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 3, usecols = (0,1,2, 3,5,6))
@@ -30,7 +30,7 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-kona_time_svd = kona_timings['time'] 
+kona_time_svd = kona_timings['time'][:-1] 
 kona_data_svd = kona_datas[new_indices]
 
 # --------------- Add the Identity PC for comparison ----------------

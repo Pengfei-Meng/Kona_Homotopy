@@ -535,6 +535,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     max_newton = self.inner_maxiter*5
 
                 inner_iters = 0
+                
+                # print '0) self.mu: ', self.mu
+                # print '0) X coordinates before Corrector: ', x.primal.design.base.data, \
+                #     x.primal.slack.base.data, x.dual.base.data
+
                 dx_newt.equals(0.0)
                 for i in xrange(max_newton):
 
@@ -688,7 +693,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.primal.slack.times(self.current_x.primal.slack)
 
 
-                    dx_newt.plus(dx)
+                    # dx_newt.plus(dx)
                     # update the design
                     x.plus(dx)
 
@@ -698,7 +703,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         x.primal.enforce_bounds()
 
+
+                    dx.equals(x)
+                    dx.minus(self.current_x)
+                    dx_newt.plus(dx)
+
+
                     self.current_x.equals(x)
+
+                    # print '1) X coordinates inside Corrector: ', x.primal.design.base.data, \
+                    #     x.primal.slack.base.data, x.dual.base.data
 
                     if not state.equals_primal_solution(x.primal):
                         raise RuntimeError('Newton step failed!')
@@ -840,6 +854,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.info_file.write(
                 'dist to curve = %e\n' % dcurve)
 
+            # print '2) dx_newt: ', dx_newt.primal.design.base.data, \
+            #             dx_newt.primal.slack.base.data, dx_newt.dual.base.data
+            # print '2) dx_newt.norm2: ', dcurve
             # compute angle between steps
             uTv = t.inner(t_save) + (dmu * dmu_save)
             angl = np.arccos(uTv)

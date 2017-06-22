@@ -17,7 +17,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output3/temp'
+        self.outdir = './output4/500_svd'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -48,9 +48,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 150.0,        
-                'nominal_dist' : 30.0,            
-                'nominal_angle' : 30.0*np.pi/180., 
+                'init_step' : 150.0,                # 100-500 : 60 100 100 100 150 
+                'nominal_dist' : 30.0,              # 100-500 : 10 10 20 30  30
+                'nominal_angle' : 30.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -66,7 +66,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : None,   #'svd_pc',                  
+                'precond'       : 'svd_pc',                  
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,

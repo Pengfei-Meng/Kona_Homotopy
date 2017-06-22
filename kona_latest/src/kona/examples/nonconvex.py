@@ -21,27 +21,24 @@ class NONCONVEX(UserSolver):
         self.init_x = init_x
 
         #--------- constructing Q and A ------------  
-        np.random.seed(1) 
-
-        self.D = np.sign(np.random.random(numdesign) - 0.5 )
-        self.D[self.D < 0] = -0.5
+        # np.random.seed(1) 
+        # self.D = np.sign(np.random.random(numdesign) - 0.5 )
+        self.D = np.array([-2])
 
         self.lb = lb
         self.ub = ub
 
-        # print 'D: ', self.D
-        # print 'lb, ub : ', lb, ub
 
     def eval_obj(self, at_design, at_state):
 
-        quadra = np.dot(at_design,  self.D*at_design)   
+        quadra = 0.5*np.dot(at_design,  self.D*at_design)   
         # print 'quadra', quadra
         return quadra
 
 
     def eval_dFdX(self, at_design, at_state):
 
-        result = 2*self.D*at_design  
+        result = self.D*at_design  
         return result
 
     def eval_ineq_cnstr(self, at_design, at_state):
@@ -73,4 +70,6 @@ class NONCONVEX(UserSolver):
         self.curr_state = curr_state
         self.curr_dual = curr_ineq
         self.curr_slack = curr_slack
+
+        # print 'Current X: ', self.curr_design
 
