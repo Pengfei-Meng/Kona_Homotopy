@@ -10,14 +10,14 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         )
 
         # number of vectors required in solve() method
-        self.primal_factory.request_num_vectors(15)
+        self.primal_factory.request_num_vectors(115)
         self.state_factory.request_num_vectors(5)
 
         if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(15)
+            self.eq_factory.request_num_vectors(115)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(50)
+            self.ineq_factory.request_num_vectors(250)
 
         # general options
         ############################################################
@@ -481,6 +481,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # influence of mu on step size
             dmu_step = dmu * self.step
+            print 'dmu_step', dmu_step
             dmu_step = max(self.dmu_min, dmu_step)
             dmu_step = min(self.dmu_max, dmu_step)
 

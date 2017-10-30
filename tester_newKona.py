@@ -484,10 +484,10 @@ prob.elems = np.array(elems, dtype=np.intc)
 x = prob.createDesignVec()
 lb = x.duplicate()
 ub = x.duplicate()
-
+# pdb.set_trace()
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results4'
+    prefix = 'results5'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -530,7 +530,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%stiny_svd'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -566,11 +566,11 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 320,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'bfgs_max_stored' : 10, 
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-6;  Small: 1e-3
         'sig_exact'       : 1.0, 
-        'w_value'         : 0.0001,           # 5) Tiny: 0.1;   Small: 0.0001
+        'w_value'         : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
     }, 
 
     'rsnk' : {
@@ -622,157 +622,157 @@ optimizer.solve()
 print 'Number of Positive Lagrangian', len(solver.curr_ineq[solver.curr_ineq > 1e-5])
 print 'Number of Negative Slack', len(solver.curr_slack[solver.curr_slack < -1e-5])
 
-# pdb.set_trace()
+pdb.set_trace()
 # ------------------------------------------------------
 # Extracting explicit W-hessian, A-constraintJacobian from the problem
 # initialize Kona memory manager
 
-# km = kona.linalg.memory.KonaMemory(solver)
-# pf = km.primal_factory
-# sf = km.state_factory
-# df = km.ineq_factory
+km = kona.linalg.memory.KonaMemory(solver)
+pf = km.primal_factory
+sf = km.state_factory
+df = km.ineq_factory
 
-# # request some work vectors
-# pf.request_num_vectors(15)
-# sf.request_num_vectors(15)
-# df.request_num_vectors(15)
+# request some work vectors
+pf.request_num_vectors(15)
+sf.request_num_vectors(15)
+df.request_num_vectors(15)
 
-# # initialize the total derivative matrices
-# W = kona.linalg.matrices.hessian.LagrangianHessian([pf, sf, df])
-# A = kona.linalg.matrices.hessian.TotalConstraintJacobian([pf, sf, df])
+# initialize the total derivative matrices
+W = kona.linalg.matrices.hessian.LagrangianHessian([pf, sf, df])
+A = kona.linalg.matrices.hessian.TotalConstraintJacobian([pf, sf, df])
 
-# # trigger memory allocations
-# km.allocate_memory()
+# trigger memory allocations
+km.allocate_memory()
 
-# # request vectors for the linearization point
-# at_design = pf.generate()
-# at_state = sf.generate()
-# state_work = sf.generate()
-# at_adjoint = sf.generate()
-# adjoint_rhs = sf.generate()
-# at_dual = df.generate()
-# at_slack = df.generate()
-# X = kona.linalg.vectors.composite.ReducedKKTVector(
-#     kona.linalg.vectors.composite.CompositePrimalVector(
-#         pf.generate(), df.generate()),
-#         df.generate())
-# dJdX = kona.linalg.vectors.composite.ReducedKKTVector(
-#        kona.linalg.vectors.composite.CompositePrimalVector(
-#         pf.generate(), df.generate()),
-#         df.generate())
+# request vectors for the linearization point
+at_design = pf.generate()
+at_state = sf.generate()
+state_work = sf.generate()
+at_adjoint = sf.generate()
+adjoint_rhs = sf.generate()
+at_dual = df.generate()
+at_slack = df.generate()
+X = kona.linalg.vectors.composite.ReducedKKTVector(
+    kona.linalg.vectors.composite.CompositePrimalVector(
+        pf.generate(), df.generate()),
+        df.generate())
+dJdX = kona.linalg.vectors.composite.ReducedKKTVector(
+       kona.linalg.vectors.composite.CompositePrimalVector(
+        pf.generate(), df.generate()),
+        df.generate())
 
-# lag_adj = sf.generate()
+lag_adj = sf.generate()
 
-# # request some input/output vectors for the products
-# in_design = pf.generate()
-# out_design = pf.generate()
-# out_dual = df.generate()
+# request some input/output vectors for the products
+in_design = pf.generate()
+out_design = pf.generate()
+out_dual = df.generate()
 
-# outdir = './results/temp'   
-# # inner_iters = 50
-# max_iter = 0
+outdir = './results4/tiny_svd_post'   
+# inner_iters = 50
+max_iter = 0
 
-# for j in xrange(max_iter,max_iter+1):    # inner_iters
-#     # set the point at which products will be evaluated
-#     file_design =  outdir + '/design_%i'%j                     #'./test/' + 
-#     file_dual = outdir + '/dual_%i'%j                        # './test/' + 
-#     file_slack = outdir + '/slack_%i'%j
+for j in xrange(max_iter,max_iter+1):    # inner_iters
+    # set the point at which products will be evaluated
+    file_design =  outdir + '/design_%i'%j                     
+    file_dual = outdir + '/dual_%i'%j                       
+    file_slack = outdir + '/slack_%i'%j
 
-#     file_W_exact =  outdir + '/%i_W_exact'%j
-#     file_W_approx =  outdir + '/%i_W_approx'%j
-#     file_A_exact = outdir + '/%i_A_exact'%j
-#     file_A_approx =  outdir + '/%i_A_approx'%j
-#     file_dLdX = outdir + '/%i_dldx'%j
+    file_W_exact =  outdir + '/%i_W_exact'%j
+    file_W_approx =  outdir + '/%i_W_approx'%j
+    file_A_exact = outdir + '/%i_A_exact'%j
+    file_A_approx =  outdir + '/%i_A_approx'%j
+    file_dLdX = outdir + '/%i_dldx'%j
 
-#     design_file = open(file_design, 'r')
-#     at_design.base.data = pickle.load(design_file)
-#     design_file.close()
-#     dual_file = open(file_dual, 'r')
-#     dual_vec = pickle.load(dual_file)
-#     dual_file.close()
-#     at_dual.base.data = dual_vec
+    design_file = open(file_design, 'r')
+    at_design.base.data = pickle.load(design_file)
+    design_file.close()
+    dual_file = open(file_dual, 'r')
+    dual_vec = pickle.load(dual_file)
+    dual_file.close()
+    at_dual.base.data = dual_vec
 
-#     slack_file = open(file_slack, 'r')
-#     slack_vec = pickle.load(slack_file)
-#     slack_file.close()
-#     at_slack.base.data = slack_vec
+    slack_file = open(file_slack, 'r')
+    slack_vec = pickle.load(slack_file)
+    slack_file.close()
+    at_slack.base.data = slack_vec
      
-#     X.primal.design.equals(at_design)
-#     X.primal.slack.equals(at_slack)
-#     X.dual.equals(at_dual)
+    X.primal.design.equals(at_design)
+    X.primal.slack.equals(at_slack)
+    X.dual.equals(at_dual)
 
-#     # compute states
-#     at_state.equals_primal_solution(at_design)
+    # compute states
+    at_state.equals_primal_solution(at_design)
 
-#     # compute the lagrangian adjoint
-#     lag_adj.equals_lagrangian_adjoint(
-#         X, at_state, state_work, obj_scale=1.0, cnstr_scale=1.0)
+    # compute the lagrangian adjoint
+    lag_adj.equals_lagrangian_adjoint(
+        X, at_state, state_work, obj_scale=1.0, cnstr_scale=1.0)
         
-#     # compute initial KKT conditions
-#     dJdX.equals_KKT_conditions(
-#         X, at_state, lag_adj, obj_scale=1.0, cnstr_scale=1.0)
+    # compute initial KKT conditions
+    dJdX.equals_KKT_conditions(
+        X, at_state, lag_adj, obj_scale=1.0, cnstr_scale=1.0)
 
 
-#     # linearize the Kona matrix objects
-#     W.linearize(X, at_state, at_adjoint)
-#     A.linearize(at_design, at_state)
+    # linearize the Kona matrix objects
+    W.linearize(X, at_state, at_adjoint)
+    A.linearize(at_design, at_state)
 
-#     # initialize containers for the explicit matrices
-#     num_design = len(at_design.base.data)
-#     num_stress = len(at_dual.base.data)/3
-#     num_dual = num_design + num_design + num_stress
-#     W_full_exact = np.zeros((num_design, num_design))
-#     W_full_approx = np.zeros((num_design, num_design))
-#     A_full_exact = np.zeros((num_dual, num_design))
-#     A_full_approx = np.zeros((num_dual, num_design))
+    # initialize containers for the explicit matrices
+    num_design = len(at_design.base.data)
+    num_stress = len(at_dual.base.data)/3
+    num_dual = num_design + num_design + num_stress
+    W_full_exact = np.zeros((num_design, num_design))
+    W_full_approx = np.zeros((num_design, num_design))
+    A_full_exact = np.zeros((num_dual, num_design))
+    A_full_approx = np.zeros((num_dual, num_design))
 
-#     dJdX_data = np.zeros(num_design + num_dual*2)
+    dJdX_data = np.zeros(num_design + num_dual*2)
 
-#     dJdX_data[:num_design] = dJdX.primal.design.base.data
-#     dJdX_data[num_design : num_design+num_dual] = dJdX.primal.slack.base.data
-#     dJdX_data[num_design+num_dual: ] = dJdX.dual.base.data
-
-
-#     # ----- either re-compute the A matrices column by column
-#     # loop over design variables and start assembling the matrices
-#     for i in xrange(num_design):
-#         print 'Evaluating design var:', i+1
-#         # set the input vector so that we only pluck out one column of the matrix
-#         in_design.equals(0.0)
-#         in_design.base.data[i] = 1.
-#         # perform the Lagrangian Hessian product and store
-#         W.approx.multiply_W(in_design, out_design)
-#         W_full_approx[:, i] = out_design.base.data
-
-#         W.multiply_W(in_design, out_design)
-#         W_full_exact[:, i] = out_design.base.data
-
-#         # perform the Constraint Jacobian product and store
-#         A.product(in_design, out_dual)
-#         A_full_exact[:, i] = out_dual.base.data
-
-#         A.approx.product(in_design, out_dual)
-#         A_full_approx[:, i] = out_dual.base.data
+    dJdX_data[:num_design] = dJdX.primal.design.base.data
+    dJdX_data[num_design : num_design+num_dual] = dJdX.primal.slack.base.data
+    dJdX_data[num_design+num_dual: ] = dJdX.dual.base.data
 
 
-#     # # store the matrices into a file
-#     W_file = open(file_W_exact, 'w')
-#     pickle.dump(W_full_exact, W_file)
-#     W_file.close()
+    # ----- either re-compute the A matrices column by column
+    # loop over design variables and start assembling the matrices
+    for i in xrange(num_design):
+        print 'Evaluating design var:', i+1
+        # set the input vector so that we only pluck out one column of the matrix
+        in_design.equals(0.0)
+        in_design.base.data[i] = 1.
+        # perform the Lagrangian Hessian product and store
+        W.approx.multiply_W(in_design, out_design)
+        W_full_approx[:, i] = out_design.base.data
 
-#     W_file = open(file_W_approx, 'w')
-#     pickle.dump(W_full_approx, W_file)
-#     W_file.close()
+        W.multiply_W(in_design, out_design)
+        W_full_exact[:, i] = out_design.base.data
 
-#     A_file = open(file_A_exact, 'w')
-#     pickle.dump(A_full_exact, A_file)
-#     A_file.close()
+        # perform the Constraint Jacobian product and store
+        A.product(in_design, out_dual)
+        A_full_exact[:, i] = out_dual.base.data
 
-#     A_file = open(file_A_approx, 'w')
-#     pickle.dump(A_full_approx, A_file)
-#     A_file.close()
+        A.approx.product(in_design, out_dual)
+        A_full_approx[:, i] = out_dual.base.data
 
-#     L_file = open(file_dLdX, 'w')
-#     pickle.dump(dJdX_data, L_file)
-#     L_file.close()
+
+    # # store the matrices into a file
+    W_file = open(file_W_exact, 'w')
+    pickle.dump(W_full_exact, W_file)
+    W_file.close()
+
+    W_file = open(file_W_approx, 'w')
+    pickle.dump(W_full_approx, W_file)
+    W_file.close()
+
+    A_file = open(file_A_exact, 'w')
+    pickle.dump(A_full_exact, A_file)
+    A_file.close()
+
+    A_file = open(file_A_approx, 'w')
+    pickle.dump(A_full_approx, A_file)
+    A_file.close()
+
+    L_file = open(file_dLdX, 'w')
+    pickle.dump(dJdX_data, L_file)
+    L_file.close()
 

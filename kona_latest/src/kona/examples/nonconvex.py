@@ -22,8 +22,8 @@ class NONCONVEX(UserSolver):
 
         #--------- constructing Q and A ------------  
         # np.random.seed(1) 
-        # self.D = np.sign(np.random.random(numdesign) - 0.5 )
-        self.D = np.array([-2])
+        self.D = np.sign(np.random.random(numdesign) - 0.5 )
+        # self.D = np.array([-2])
 
         self.lb = lb
         self.ub = ub

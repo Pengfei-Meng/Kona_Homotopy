@@ -13,15 +13,16 @@ class FGMRES(KrylovSolver):
         self.rel_tol = get_opt(self.optns, 1e-3, 'rel_tol')
         self.abs_tol = get_opt(self.optns, 1e-8, 'abs_tol')
         self.check_LSgrad = get_opt(self.optns, False, 'check_LSgrad')
+        self.subspace = get_opt(self.optns, False, 'subspace_size')
 
         # put in memory request
-        self.vec_fac.request_num_vectors(2*50 + 1)   #self.max_iter
+        self.vec_fac.request_num_vectors(2*self.subspace + 1)   #self.max_iter
         self.eq_fac = eq_factory
         self.ineq_fac = ineq_factory
         if self.eq_fac is not None:
-            self.eq_fac.request_num_vectors(2*50 + 1)
+            self.eq_fac.request_num_vectors(2*self.subspace + 1)
         if self.ineq_fac is not None:
-            self.ineq_fac.request_num_vectors(4*50 + 2)
+            self.ineq_fac.request_num_vectors(4*self.subspace + 2)
 
     def _generate_vector(self):
         # if there are no constraints, just return design vectors

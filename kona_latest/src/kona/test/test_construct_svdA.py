@@ -17,11 +17,11 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output4/500_svd'
+        self.outdir = './temp2'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        size_prob = 500
+        size_prob = 100
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -48,9 +48,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 150.0,                # 100-500 : 60 100 100 100 150 
-                'nominal_dist' : 30.0,              # 100-500 : 10 10 20 30  30
-                'nominal_angle' : 30.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
+                'init_step' : 60.0,                # 100-500 : 60 100 100 100 150 
+                'nominal_dist' : 10.0,              # 100-500 : 10 10 20 30  30
+                'nominal_angle' : 20.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -110,6 +110,7 @@ class InequalityTestCase(unittest.TestCase):
         self.kona_x = self.solver.curr_design
         print 'postive dual:   ', self.solver.curr_dual[self.solver.curr_dual > 1e-5]
         print 'negative slack: ', self.solver.curr_slack[self.solver.curr_slack < -1e-5]
+        import pdb; pdb.set_trace()
 
     def objfunc(self, xdict):
         self.iteration += 1
@@ -248,6 +249,8 @@ class InequalityTestCase(unittest.TestCase):
 
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)
+
+
 
         # print 'kona_x', self.kona_x
         # print 'pyopt_x', self.pyopt_x

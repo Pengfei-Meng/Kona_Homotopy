@@ -18,11 +18,11 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output5/nonconvex'
+        self.outdir = './temp/nonconvex'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        num_design = 1
+        num_design = 100
         lb = -1
         ub = 1
 
@@ -54,7 +54,7 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,                         # Hessian : num_design 
                 'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
                 'init_step' : 0.05,                       # 0.5         0.05
-                'nominal_dist' : 2.5,                     # 20           40
+                'nominal_dist' : 20,                     # 20           40
                 'nominal_angle' : 10.0*np.pi/180.,          # 50           50
                 'max_factor' : 50.0,                  
                 'min_factor' : 0.001,                   

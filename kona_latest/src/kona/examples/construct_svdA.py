@@ -27,7 +27,7 @@ class Constructed_SVDA(UserSolver):
         #--------- constructing Q and A ------------  
         A_sigma = 1./np.array(range(1, numdesign+1))**2 
         A_sigma[8:] = A_sigma[8]*np.ones(len(A_sigma[8:]))
-        A_sigma = 10*np.diag( A_sigma )
+        A_sigma = 10*np.diag( A_sigma )    
 
         np.random.seed(0)   
         A_U = np.random.randint(10, size=(numineq, numdesign))   #((numineq, numdesign))  
@@ -46,9 +46,9 @@ class Constructed_SVDA(UserSolver):
 
         self.Q_diag = 1./np.array(range(1, numdesign+1))         #np.eye(numdesign)  # 
         self.Q_diag[8:] = self.Q_diag[8]*np.ones( len(self.Q_diag[8:]) )
-        self.Q = 10*np.diag( self.Q_diag )
+        self.Q = 10*np.diag( self.Q_diag )    # 10* 
         # self.Q = np.eye(numdesign) 
-
+        # import pdb; pdb.set_trace()
 
         print 'Condition no. self.A: ', np.linalg.cond(self.A)
         print 'Condition no. self.Q: ', np.linalg.cond(self.Q)
@@ -82,8 +82,9 @@ class Constructed_SVDA(UserSolver):
         return self.init_x
 
     def init_slack(self):
-        at_slack = 10*np.ones(self.num_ineq)
-        # at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        # at_slack = 10*np.ones(self.num_ineq)
+        at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        at_slack[ at_slack<1e-3 ] = 10.0
         return (at_slack, 0)
 
     def enforce_bounds(self, design_vec):
