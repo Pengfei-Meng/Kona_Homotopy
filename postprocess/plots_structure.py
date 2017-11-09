@@ -3,13 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import pdb
 
+# #  for plotting results4
 
 # # Plotting SVD results
-case = 'medium'
+case = 'tiny'
 
-# num_design, nlcost = 128, 9
-# num_design, nlcost = 512, 10
-num_design, nlcost = 2048, 12
+num_design, nlcost, dt_onesolve = 128, 9, 0.0153
+# num_design, nlcost, dt_onesolve = 512, 10, 0.0632
+# num_design, nlcost, dt_onesolve = 2048, 12, 0.2988
 
 # xax = 'time'
 xax = 'cost'
@@ -30,7 +31,10 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-kona_time_svd = kona_timings['time'][:-1] 
+if xax is 'cost':
+    kona_time_svd = kona_timings['time'][:-1] / dt_onesolve
+if xax is 'time':
+    kona_time_svd = kona_timings['time'] / dt_onesolve
 kona_data_svd = kona_datas[new_indices]
 
 # --------------- Add the Identity PC for comparison ----------------
@@ -47,9 +51,14 @@ iter_unique2, indices2 = np.unique(kona_datas2['outer_iter'], return_index=True)
 last_indices2 = indices2[-1]
 last_inners2 = range(last_indices2+1, len(kona_datas2['outer_iter']))
 new_indices2 = np.hstack([indices2, np.array(last_inners2)])
-# import pdb; pdb.set_trace()
-kona_time_eye = kona_timings2['time'][:-1] 
+
 kona_data_eye = kona_datas2[new_indices2.astype(int)]
+if xax is 'cost':
+    kona_time_eye = kona_timings2['time'][:-1] / dt_onesolve
+    
+if xax is 'time':
+    kona_time_eye = kona_timings2['time'] / dt_onesolve
+    kona_data_eye = np.delete(kona_data_eye, -2, 0)
 
 # ------------- SNOPT data -----------------
 # --------------------------------------------------------------------
@@ -65,7 +74,7 @@ tname = dir_konahist + 'SNOPT_timings.dat'
 dtype_cols2 = np.dtype([('ncon', 'i4'), ('cost', 'i4'), ('time', 'float64')])
 snopt_time_s = np.loadtxt(tname, dtype=dtype_cols2, skiprows = 0, usecols = (0,1,3))
 
-snopt_time = snopt_time_s['time'][nCon_idx-1]
+snopt_time = snopt_time_s['time'][nCon_idx-1] / dt_onesolve
 snopt_cost = snopt_time_s['cost'][nCon_idx-1]
 
 
@@ -81,8 +90,8 @@ label_fs = 10 # axis labels' font size
 
 
 fig = plt.figure(figsize=(6,4), facecolor=None)
+# fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
-
 
 if xax is 'time':
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
@@ -95,7 +104,7 @@ if xax is 'time':
     line6, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
     ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
-    ax.set_xlabel('CPU time seconds', fontsize=axis_fs, weight='bold')
+    ax.set_xlabel('Cost (equivalent PDE solutions)', fontsize=axis_fs, weight='bold')
 
     xmax = max(kona_time_eye[-1], kona_time_svd[-1], snopt_time[-1])
 
@@ -144,10 +153,10 @@ for label in ax.yaxis.get_ticklabels():
 # ax.xaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
 
 
-ax.yaxis.set_ticks(np.logspace(-8, 2, num=11))
+ax.yaxis.set_ticks(np.logspace(-7, 2, num=10))
 ax.yaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
-textstr = 'Number of Design : %i'%num_design 
-ax.text(xmax*0.6, 15, textstr, fontsize=label_fs, weight='bold')
+# textstr = 'Number of Design : %i'%num_design 
+# ax.text(xmax*0.6, 15, textstr, fontsize=label_fs, weight='bold')
 
 # if case is 'tiny':
 leg_size = 2

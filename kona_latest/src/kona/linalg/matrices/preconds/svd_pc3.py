@@ -36,9 +36,7 @@ class SVDPC_STRESS(BaseHessian):
             self.ineq_factory.request_num_vectors(5)
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
-        bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
-        self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.w_value = get_opt(optns, 0.1, 'w_value')
 
         self.Ag = TotalConstraintJacobian( vector_factories )
@@ -54,7 +52,7 @@ class SVDPC_STRESS(BaseHessian):
         else:
             self.Ag.approx.product(in_vec, self.dual_work1)
             
-        if self.mu < self.sig_exact:
+        if self.mu < 1.0:
             self.dual_work2.equals(0.0)
             self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
         else:

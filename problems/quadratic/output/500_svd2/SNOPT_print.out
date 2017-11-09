@@ -1,0 +1,1198 @@
+
+         ==============================
+         S N O P T  7.2-5    (May 2007)
+         ==============================
+      Minimize
+      Print file 18
+      Summary file 19
+      Derivative level               3
+1
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+         ==============================
+         S N O P T  7.2-5    (May 2007)
+         ==============================
+      Minimize
+      Print file 18
+      Summary file 19
+      Derivative level               3
+1
+ 
+ Parameters
+ ==========
+
+ Files
+ -----
+ Solution file..........         0       Old basis file ........         0       Standard input.........         5
+ Insert file............         0       New basis file ........         0       (Printer)..............        18
+ Punch file.............         0       Backup basis file......         0       (Specs file)...........         0
+ Load file..............         0       Dump file..............         0       Standard output........         6
+
+ Frequencies
+ -----------
+ Print frequency........       100       Check frequency........        60       Save new basis map.....       100
+ Summary frequency......       100       Factorization frequency        50       Expand frequency.......     10000
+
+ QP subproblems
+ --------------
+ QPsolver Cholesky......
+ Scale tolerance........     0.900       Minor feasibility tol..  1.00E-06       Iteration limit........     10000
+ Scale option...........         0       Minor optimality  tol..  1.00E-06       Minor print level......         1
+ Crash tolerance........     0.100       Pivot tolerance........  3.25E-11       Partial price..........         1
+ Crash option...........         3       Elastic weight.........  1.00E+04       Prtl price section ( A)       500
+                                         New superbasics........        99       Prtl price section (-I)       500
+
+ The SQP Method
+ --------------
+ Minimize...............                 Cold start.............                 Proximal Point method..         1
+ Nonlinear objectiv vars       500       Major optimality tol...  2.00E-06       Function precision.....  3.00E-13
+ Unbounded step size....  1.00E+20       Superbasics limit......       500       Difference interval....  5.48E-07
+ Unbounded objective....  1.00E+15       Reduced Hessian dim....       500       Central difference int.  6.70E-05
+ Major step limit.......  2.00E+00       Derivative linesearch..                 Derivative level.......         3
+ Major iterations limit.      1500       Linesearch tolerance...   0.90000       Verify level...........         0
+ Minor iterations limit.       500       Penalty parameter......  0.00E+00       Major Print Level......         1
+
+ Hessian Approximation
+ ---------------------
+ Limited-Memory Hessian.                 Hessian updates........        10       Hessian frequency......  99999999
+                                                                                 Hessian flush..........  99999999
+
+ Nonlinear constraints
+ ---------------------
+ Nonlinear constraints..       500       Major feasibility tol..  1.00E-06       Violation limit........  1.00E+06
+ Nonlinear Jacobian vars       500
+
+ Miscellaneous
+ -------------
+ LU factor tolerance....      3.99       LU singularity tol.....  3.25E-11       Timing level...........         3
+ LU update tolerance....      3.99       LU swap tolerance......  1.22E-04       Debug level............         0
+ LU partial  pivoting...                 eps (machine precision)  2.22E-16       System information.....        No
+1
+ 
+
+ 
+
+ Matrix statistics
+ -----------------
+               Total      Normal        Free       Fixed     Bounded
+ Rows            500         500           0           0           0
+ Columns         500           0         500           0           0
+
+ No. of matrix elements               250000     Density     100.000
+ Biggest                          0.0000E+00  (excluding fixed columns,
+ Smallest                         0.0000E+00   free rows, and RHS)
+
+ No. of objective coefficients             0
+
+ Nonlinear constraints     500     Linear constraints       0
+ Nonlinear variables       500     Linear variables         0
+ Jacobian  variables       500     Objective variables    500
+ Total constraints         500     Total variables        500
+1
+ 
+
+ 
+ The user has defined  250000   out of  250000   constraint gradients.
+ The user has defined     500   out of     500   objective  gradients.
+
+ Cheap test of user-supplied problem derivatives...
+
+ The constraint gradients seem to be OK.
+
+ -->  The largest discrepancy was    9.49E-12  in constraint   674
+ 
+
+ The objective  gradients seem to be OK.
+
+ Gradient projected in one direction   2.80829957284E-02
+ Difference approximation              2.80831519913E-02
+1
+ 
+
+    Itn       QPmult  QPstep   nInf   SumInf   rgNorm    QPobjective   +SBS   -SBS    -BS    Pivot     L+U ncp    nS  condHz
+    100     -8.6E+01 1.0E+00                  3.0E-09  1.4923098E+03    979                           6543        10 1.0E+03
+    200     -1.7E+01 1.0E+00                  3.8E-10  5.3626224E+02    731                           8674   2    23 2.4E+03
+    300      3.7E+00 7.4E-01                  9.5E-01  3.2500880E+02     39    731         1.8E-02    8703   2    48 8.1E+02
+    400      2.6E+00 1.0E+00                  2.1E-09  2.1248026E+02    460                           8700   2    78 3.7E+02
+ 
+
+   Itns Major Minors    Step   nCon Feasible  Optimal  MeritFunction     L+U BSwap     nS  condHz Penalty
+    485     0    485              1  9.6E-02  8.6E-02  2.1528471E+02    9734           99 1.8E+03         _  r  T
+
+    Itn       QPmult  QPstep   nInf   SumInf   rgNorm    QPobjective   +SBS   -SBS    -BS    Pivot     L+U ncp    nS  condHz
+    585              1.0E+00                  1.9E-12  9.9065069E+01                                  9518       152 2.4E+02
+
+   Itns Major Minors    Step   nCon Feasible  Optimal  MeritFunction     L+U BSwap     nS  condHz Penalty
+    649     1    164 1.0E-01      2  9.3E-02  6.9E-02  2.6207324E+02    9527          198 1.5E+02 2.0E+01 _n rl T
+
+    Itn       QPmult  QPstep   nInf   SumInf   rgNorm    QPobjective   +SBS   -SBS    -BS    Pivot     L+U ncp    nS  condHz
+    749      9.6E-01 1.0E+00                  2.7E-12 -1.0291815E+01     74                           9989       286 1.4E+02
+
+   Itns Major Minors    Step   nCon Feasible  Optimal  MeritFunction     L+U BSwap     nS  condHz Penalty
+    760     2    111 7.4E-02      3  9.3E-02  8.7E-02  2.2520069E+02    9989          297 1.4E+02 2.0E+01 _s  l T
+
+    Itn       QPmult  QPstep   nInf   SumInf   rgNorm    QPobjective   +SBS   -SBS    -BS    Pivot     L+U ncp    nS  condHz
+    860      7.2E-01 1.0E+00                  7.6E-13 -2.1854370E+02     66                           9984       380 1.5E+02
+
+   Itns Major Minors    Step   nCon Feasible  Optimal  MeritFunction     L+U BSwap     nS  condHz Penalty
+    876     3    116 1.0E+00      4 (5.8E-16) 3.8E+00  1.8603109E+02    9984          396 1.5E+02 2.0E+01 _     T
+
+    Itn       QPmult  QPstep   nInf   SumInf   rgNorm    QPobjective   +SBS   -SBS    -BS    Pivot     L+U ncp    nS  condHz
+    976      5.5E-03 1.0E+00                  3.7E-14 -7.0664049E+01    176                           9981       489 1.5E+02
+
+   Itns Major Minors    Step   nCon Feasible  Optimal  MeritFunction     L+U BSwap     nS  condHz Penalty
+    976     4    100 3.0E-01      6 (5.2E-16) 2.7E-01  6.1679466E+01    9981          489 1.5E+02 2.0E+01 _
+    978     5      2 3.5E-01      8 (5.7E-16) 1.2E-01  1.4882605E+01    9981          488 1.5E+02 2.0E+01 _
+    979     6      1 1.0E+00      9 (7.2E-16) 8.5E-02  3.4439660E+00    9981          488 1.5E+02 2.0E+01 _
+    980     7      1 1.0E+00     10 (6.7E-16) 5.2E-02 -4.7229678E+00    9981          488 1.5E+02 2.0E+01 _
+    981     8      1 4.8E-01     12 (6.7E-16) 9.2E-03 -5.5687875E+00    9981          488 1.5E+02 2.0E+01 _
+    982     9      1 1.0E+00     13 (6.6E-16) 6.8E-03 -5.6229536E+00    9981          488 1.5E+02 2.0E+01 _
+    983    10      1 1.0E+00     14 (6.7E-16) 1.3E-03 -5.6385667E+00    9981          488 1.5E+02 2.0E+01 _
+    984    11      1 1.0E+00     15 (6.4E-16) 1.8E-04 -5.6406883E+00    6488    15    488 5.0E+00 2.0E+01 _
+    985    12      1 1.0E+00     16 (6.4E-16) 5.0E-05 -5.6407379E+00    6488          488 5.0E+00 2.0E+01 _  R
+    986    13      1 1.0E+00     17 (6.4E-16) 2.1E-05 -5.6407390E+00    6488          488 5.0E+00 2.0E+01 _s
+    987    14      1 1.0E+00     18 (6.6E-16)(1.1E-06)-5.6407392E+00    6488          488 5.0E+00 2.0E+01 _
+1
+ 
+ SNOPTC EXIT   0 -- finished successfully
+ SNOPTC INFO   1 -- optimality conditions satisfied
+
+ Problem name                 SVD_Cons
+ No. of iterations                 987   Objective value     -5.6407392375E+00
+ No. of major iterations            14   Linear objective     0.0000000000E+00
+ Penalty parameter           2.042E+01   Nonlinear objective -5.6407392375E+00
+ No. of calls to funobj             19   No. of calls to funcon             19
+ No. of superbasics                488   No. of basic nonlinears            12
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                     477 1.8E+00   Max pi                     50 4.1E+01
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             4 4.6E-05
+ Nonlinear constraint violn    9.4E-15
+1
+ 
+ Name           SVD_Cons                 Objective Value     -5.6407392375E+00
+
+ Status         Optimal Soln             Iteration    987    Superbasics   488
+
+ Objective      3        (Min)
+ RHS            4       
+ Ranges         5       
+ Bounds         6       
+
+ Section 1 - Rows
+
+  Number  ...Row.. State  ...Activity...  Slack Activity  ..Lower Limit.  ..Upper Limit.  .Dual Activity    ..i
+ 
+     501  r      1    BS         0.89604         0.89604          .                None           .           1
+     502  r      2    BS         2.65785         2.65785          .                None           .           2
+     503  r      3    BS         1.97024         1.97024          .                None           .           3
+     504  r      4    BS         2.58893         2.58893          .                None           .           4
+     505  r      5    BS         1.21065         1.21065          .                None           .           5
+     506  r      6    BS         0.12840         0.12840          .                None           .           6
+     507  r      7    BS         2.14217         2.14217          .                None           .           7
+     508  r      8    BS         1.53687         1.53687          .                None           .           8
+     509  r      9    BS         3.46426         3.46426          .                None           .           9
+     510  r     10    BS         1.53716         1.53716          .                None           .          10
+     511  r     11    BS         1.46457         1.46457          .                None           .          11
+     512  r     12    BS         0.33734         0.33734          .                None           .          12
+     513  r     13    BS         1.83016         1.83016          .                None           .          13
+     514  r     14    BS         0.93504         0.93504          .                None           .          14
+     515  r     15    BS         0.03258         0.03258          .                None           .          15
+     516  r     16    BS         2.05931         2.05931          .                None           .          16
+     517  r     17    BS         1.53139         1.53139          .                None           .          17
+     518  r     18    BS         1.32754         1.32754          .                None           .          18
+     519  r     19    BS         2.21817         2.21817          .                None           .          19
+     520  r     20    BS         0.07165         0.07165          .                None           .          20
+     521  r     21    BS         3.22018         3.22018          .                None           .          21
+     522  r     22    BS         1.76348         1.76348          .                None           .          22
+     523  r     23    BS         1.80996         1.80996          .                None           .          23
+     524  r     24    BS         0.74435         0.74435          .                None           .          24
+     525  r     25    BS         1.74415         1.74415          .                None           .          25
+     526  r     26    BS         2.75754         2.75754          .                None           .          26
+     527  r     27    BS         1.76696         1.76696          .                None           .          27
+     528  r     28    BS         2.27892         2.27892          .                None           .          28
+     529  r     29    BS         1.46231         1.46231          .                None           .          29
+     530  r     30    BS         1.43042         1.43042          .                None           .          30
+     531  r     31    BS         2.47139         2.47139          .                None           .          31
+     532  r     32    BS         1.60388         1.60388          .                None           .          32
+     533  r     33    BS         1.46885         1.46885          .                None           .          33
+     534  r     34    BS         2.73626         2.73626          .                None           .          34
+     535  r     35    BS         0.44889         0.44889          .                None           .          35
+     536  r     36    BS         1.54989         1.54989          .                None           .          36
+     537  r     37    BS         1.45173         1.45173          .                None           .          37
+     538  r     38    BS         1.16381         1.16381          .                None           .          38
+     539  r     39    BS         2.79538         2.79538          .                None           .          39
+     540  r     40    BS         2.36793         2.36793          .                None           .          40
+     541  r     41    BS         2.59274         2.59274          .                None           .          41
+     542  r     42    BS         1.96689         1.96689          .                None           .          42
+     543  r     43    BS         1.01820         1.01820          .                None           .          43
+     544  r     44    BS         2.46968         2.46968          .                None           .          44
+     545  r     45    BS         1.95868         1.95868          .                None           .          45
+     546  r     46    BS         1.58014         1.58014          .                None           .          46
+     547  r     47    BS         2.36584         2.36584          .                None           .          47
+     548  r     48    BS         1.59172         1.59172          .                None           .          48
+     549  r     49    BS         2.00617         2.00617          .                None           .          49
+     550  r     50    LL         0.00000         0.00000          .                None         40.65327     50
+     551  r     51    BS         2.18705         2.18705          .                None           .          51
+     552  r     52    BS         2.02584         2.02584          .                None           .          52
+     553  r     53    BS         0.43739         0.43739          .                None           .          53
+     554  r     54    BS         2.19928         2.19928          .                None           .          54
+     555  r     55    BS         2.82584         2.82584          .                None           .          55
+     556  r     56    BS         2.70985         2.70985          .                None           .          56
+     557  r     57    BS         2.25341         2.25341          .                None           .          57
+     558  r     58    BS         0.78361         0.78361          .                None           .          58
+     559  r     59    BS         1.41658         1.41658          .                None           .          59
+     560  r     60    BS         1.61901         1.61901          .                None           .          60
+     561  r     61    BS         0.83317         0.83317          .                None           .          61
+     562  r     62    BS         1.58866         1.58866          .                None           .          62
+     563  r     63    BS         1.29591         1.29591          .                None           .          63
+     564  r     64    BS         1.91632         1.91632          .                None           .          64
+     565  r     65    BS         0.39274         0.39274          .                None           .          65
+     566  r     66    BS         2.49732         2.49732          .                None           .          66
+     567  r     67    BS         0.08334         0.08334          .                None           .          67
+     568  r     68    BS         1.23167         1.23167          .                None           .          68
+     569  r     69    BS         2.00109         2.00109          .                None           .          69
+     570  r     70    BS         1.67569         1.67569          .                None           .          70
+     571  r     71    BS         2.32452         2.32452          .                None           .          71
+     572  r     72    BS         0.42185         0.42185          .                None           .          72
+     573  r     73    BS         1.17627         1.17627          .                None           .          73
+     574  r     74    BS         2.06777         2.06777          .                None           .          74
+     575  r     75    BS         0.51826         0.51826          .                None           .          75
+     576  r     76    BS         1.48321         1.48321          .                None           .          76
+     577  r     77    BS         0.70334         0.70334          .                None           .          77
+     578  r     78    BS         1.58580         1.58580          .                None           .          78
+     579  r     79    BS         0.99289         0.99289          .                None           .          79
+     580  r     80    BS         3.07446         3.07446          .                None           .          80
+     581  r     81    BS         1.81377         1.81377          .                None           .          81
+     582  r     82    BS         2.64375         2.64375          .                None           .          82
+     583  r     83    BS         1.04953         1.04953          .                None           .          83
+     584  r     84    BS         2.87564         2.87564          .                None           .          84
+     585  r     85    BS         1.53123         1.53123          .                None           .          85
+     586  r     86    BS         1.97903         1.97903          .                None           .          86
+     587  r     87    BS         0.48883         0.48883          .                None           .          87
+     588  r     88    BS         1.30157         1.30157          .                None           .          88
+     589  r     89    BS         0.26859         0.26859          .                None           .          89
+     590  r     90    BS         1.49020         1.49020          .                None           .          90
+     591  r     91    BS         1.33614         1.33614          .                None           .          91
+     592  r     92    BS         1.70745         1.70745          .                None           .          92
+     593  r     93    BS         1.94187         1.94187          .                None           .          93
+     594  r     94    BS         0.70513         0.70513          .                None           .          94
+     595  r     95    BS         1.28543         1.28543          .                None           .          95
+     596  r     96    BS         0.77557         0.77557          .                None           .          96
+     597  r     97    BS         0.21559         0.21559          .                None           .          97
+     598  r     98    BS         1.62171         1.62171          .                None           .          98
+     599  r     99    BS         2.45319         2.45319          .                None           .          99
+     600  r    100    BS         1.62613         1.62613          .                None           .         100
+     601  r    101    BS         2.87650         2.87650          .                None           .         101
+     602  r    102    BS         2.21066         2.21066          .                None           .         102
+     603  r    103    BS         1.04230         1.04230          .                None           .         103
+     604  r    104    BS         2.06448         2.06448          .                None           .         104
+     605  r    105    BS         2.12943         2.12943          .                None           .         105
+     606  r    106    BS         1.98589         1.98589          .                None           .         106
+     607  r    107    BS         1.02822         1.02822          .                None           .         107
+     608  r    108    BS         1.38801         1.38801          .                None           .         108
+     609  r    109    BS         0.39860         0.39860          .                None           .         109
+     610  r    110    BS         3.34680         3.34680          .                None           .         110
+     611  r    111    BS         1.33806         1.33806          .                None           .         111
+     612  r    112    BS         1.17091         1.17091          .                None           .         112
+     613  r    113    BS         1.19625         1.19625          .                None           .         113
+     614  r    114    BS         0.47983         0.47983          .                None           .         114
+     615  r    115    BS         2.41684         2.41684          .                None           .         115
+     616  r    116    BS         1.44340         1.44340          .                None           .         116
+     617  r    117    BS         2.38538         2.38538          .                None           .         117
+     618  r    118    BS         2.01314         2.01314          .                None           .         118
+     619  r    119    BS         2.53643         2.53643          .                None           .         119
+     620  r    120    BS         0.89761         0.89761          .                None           .         120
+     621  r    121    BS         1.70870         1.70870          .                None           .         121
+     622  r    122    LL         0.00000         0.00000          .                None         17.90973    122
+     623  r    123    BS         1.18475         1.18475          .                None           .         123
+     624  r    124    BS         2.50845         2.50845          .                None           .         124
+     625  r    125    LL         0.00000         0.00000          .                None          1.11546    125
+     626  r    126    BS         2.61659         2.61659          .                None           .         126
+     627  r    127    BS         2.55735         2.55735          .                None           .         127
+     628  r    128    BS         0.75806         0.75806          .                None           .         128
+     629  r    129    BS         2.28093         2.28093          .                None           .         129
+     630  r    130    BS         1.96787         1.96787          .                None           .         130
+     631  r    131    BS         2.12568         2.12568          .                None           .         131
+     632  r    132    BS         1.54745         1.54745          .                None           .         132
+     633  r    133    BS         2.33639         2.33639          .                None           .         133
+     634  r    134    BS         1.06041         1.06041          .                None           .         134
+     635  r    135    BS         1.55672         1.55672          .                None           .         135
+     636  r    136    BS         1.62053         1.62053          .                None           .         136
+     637  r    137    BS         0.47021         0.47021          .                None           .         137
+     638  r    138    BS         0.67699         0.67699          .                None           .         138
+     639  r    139    BS         3.03629         3.03629          .                None           .         139
+     640  r    140    BS         2.58371         2.58371          .                None           .         140
+     641  r    141    BS         0.54465         0.54465          .                None           .         141
+     642  r    142    BS         2.18272         2.18272          .                None           .         142
+     643  r    143    BS         1.15551         1.15551          .                None           .         143
+     644  r    144    BS         0.10349         0.10349          .                None           .         144
+     645  r    145    BS         1.09653         1.09653          .                None           .         145
+     646  r    146    BS         1.59133         1.59133          .                None           .         146
+     647  r    147    BS         0.09268         0.09268          .                None           .         147
+     648  r    148    BS         0.84883         0.84883          .                None           .         148
+     649  r    149    BS         0.99867         0.99867          .                None           .         149
+     650  r    150    BS         2.12473         2.12473          .                None           .         150
+     651  r    151    BS         0.72032         0.72032          .                None           .         151
+     652  r    152    BS         0.46101         0.46101          .                None           .         152
+     653  r    153    BS         1.16519         1.16519          .                None           .         153
+     654  r    154    BS         1.31609         1.31609          .                None           .         154
+     655  r    155    BS         2.55586         2.55586          .                None           .         155
+     656  r    156    BS         0.98694         0.98694          .                None           .         156
+     657  r    157    BS         0.80679         0.80679          .                None           .         157
+     658  r    158    BS         2.28037         2.28037          .                None           .         158
+     659  r    159    BS         0.89734         0.89734          .                None           .         159
+     660  r    160    BS         1.27244         1.27244          .                None           .         160
+     661  r    161    BS         2.60831         2.60831          .                None           .         161
+     662  r    162    BS         1.54933         1.54933          .                None           .         162
+     663  r    163    BS         2.08257         2.08257          .                None           .         163
+     664  r    164    BS         2.26874         2.26874          .                None           .         164
+     665  r    165    BS         0.19589         0.19589          .                None           .         165
+     666  r    166    BS         0.79218         0.79218          .                None           .         166
+     667  r    167    BS         1.66120         1.66120          .                None           .         167
+     668  r    168    BS         1.58592         1.58592          .                None           .         168
+     669  r    169    BS         1.83560         1.83560          .                None           .         169
+     670  r    170    BS         2.85483         2.85483          .                None           .         170
+     671  r    171    BS         1.82297         1.82297          .                None           .         171
+     672  r    172    BS         2.39372         2.39372          .                None           .         172
+     673  r    173    BS         1.09432         1.09432          .                None           .         173
+     674  r    174    BS         3.08174         3.08174          .                None           .         174
+     675  r    175    BS         1.90149         1.90149          .                None           .         175
+     676  r    176    BS         0.83734         0.83734          .                None           .         176
+     677  r    177    BS         1.85007         1.85007          .                None           .         177
+     678  r    178    BS         1.49394         1.49394          .                None           .         178
+     679  r    179    BS         2.28083         2.28083          .                None           .         179
+     680  r    180    BS         0.27890         0.27890          .                None           .         180
+     681  r    181    BS         2.04866         2.04866          .                None           .         181
+     682  r    182    BS         2.41986         2.41986          .                None           .         182
+     683  r    183    BS         1.27867         1.27867          .                None           .         183
+     684  r    184    BS         1.16145         1.16145          .                None           .         184
+     685  r    185    BS         2.09232         2.09232          .                None           .         185
+     686  r    186    BS         1.66485         1.66485          .                None           .         186
+     687  r    187    BS         1.87996         1.87996          .                None           .         187
+     688  r    188    BS         1.23054         1.23054          .                None           .         188
+     689  r    189    BS         1.48462         1.48462          .                None           .         189
+     690  r    190    BS         1.75782         1.75782          .                None           .         190
+     691  r    191    BS         1.10617         1.10617          .                None           .         191
+     692  r    192    BS         1.88293         1.88293          .                None           .         192
+     693  r    193    BS         1.64827         1.64827          .                None           .         193
+     694  r    194    BS         2.14113         2.14113          .                None           .         194
+     695  r    195    BS         0.28632         0.28632          .                None           .         195
+     696  r    196    BS         0.68055         0.68055          .                None           .         196
+     697  r    197    BS         2.42715         2.42715          .                None           .         197
+     698  r    198    BS         2.64661         2.64661          .                None           .         198
+     699  r    199    BS         1.55445         1.55445          .                None           .         199
+     700  r    200    BS         1.22561         1.22561          .                None           .         200
+     701  r    201    BS         1.52661         1.52661          .                None           .         201
+     702  r    202    BS         0.52292         0.52292          .                None           .         202
+     703  r    203    BS         1.38491         1.38491          .                None           .         203
+     704  r    204    BS         2.12044         2.12044          .                None           .         204
+     705  r    205    BS         1.81128         1.81128          .                None           .         205
+     706  r    206    BS         1.05903         1.05903          .                None           .         206
+     707  r    207    BS         1.65752         1.65752          .                None           .         207
+     708  r    208    BS         1.40879         1.40879          .                None           .         208
+     709  r    209    BS         2.35563         2.35563          .                None           .         209
+     710  r    210    BS         1.43970         1.43970          .                None           .         210
+     711  r    211    BS         2.37833         2.37833          .                None           .         211
+     712  r    212    BS         0.69158         0.69158          .                None           .         212
+     713  r    213    BS         0.03897         0.03897          .                None           .         213
+     714  r    214    BS         1.64306         1.64306          .                None           .         214
+     715  r    215    BS         0.51503         0.51503          .                None           .         215
+     716  r    216    BS         2.07202         2.07202          .                None           .         216
+     717  r    217    BS         0.95926         0.95926          .                None           .         217
+     718  r    218    BS         1.18701         1.18701          .                None           .         218
+     719  r    219    BS         1.31493         1.31493          .                None           .         219
+     720  r    220    BS         0.89676         0.89676          .                None           .         220
+     721  r    221    BS         1.81856         1.81856          .                None           .         221
+     722  r    222    BS         2.53030         2.53030          .                None           .         222
+     723  r    223    BS         1.68332         1.68332          .                None           .         223
+     724  r    224    BS         0.38653         0.38653          .                None           .         224
+     725  r    225    BS         1.43616         1.43616          .                None           .         225
+     726  r    226    BS         2.07069         2.07069          .                None           .         226
+     727  r    227    BS         2.69375         2.69375          .                None           .         227
+     728  r    228    BS         2.61173         2.61173          .                None           .         228
+     729  r    229    BS         0.38968         0.38968          .                None           .         229
+     730  r    230    BS         2.35726         2.35726          .                None           .         230
+     731  r    231    LL         0.00000         0.00000          .                None         10.77549    231
+     732  r    232    LL        -0.00000        -0.00000          .                None          4.97778    232
+     733  r    233    BS         1.20282         1.20282          .                None           .         233
+     734  r    234    BS         0.87647         0.87647          .                None           .         234
+     735  r    235    LL        -0.00000        -0.00000          .                None         16.53088    235
+     736  r    236    BS         0.60715         0.60715          .                None           .         236
+     737  r    237    BS         2.76567         2.76567          .                None           .         237
+     738  r    238    BS         0.80804         0.80804          .                None           .         238
+     739  r    239    BS         0.52365         0.52365          .                None           .         239
+     740  r    240    BS         1.02186         1.02186          .                None           .         240
+     741  r    241    BS         1.21353         1.21353          .                None           .         241
+     742  r    242    BS         2.13145         2.13145          .                None           .         242
+     743  r    243    BS         1.33770         1.33770          .                None           .         243
+     744  r    244    BS         1.42462         1.42462          .                None           .         244
+     745  r    245    BS         2.66053         2.66053          .                None           .         245
+     746  r    246    BS         1.93697         1.93697          .                None           .         246
+     747  r    247    BS         2.33333         2.33333          .                None           .         247
+     748  r    248    BS         2.30014         2.30014          .                None           .         248
+     749  r    249    BS         0.89896         0.89896          .                None           .         249
+     750  r    250    BS         1.78689         1.78689          .                None           .         250
+     751  r    251    BS         1.67722         1.67722          .                None           .         251
+     752  r    252    BS         0.38301         0.38301          .                None           .         252
+     753  r    253    BS         1.68653         1.68653          .                None           .         253
+     754  r    254    BS         0.68154         0.68154          .                None           .         254
+     755  r    255    BS         1.95305         1.95305          .                None           .         255
+     756  r    256    BS         0.25140         0.25140          .                None           .         256
+     757  r    257    BS         2.30470         2.30470          .                None           .         257
+     758  r    258    BS         0.02898         0.02898          .                None           .         258
+     759  r    259    BS         1.02844         1.02844          .                None           .         259
+     760  r    260    BS         3.39935         3.39935          .                None           .         260
+     761  r    261    BS         1.28163         1.28163          .                None           .         261
+     762  r    262    BS         1.48347         1.48347          .                None           .         262
+     763  r    263    BS         3.02008         3.02008          .                None           .         263
+     764  r    264    BS         1.99267         1.99267          .                None           .         264
+     765  r    265    BS         1.51294         1.51294          .                None           .         265
+     766  r    266    BS         1.01205         1.01205          .                None           .         266
+     767  r    267    BS         1.62562         1.62562          .                None           .         267
+     768  r    268    BS         1.40236         1.40236          .                None           .         268
+     769  r    269    BS         1.44254         1.44254          .                None           .         269
+     770  r    270    BS         1.76306         1.76306          .                None           .         270
+     771  r    271    BS         2.23872         2.23872          .                None           .         271
+     772  r    272    BS         0.78965         0.78965          .                None           .         272
+     773  r    273    BS         0.25499         0.25499          .                None           .         273
+     774  r    274    BS         1.19244         1.19244          .                None           .         274
+     775  r    275    LL         0.00000         0.00000          .                None         28.35698    275
+     776  r    276    BS         2.58249         2.58249          .                None           .         276
+     777  r    277    BS         1.41336         1.41336          .                None           .         277
+     778  r    278    BS         0.64004         0.64004          .                None           .         278
+     779  r    279    BS         2.34060         2.34060          .                None           .         279
+     780  r    280    BS         2.86248         2.86248          .                None           .         280
+     781  r    281    BS         1.67055         1.67055          .                None           .         281
+     782  r    282    BS         1.67566         1.67566          .                None           .         282
+     783  r    283    BS         0.59721         0.59721          .                None           .         283
+     784  r    284    BS         0.44697         0.44697          .                None           .         284
+     785  r    285    BS         2.95471         2.95471          .                None           .         285
+     786  r    286    BS         2.25100         2.25100          .                None           .         286
+     787  r    287    BS         2.55528         2.55528          .                None           .         287
+     788  r    288    BS         0.89468         0.89468          .                None           .         288
+     789  r    289    BS         0.28290         0.28290          .                None           .         289
+     790  r    290    BS         1.52890         1.52890          .                None           .         290
+     791  r    291    BS         1.05208         1.05208          .                None           .         291
+     792  r    292    BS         0.88841         0.88841          .                None           .         292
+     793  r    293    BS         0.58246         0.58246          .                None           .         293
+     794  r    294    BS         2.62192         2.62192          .                None           .         294
+     795  r    295    BS         2.09316         2.09316          .                None           .         295
+     796  r    296    BS         0.68959         0.68959          .                None           .         296
+     797  r    297    BS         2.73712         2.73712          .                None           .         297
+     798  r    298    BS         2.86861         2.86861          .                None           .         298
+     799  r    299    BS         1.15061         1.15061          .                None           .         299
+     800  r    300    BS         1.57333         1.57333          .                None           .         300
+     801  r    301    BS         1.23347         1.23347          .                None           .         301
+     802  r    302    BS         0.33600         0.33600          .                None           .         302
+     803  r    303    BS         1.43653         1.43653          .                None           .         303
+     804  r    304    BS         1.84045         1.84045          .                None           .         304
+     805  r    305    BS         0.08223         0.08223          .                None           .         305
+     806  r    306    BS         0.74406         0.74406          .                None           .         306
+     807  r    307    BS         1.21031         1.21031          .                None           .         307
+     808  r    308    BS         0.53493         0.53493          .                None           .         308
+     809  r    309    BS         1.93210         1.93210          .                None           .         309
+     810  r    310    BS         1.81736         1.81736          .                None           .         310
+     811  r    311    BS         0.64396         0.64396          .                None           .         311
+     812  r    312    BS         2.49514         2.49514          .                None           .         312
+     813  r    313    BS         1.37709         1.37709          .                None           .         313
+     814  r    314    BS         1.54984         1.54984          .                None           .         314
+     815  r    315    BS         2.76510         2.76510          .                None           .         315
+     816  r    316    BS         2.10364         2.10364          .                None           .         316
+     817  r    317    BS         0.08075         0.08075          .                None           .         317
+     818  r    318    BS         1.30272         1.30272          .                None           .         318
+     819  r    319    BS         1.88074         1.88074          .                None           .         319
+     820  r    320    BS         2.48695         2.48695          .                None           .         320
+     821  r    321    BS         0.68793         0.68793          .                None           .         321
+     822  r    322    BS         2.81033         2.81033          .                None           .         322
+     823  r    323    BS         2.05141         2.05141          .                None           .         323
+     824  r    324    BS         0.74246         0.74246          .                None           .         324
+     825  r    325    BS         1.07443         1.07443          .                None           .         325
+     826  r    326    BS         0.32300         0.32300          .                None           .         326
+     827  r    327    BS         2.56775         2.56775          .                None           .         327
+     828  r    328    BS         1.92027         1.92027          .                None           .         328
+     829  r    329    BS         2.19430         2.19430          .                None           .         329
+     830  r    330    BS         1.47822         1.47822          .                None           .         330
+     831  r    331    BS         0.29140         0.29140          .                None           .         331
+     832  r    332    BS         1.54098         1.54098          .                None           .         332
+     833  r    333    BS         0.96181         0.96181          .                None           .         333
+     834  r    334    BS         1.56393         1.56393          .                None           .         334
+     835  r    335    BS         0.73900         0.73900          .                None           .         335
+     836  r    336    BS         1.79031         1.79031          .                None           .         336
+     837  r    337    BS         1.07365         1.07365          .                None           .         337
+     838  r    338    BS         2.33672         2.33672          .                None           .         338
+     839  r    339    LL        -0.00000        -0.00000          .                None          2.58953    339
+     840  r    340    BS         3.17615         3.17615          .                None           .         340
+     841  r    341    BS         1.89423         1.89423          .                None           .         341
+     842  r    342    BS         2.49823         2.49823          .                None           .         342
+     843  r    343    BS         2.71288         2.71288          .                None           .         343
+     844  r    344    BS         2.27618         2.27618          .                None           .         344
+     845  r    345    BS         1.94774         1.94774          .                None           .         345
+     846  r    346    BS         0.60758         0.60758          .                None           .         346
+     847  r    347    BS         0.38011         0.38011          .                None           .         347
+     848  r    348    BS         0.72639         0.72639          .                None           .         348
+     849  r    349    BS         1.79860         1.79860          .                None           .         349
+     850  r    350    BS         1.32712         1.32712          .                None           .         350
+     851  r    351    BS         1.58906         1.58906          .                None           .         351
+     852  r    352    BS         2.25566         2.25566          .                None           .         352
+     853  r    353    BS         0.41675         0.41675          .                None           .         353
+     854  r    354    BS         0.37776         0.37776          .                None           .         354
+     855  r    355    BS         1.31961         1.31961          .                None           .         355
+     856  r    356    BS         1.40439         1.40439          .                None           .         356
+     857  r    357    BS         2.49371         2.49371          .                None           .         357
+     858  r    358    BS         0.85833         0.85833          .                None           .         358
+     859  r    359    BS         1.55921         1.55921          .                None           .         359
+     860  r    360    BS         0.99567         0.99567          .                None           .         360
+     861  r    361    BS         1.90843         1.90843          .                None           .         361
+     862  r    362    BS         2.19928         2.19928          .                None           .         362
+     863  r    363    BS         3.01364         3.01364          .                None           .         363
+     864  r    364    BS         1.24526         1.24526          .                None           .         364
+     865  r    365    BS         1.56324         1.56324          .                None           .         365
+     866  r    366    BS         0.50831         0.50831          .                None           .         366
+     867  r    367    BS         1.46553         1.46553          .                None           .         367
+     868  r    368    BS         1.76952         1.76952          .                None           .         368
+     869  r    369    BS         1.66741         1.66741          .                None           .         369
+     870  r    370    BS         3.23488         3.23488          .                None           .         370
+     871  r    371    BS         2.28847         2.28847          .                None           .         371
+     872  r    372    BS         2.83956         2.83956          .                None           .         372
+     873  r    373    BS         2.68292         2.68292          .                None           .         373
+     874  r    374    BS         0.25955         0.25955          .                None           .         374
+     875  r    375    BS         1.74401         1.74401          .                None           .         375
+     876  r    376    BS         1.50116         1.50116          .                None           .         376
+     877  r    377    BS         0.85006         0.85006          .                None           .         377
+     878  r    378    BS         1.43647         1.43647          .                None           .         378
+     879  r    379    BS         1.33734         1.33734          .                None           .         379
+     880  r    380    BS         1.83183         1.83183          .                None           .         380
+     881  r    381    BS         0.12283         0.12283          .                None           .         381
+     882  r    382    BS         1.81063         1.81063          .                None           .         382
+     883  r    383    BS         2.43706         2.43706          .                None           .         383
+     884  r    384    BS         0.28613         0.28613          .                None           .         384
+     885  r    385    BS         0.67556         0.67556          .                None           .         385
+     886  r    386    BS         1.43536         1.43536          .                None           .         386
+     887  r    387    BS         0.64881         0.64881          .                None           .         387
+     888  r    388    BS         2.88794         2.88794          .                None           .         388
+     889  r    389    BS         0.85211         0.85211          .                None           .         389
+     890  r    390    BS         1.86217         1.86217          .                None           .         390
+     891  r    391    BS         2.44522         2.44522          .                None           .         391
+     892  r    392    BS         0.76399         0.76399          .                None           .         392
+     893  r    393    BS         1.23385         1.23385          .                None           .         393
+     894  r    394    BS         1.24859         1.24859          .                None           .         394
+     895  r    395    BS         2.08403         2.08403          .                None           .         395
+     896  r    396    BS         2.78927         2.78927          .                None           .         396
+     897  r    397    BS         0.65478         0.65478          .                None           .         397
+     898  r    398    BS         2.73396         2.73396          .                None           .         398
+     899  r    399    BS         2.24412         2.24412          .                None           .         399
+     900  r    400    BS         2.12577         2.12577          .                None           .         400
+     901  r    401    LL         0.00000         0.00000          .                None          4.51534    401
+     902  r    402    BS         2.07555         2.07555          .                None           .         402
+     903  r    403    BS         1.15177         1.15177          .                None           .         403
+     904  r    404    BS         3.06102         3.06102          .                None           .         404
+     905  r    405    BS         2.12019         2.12019          .                None           .         405
+     906  r    406    BS         2.82097         2.82097          .                None           .         406
+     907  r    407    BS         1.06586         1.06586          .                None           .         407
+     908  r    408    BS         2.56504         2.56504          .                None           .         408
+     909  r    409    BS         0.21114         0.21114          .                None           .         409
+     910  r    410    BS         0.25521         0.25521          .                None           .         410
+     911  r    411    BS         0.79062         0.79062          .                None           .         411
+     912  r    412    BS         1.69586         1.69586          .                None           .         412
+     913  r    413    BS         0.60786         0.60786          .                None           .         413
+     914  r    414    BS         1.40897         1.40897          .                None           .         414
+     915  r    415    BS         2.03611         2.03611          .                None           .         415
+     916  r    416    BS         2.31840         2.31840          .                None           .         416
+     917  r    417    LL        -0.00000        -0.00000          .                None         13.86401    417
+     918  r    418    BS         1.67250         1.67250          .                None           .         418
+     919  r    419    BS         1.97723         1.97723          .                None           .         419
+     920  r    420    BS         1.19943         1.19943          .                None           .         420
+     921  r    421    BS         0.60372         0.60372          .                None           .         421
+     922  r    422    BS         1.29102         1.29102          .                None           .         422
+     923  r    423    BS         1.78901         1.78901          .                None           .         423
+     924  r    424    BS         0.73909         0.73909          .                None           .         424
+     925  r    425    BS         2.29795         2.29795          .                None           .         425
+     926  r    426    BS         1.11213         1.11213          .                None           .         426
+     927  r    427    BS         0.10729         0.10729          .                None           .         427
+     928  r    428    LL         0.00000         0.00000          .                None         26.90308    428
+     929  r    429    BS         0.73936         0.73936          .                None           .         429
+     930  r    430    BS         0.67248         0.67248          .                None           .         430
+     931  r    431    BS         0.54016         0.54016          .                None           .         431
+     932  r    432    BS         0.47205         0.47205          .                None           .         432
+     933  r    433    BS         0.64954         0.64954          .                None           .         433
+     934  r    434    BS         1.47084         1.47084          .                None           .         434
+     935  r    435    BS         1.84903         1.84903          .                None           .         435
+     936  r    436    BS         2.07817         2.07817          .                None           .         436
+     937  r    437    BS         2.31507         2.31507          .                None           .         437
+     938  r    438    BS         1.70798         1.70798          .                None           .         438
+     939  r    439    BS         1.40053         1.40053          .                None           .         439
+     940  r    440    BS         2.55764         2.55764          .                None           .         440
+     941  r    441    BS         1.23147         1.23147          .                None           .         441
+     942  r    442    BS         0.71979         0.71979          .                None           .         442
+     943  r    443    BS         1.87815         1.87815          .                None           .         443
+     944  r    444    BS         1.73668         1.73668          .                None           .         444
+     945  r    445    BS         1.41319         1.41319          .                None           .         445
+     946  r    446    BS         0.63270         0.63270          .                None           .         446
+     947  r    447    BS         1.18825         1.18825          .                None           .         447
+     948  r    448    BS         0.72208         0.72208          .                None           .         448
+     949  r    449    BS         2.72014         2.72014          .                None           .         449
+     950  r    450    BS         2.69318         2.69318          .                None           .         450
+     951  r    451    BS         0.71441         0.71441          .                None           .         451
+     952  r    452    BS         1.43871         1.43871          .                None           .         452
+     953  r    453    BS         2.95408         2.95408          .                None           .         453
+     954  r    454    BS         1.29808         1.29808          .                None           .         454
+     955  r    455    BS         0.89715         0.89715          .                None           .         455
+     956  r    456    BS         0.40416         0.40416          .                None           .         456
+     957  r    457    BS         0.47109         0.47109          .                None           .         457
+     958  r    458    BS         2.14952         2.14952          .                None           .         458
+     959  r    459    BS         1.37313         1.37313          .                None           .         459
+     960  r    460    BS         0.98908         0.98908          .                None           .         460
+     961  r    461    BS         0.81238         0.81238          .                None           .         461
+     962  r    462    BS         1.58333         1.58333          .                None           .         462
+     963  r    463    LL        -0.00000        -0.00000          .                None          3.21876    463
+     964  r    464    BS         2.14910         2.14910          .                None           .         464
+     965  r    465    BS         0.63435         0.63435          .                None           .         465
+     966  r    466    BS         2.50552         2.50552          .                None           .         466
+     967  r    467    BS         1.99783         1.99783          .                None           .         467
+     968  r    468    BS         2.41710         2.41710          .                None           .         468
+     969  r    469    BS         1.42588         1.42588          .                None           .         469
+     970  r    470    BS         2.21167         2.21167          .                None           .         470
+     971  r    471    BS         2.09567         2.09567          .                None           .         471
+     972  r    472    BS         0.25551         0.25551          .                None           .         472
+     973  r    473    BS         1.37087         1.37087          .                None           .         473
+     974  r    474    BS         2.08155         2.08155          .                None           .         474
+     975  r    475    BS         1.76579         1.76579          .                None           .         475
+     976  r    476    BS         0.04902         0.04902          .                None           .         476
+     977  r    477    BS         0.43878         0.43878          .                None           .         477
+     978  r    478    BS         0.86417         0.86417          .                None           .         478
+     979  r    479    BS         0.24527         0.24527          .                None           .         479
+     980  r    480    BS         0.88233         0.88233          .                None           .         480
+     981  r    481    BS         0.56548         0.56548          .                None           .         481
+     982  r    482    BS         2.46634         2.46634          .                None           .         482
+     983  r    483    BS         1.12339         1.12339          .                None           .         483
+     984  r    484    BS         1.18335         1.18335          .                None           .         484
+     985  r    485    BS         1.29461         1.29461          .                None           .         485
+     986  r    486    BS         1.40536         1.40536          .                None           .         486
+     987  r    487    BS         1.24076         1.24076          .                None           .         487
+     988  r    488    BS         1.61718         1.61718          .                None           .         488
+     989  r    489    BS         1.72094         1.72094          .                None           .         489
+     990  r    490    BS         2.26747         2.26747          .                None           .         490
+     991  r    491    BS         1.18169         1.18169          .                None           .         491
+     992  r    492    BS         1.29870         1.29870          .                None           .         492
+     993  r    493    BS         1.73303         1.73303          .                None           .         493
+     994  r    494    BS         2.10193         2.10193          .                None           .         494
+     995  r    495    BS         2.48827         2.48827          .                None           .         495
+     996  r    496    BS         2.13834         2.13834          .                None           .         496
+     997  r    497    BS         1.74561         1.74561          .                None           .         497
+     998  r    498    BS         2.19195         2.19195          .                None           .         498
+     999  r    499    BS         2.64839         2.64839          .                None           .         499
+    1000  r    500    BS         0.40064         0.40064          .                None           .         500
+1
+ 
+ Section 2 - Columns
+
+  Number  .Column. State  ...Activity...  .Obj Gradient.  ..Lower Limit.  ..Upper Limit.  Reduced Gradnt    m+j
+ 
+       1  x      1    BS         0.03999         0.51685           None            None         -0.00001    501
+       2  x      2   SBS        -0.15530        -0.02258           None            None          0.00001    502
+       3  x      3   SBS         0.07081         0.42189           None            None          0.00001    503
+       4  x      4   SBS        -0.45549        -0.26894           None            None         -0.00005    504
+       5  x      5   SBS        -0.49275        -0.22327           None            None          0.00001    505
+       6  x      6   SBS         0.03418         0.19825           None            None         -0.00000    506
+       7  x      7   SBS        -0.54882        -0.61178           None            None         -0.00000    507
+       8  x      8   SBS        -0.94901        -0.93222           None            None          0.00000    508
+       9  x      9   SBS        -0.80765        -0.46285           None            None          0.00000    509
+      10  x     10   SBS        -1.10902        -0.43052           None            None          0.00000    510
+      11  x     11   SBS        -0.06201         0.16036           None            None          0.00000    511
+      12  x     12   SBS        -0.32968        -0.02648           None            None          0.00000    512
+      13  x     13   SBS        -1.00404        -1.00592           None            None          0.00000    513
+      14  x     14   SBS        -1.00713        -0.77054           None            None          0.00000    514
+      15  x     15   SBS        -0.90616        -0.89970           None            None         -0.00000    515
+      16  x     16   SBS        -0.74708         0.16517           None            None          0.00000    516
+      17  x     17   SBS        -1.22391        -0.88724           None            None          0.00000    517
+      18  x     18   SBS        -0.41152         0.01345           None            None          0.00000    518
+      19  x     19   SBS        -0.20155        -0.21586           None            None         -0.00000    519
+      20  x     20   SBS        -0.21261        -0.22940           None            None         -0.00000    520
+      21  x     21   SBS        -0.84697        -0.46120           None            None          0.00000    521
+      22  x     22   SBS        -0.57212        -0.44828           None            None          0.00000    522
+      23  x     23   SBS        -0.11390         0.01067           None            None         -0.00000    523
+      24  x     24   SBS        -1.43104        -0.85871           None            None          0.00000    524
+      25  x     25   SBS        -0.62474        -0.40119           None            None         -0.00000    525
+      26  x     26   SBS        -0.31245         0.10055           None            None          0.00000    526
+      27  x     27   SBS        -1.08895        -0.94683           None            None         -0.00000    527
+      28  x     28   SBS        -0.01664         0.40385           None            None          0.00000    528
+      29  x     29   SBS        -0.81268        -0.04225           None            None          0.00000    529
+      30  x     30   SBS        -1.11382        -0.42725           None            None          0.00000    530
+      31  x     31   SBS        -0.31130        -0.16486           None            None         -0.00000    531
+      32  x     32   SBS        -1.57964        -0.86552           None            None          0.00000    532
+      33  x     33   SBS        -0.79603        -0.53057           None            None          0.00000    533
+      34  x     34   SBS         0.28531         0.68616           None            None          0.00000    534
+      35  x     35   SBS         0.49969         0.67985           None            None          0.00000    535
+      36  x     36   SBS        -0.05459         0.55494           None            None          0.00000    536
+      37  x     37   SBS        -0.97731        -0.28644           None            None          0.00000    537
+      38  x     38   SBS        -1.51147        -0.83114           None            None          0.00000    538
+      39  x     39   SBS        -1.08360        -0.30746           None            None          0.00000    539
+      40  x     40   SBS        -0.72853        -0.52192           None            None          0.00000    540
+      41  x     41   SBS        -1.00534        -0.68262           None            None          0.00000    541
+      42  x     42   SBS        -0.82005        -0.59375           None            None          0.00000    542
+      43  x     43   SBS         0.45975         0.67879           None            None          0.00000    543
+      44  x     44   SBS        -1.36022        -1.12205           None            None          0.00000    544
+      45  x     45   SBS        -0.82159         0.00670           None            None          0.00000    545
+      46  x     46   SBS         0.15742         0.23630           None            None         -0.00000    546
+      47  x     47   SBS        -0.57532         0.33816           None            None          0.00000    547
+      48  x     48   SBS        -0.94707        -1.01301           None            None         -0.00000    548
+      49  x     49   SBS        -0.24844         0.64727           None            None          0.00000    549
+      50  x     50   SBS         0.12296         0.22120           None            None         -0.00000    550
+      51  x     51   SBS        -0.28635        -0.25956           None            None         -0.00000    551
+      52  x     52   SBS         0.09294         0.32672           None            None          0.00000    552
+      53  x     53   SBS        -0.39225        -0.37746           None            None          0.00000    553
+      54  x     54   SBS        -0.27200         0.52243           None            None         -0.00000    554
+      55  x     55   SBS         0.03717         0.38511           None            None          0.00000    555
+      56  x     56   SBS        -0.54429         0.04401           None            None         -0.00000    556
+      57  x     57   SBS        -0.27980         0.32250           None            None          0.00000    557
+      58  x     58   SBS         0.30320         0.59956           None            None          0.00000    558
+      59  x     59   SBS        -1.14038        -0.76016           None            None          0.00000    559
+      60  x     60   SBS        -0.91686        -0.30621           None            None          0.00000    560
+      61  x     61   SBS        -1.01356        -0.39788           None            None          0.00000    561
+      62  x     62   SBS        -0.49743         0.18184           None            None         -0.00000    562
+      63  x     63   SBS        -1.26630        -0.47626           None            None          0.00000    563
+      64  x     64   SBS         0.89468         1.03386           None            None          0.00000    564
+      65  x     65   SBS        -0.18701        -0.11317           None            None         -0.00000    565
+      66  x     66   SBS        -0.02766         0.05894           None            None         -0.00000    566
+      67  x     67   SBS        -0.50854        -0.15346           None            None          0.00000    567
+      68  x     68   SBS        -1.32703        -0.53836           None            None          0.00000    568
+      69  x     69   SBS        -0.61360        -0.11684           None            None          0.00000    569
+      70  x     70   SBS        -0.56755         0.02144           None            None         -0.00000    570
+      71  x     71   SBS         0.60547         1.01289           None            None          0.00000    571
+      72  x     72   SBS        -1.30245        -0.47226           None            None          0.00000    572
+      73  x     73   SBS        -0.39434        -0.30093           None            None          0.00000    573
+      74  x     74   SBS        -0.22026         0.31839           None            None          0.00000    574
+      75  x     75   SBS        -0.61451        -0.13565           None            None          0.00000    575
+      76  x     76   SBS        -0.71800        -0.53438           None            None         -0.00000    576
+      77  x     77   SBS        -1.22066        -0.63069           None            None          0.00000    577
+      78  x     78   SBS        -1.02019        -0.64870           None            None         -0.00000    578
+      79  x     79   SBS        -0.08865         0.47427           None            None         -0.00000    579
+      80  x     80   SBS        -0.65957         0.09031           None            None          0.00000    580
+      81  x     81   SBS        -0.23173        -0.22588           None            None         -0.00000    581
+      82  x     82   SBS         0.96459         1.17656           None            None          0.00000    582
+      83  x     83   SBS        -0.47818         0.39154           None            None         -0.00000    583
+      84  x     84   SBS        -0.50947         0.40509           None            None          0.00000    584
+      85  x     85   SBS        -0.42977         0.40347           None            None          0.00000    585
+      86  x     86   SBS        -0.94871        -0.35059           None            None          0.00000    586
+      87  x     87   SBS        -0.25928         0.12277           None            None          0.00000    587
+      88  x     88   SBS        -1.09936        -0.38601           None            None         -0.00000    588
+      89  x     89   SBS        -1.36375        -0.75916           None            None          0.00000    589
+      90  x     90   SBS        -0.15456         0.74358           None            None          0.00000    590
+      91  x     91   SBS        -1.26586        -0.50145           None            None          0.00000    591
+      92  x     92   SBS        -0.93138        -0.42423           None            None          0.00000    592
+      93  x     93   SBS        -0.26245        -0.00407           None            None         -0.00000    593
+      94  x     94   SBS        -1.61189        -1.14391           None            None          0.00000    594
+      95  x     95   SBS        -0.68082        -0.14990           None            None         -0.00000    595
+      96  x     96   SBS        -1.46115        -0.78340           None            None          0.00000    596
+      97  x     97   SBS         0.01294         0.55612           None            None         -0.00000    597
+      98  x     98    BS        -1.35416        -1.30602           None            None          0.00000    598
+      99  x     99   SBS        -0.41782         0.29949           None            None          0.00000    599
+     100  x    100   SBS        -0.77888        -0.13735           None            None         -0.00000    600
+     101  x    101   SBS        -1.28444        -0.49055           None            None          0.00000    601
+     102  x    102   SBS        -0.87143        -0.83875           None            None         -0.00000    602
+     103  x    103   SBS        -0.59668        -0.12665           None            None          0.00000    603
+     104  x    104   SBS        -0.32491        -0.13551           None            None          0.00000    604
+     105  x    105   SBS        -1.33680        -0.76903           None            None          0.00000    605
+     106  x    106   SBS        -0.34834         0.00621           None            None         -0.00000    606
+     107  x    107   SBS        -0.25214         0.69543           None            None          0.00000    607
+     108  x    108   SBS        -0.87709        -0.36044           None            None          0.00000    608
+     109  x    109    BS        -1.28272        -1.15828           None            None         -0.00000    609
+     110  x    110   SBS         0.58905         0.76172           None            None          0.00000    610
+     111  x    111   SBS        -0.22934         0.41390           None            None         -0.00000    611
+     112  x    112   SBS        -0.96870        -0.46492           None            None          0.00000    612
+     113  x    113   SBS        -0.04666         0.14167           None            None         -0.00000    613
+     114  x    114   SBS         0.18710         0.43576           None            None          0.00000    614
+     115  x    115    BS         0.22631         0.60763           None            None          0.00000    615
+     116  x    116   SBS        -0.45664         0.00441           None            None          0.00000    616
+     117  x    117   SBS        -1.15691        -0.66018           None            None          0.00000    617
+     118  x    118   SBS        -0.40681         0.12631           None            None          0.00000    618
+     119  x    119   SBS        -1.46082        -0.80859           None            None          0.00000    619
+     120  x    120   SBS        -0.60899         0.08326           None            None          0.00000    620
+     121  x    121   SBS        -0.53402         0.35526           None            None          0.00000    621
+     122  x    122   SBS        -0.90332        -0.29224           None            None          0.00000    622
+     123  x    123   SBS         0.63508         1.17114           None            None          0.00000    623
+     124  x    124   SBS        -0.37075        -0.17529           None            None          0.00000    624
+     125  x    125   SBS        -0.27202        -0.04626           None            None         -0.00000    625
+     126  x    126   SBS        -0.05857        -0.01902           None            None         -0.00000    626
+     127  x    127   SBS        -0.72511        -0.09994           None            None         -0.00000    627
+     128  x    128   SBS        -1.05516        -0.21367           None            None          0.00000    628
+     129  x    129   SBS        -0.64870        -0.60107           None            None          0.00000    629
+     130  x    130   SBS        -1.45791        -0.92743           None            None          0.00000    630
+     131  x    131   SBS        -0.48566        -0.11504           None            None          0.00000    631
+     132  x    132   SBS        -1.01885        -1.03397           None            None          0.00000    632
+     133  x    133   SBS        -0.80992        -0.46518           None            None         -0.00000    633
+     134  x    134   SBS        -0.23343         0.42173           None            None         -0.00000    634
+     135  x    135   SBS        -0.93446        -0.31009           None            None          0.00000    635
+     136  x    136   SBS        -0.54169         0.22604           None            None          0.00000    636
+     137  x    137   SBS        -0.19262         0.58510           None            None          0.00000    637
+     138  x    138   SBS        -0.48359        -0.41039           None            None          0.00000    638
+     139  x    139   SBS        -1.76716        -1.19562           None            None          0.00000    639
+     140  x    140   SBS         0.41015         0.45573           None            None         -0.00000    640
+     141  x    141   SBS        -0.68394        -0.53689           None            None          0.00000    641
+     142  x    142   SBS        -0.61189         0.18821           None            None          0.00000    642
+     143  x    143   SBS        -0.19395         0.18208           None            None         -0.00000    643
+     144  x    144   SBS         0.44934         0.80927           None            None          0.00000    644
+     145  x    145   SBS         0.20592         0.83307           None            None          0.00000    645
+     146  x    146   SBS         0.21080         0.43723           None            None         -0.00000    646
+     147  x    147   SBS        -0.38033         0.17478           None            None          0.00000    647
+     148  x    148   SBS        -0.33896        -0.32704           None            None          0.00000    648
+     149  x    149   SBS        -0.27638         0.47276           None            None          0.00000    649
+     150  x    150   SBS        -0.51022        -0.01233           None            None          0.00000    650
+     151  x    151   SBS        -0.18533         0.15247           None            None         -0.00000    651
+     152  x    152   SBS        -1.13092        -0.53706           None            None          0.00000    652
+     153  x    153   SBS        -0.57293        -0.20797           None            None         -0.00000    653
+     154  x    154   SBS        -0.32075         0.01844           None            None         -0.00000    654
+     155  x    155   SBS        -0.39655         0.53868           None            None         -0.00000    655
+     156  x    156   SBS        -0.22468        -0.04703           None            None         -0.00000    656
+     157  x    157   SBS         0.56432         1.39111           None            None          0.00000    657
+     158  x    158   SBS        -0.19829         0.44310           None            None          0.00000    658
+     159  x    159   SBS         0.19872         0.27544           None            None          0.00000    659
+     160  x    160   SBS        -1.33547        -1.10769           None            None          0.00000    660
+     161  x    161   SBS         0.45177         1.10378           None            None          0.00000    661
+     162  x    162   SBS        -0.10451         0.04123           None            None         -0.00000    662
+     163  x    163   SBS        -0.59441        -0.39146           None            None          0.00000    663
+     164  x    164   SBS        -0.67871         0.18436           None            None          0.00000    664
+     165  x    165   SBS        -1.43903        -0.60327           None            None          0.00000    665
+     166  x    166   SBS        -0.38624        -0.00235           None            None          0.00000    666
+     167  x    167   SBS         0.04672         1.02694           None            None          0.00000    667
+     168  x    168   SBS         0.77130         1.05388           None            None          0.00000    668
+     169  x    169    BS        -0.19529         0.67041           None            None          0.00000    669
+     170  x    170   SBS        -0.65401        -0.15875           None            None         -0.00000    670
+     171  x    171   SBS        -1.29265        -1.01725           None            None          0.00000    671
+     172  x    172   SBS        -0.29070         0.21261           None            None          0.00000    672
+     173  x    173   SBS        -0.37092        -0.22335           None            None         -0.00000    673
+     174  x    174   SBS        -0.98666        -0.45372           None            None         -0.00000    674
+     175  x    175   SBS         0.16776         0.32374           None            None         -0.00000    675
+     176  x    176   SBS         0.19242         0.24789           None            None          0.00000    676
+     177  x    177   SBS        -0.65928        -0.08314           None            None          0.00000    677
+     178  x    178   SBS         0.12380         0.18722           None            None          0.00000    678
+     179  x    179   SBS        -1.36309        -0.58885           None            None          0.00000    679
+     180  x    180   SBS        -1.03744        -0.24689           None            None          0.00000    680
+     181  x    181   SBS        -0.27310        -0.01061           None            None         -0.00000    681
+     182  x    182   SBS        -1.16839        -0.62526           None            None          0.00000    682
+     183  x    183   SBS        -0.98556        -0.78986           None            None          0.00000    683
+     184  x    184   SBS        -0.81214        -0.05164           None            None          0.00000    684
+     185  x    185   SBS         0.20209         0.58845           None            None          0.00000    685
+     186  x    186   SBS        -0.65058         0.09070           None            None          0.00000    686
+     187  x    187   SBS        -0.47614        -0.12770           None            None         -0.00000    687
+     188  x    188   SBS        -0.93351        -0.79796           None            None          0.00000    688
+     189  x    189   SBS        -0.57664         0.33227           None            None          0.00000    689
+     190  x    190   SBS        -0.90151        -0.74004           None            None          0.00000    690
+     191  x    191   SBS        -0.92197        -0.22962           None            None          0.00000    691
+     192  x    192   SBS        -0.17951        -0.07019           None            None         -0.00000    692
+     193  x    193   SBS        -0.77424         0.01999           None            None          0.00000    693
+     194  x    194   SBS        -0.08351        -0.03063           None            None         -0.00000    694
+     195  x    195   SBS        -0.22374         0.43236           None            None          0.00000    695
+     196  x    196   SBS        -0.32200         0.62970           None            None          0.00000    696
+     197  x    197   SBS        -0.26755        -0.27953           None            None         -0.00000    697
+     198  x    198   SBS        -0.42761         0.20853           None            None         -0.00000    698
+     199  x    199   SBS        -0.38129         0.36135           None            None          0.00000    699
+     200  x    200   SBS        -1.01567        -0.50358           None            None          0.00000    700
+     201  x    201   SBS        -1.16338        -1.06898           None            None          0.00000    701
+     202  x    202   SBS        -1.75753        -1.55510           None            None          0.00000    702
+     203  x    203   SBS        -1.67966        -0.87850           None            None          0.00000    703
+     204  x    204   SBS        -0.14889         0.60116           None            None          0.00000    704
+     205  x    205   SBS         0.48537         0.84891           None            None          0.00000    705
+     206  x    206   SBS        -1.10861        -0.23961           None            None          0.00000    706
+     207  x    207   SBS        -0.59118        -0.23140           None            None          0.00000    707
+     208  x    208   SBS        -0.16993         0.34871           None            None         -0.00000    708
+     209  x    209   SBS        -1.15703        -0.40858           None            None          0.00000    709
+     210  x    210   SBS        -1.09844        -0.42578           None            None          0.00000    710
+     211  x    211   SBS        -0.05645         0.15972           None            None          0.00000    711
+     212  x    212    BS        -0.43603         0.42040           None            None          0.00000    712
+     213  x    213   SBS        -1.16981        -1.23765           None            None          0.00000    713
+     214  x    214   SBS        -1.32489        -0.65612           None            None          0.00000    714
+     215  x    215   SBS        -0.67670         0.20185           None            None         -0.00000    715
+     216  x    216   SBS        -1.01268        -0.16831           None            None          0.00000    716
+     217  x    217   SBS        -1.43803        -1.12989           None            None         -0.00000    717
+     218  x    218   SBS        -0.87937        -0.17153           None            None          0.00000    718
+     219  x    219   SBS        -1.41331        -0.73977           None            None          0.00000    719
+     220  x    220   SBS         0.27141         0.49309           None            None          0.00000    720
+     221  x    221   SBS         0.23226         0.89869           None            None          0.00000    721
+     222  x    222   SBS         0.60648         1.11682           None            None          0.00000    722
+     223  x    223   SBS        -0.70259         0.11636           None            None          0.00000    723
+     224  x    224   SBS         0.21393         0.34638           None            None          0.00000    724
+     225  x    225   SBS        -0.99482        -0.77577           None            None          0.00000    725
+     226  x    226   SBS        -0.69355        -0.36442           None            None          0.00000    726
+     227  x    227   SBS        -1.37302        -0.64394           None            None          0.00000    727
+     228  x    228    BS        -0.09003         0.47266           None            None          0.00000    728
+     229  x    229   SBS        -1.28758        -0.63325           None            None          0.00000    729
+     230  x    230   SBS        -0.53255        -0.15985           None            None          0.00000    730
+     231  x    231   SBS        -0.84892        -0.30322           None            None          0.00000    731
+     232  x    232   SBS        -0.90531        -0.27285           None            None         -0.00000    732
+     233  x    233   SBS        -0.90919        -0.22492           None            None          0.00000    733
+     234  x    234   SBS        -0.83376        -0.20735           None            None         -0.00000    734
+     235  x    235   SBS        -0.66564        -0.12621           None            None         -0.00000    735
+     236  x    236   SBS        -0.61858        -0.67741           None            None         -0.00000    736
+     237  x    237   SBS        -0.25307         0.12215           None            None         -0.00000    737
+     238  x    238   SBS        -0.22482         0.48615           None            None          0.00000    738
+     239  x    239   SBS        -0.62591        -0.48803           None            None         -0.00000    739
+     240  x    240   SBS        -0.99021        -0.52527           None            None          0.00000    740
+     241  x    241   SBS         0.25099         0.37391           None            None         -0.00000    741
+     242  x    242   SBS        -0.53392        -0.49452           None            None         -0.00000    742
+     243  x    243   SBS        -0.39296         0.18567           None            None          0.00000    743
+     244  x    244   SBS         0.47561         0.90905           None            None          0.00000    744
+     245  x    245   SBS        -0.08941         0.12806           None            None          0.00000    745
+     246  x    246   SBS        -0.83747        -0.31840           None            None          0.00000    746
+     247  x    247   SBS        -0.76339         0.06459           None            None          0.00000    747
+     248  x    248   SBS         0.11995         0.90468           None            None         -0.00000    748
+     249  x    249   SBS        -0.46129        -0.49003           None            None         -0.00000    749
+     250  x    250   SBS        -0.15475         0.22168           None            None         -0.00000    750
+     251  x    251   SBS        -0.01469         0.20286           None            None         -0.00000    751
+     252  x    252   SBS         0.40465         0.52730           None            None          0.00000    752
+     253  x    253   SBS        -0.05461         0.28510           None            None          0.00000    753
+     254  x    254   SBS        -0.72765        -0.57728           None            None          0.00000    754
+     255  x    255   SBS        -1.02631        -0.34717           None            None          0.00000    755
+     256  x    256   SBS        -0.32716         0.19439           None            None         -0.00000    756
+     257  x    257   SBS        -0.73878        -0.54605           None            None          0.00000    757
+     258  x    258   SBS        -0.38725        -0.03189           None            None          0.00000    758
+     259  x    259   SBS        -0.13839         0.02704           None            None          0.00000    759
+     260  x    260   SBS        -0.79863        -0.51850           None            None         -0.00000    760
+     261  x    261   SBS        -0.50301        -0.22694           None            None         -0.00000    761
+     262  x    262   SBS         0.56349         0.84272           None            None          0.00000    762
+     263  x    263   SBS        -0.10163         0.34546           None            None          0.00000    763
+     264  x    264   SBS        -0.40371         0.54661           None            None          0.00000    764
+     265  x    265   SBS         0.10631         0.52063           None            None          0.00000    765
+     266  x    266   SBS        -0.75913        -0.07442           None            None          0.00000    766
+     267  x    267   SBS        -0.16178        -0.03322           None            None          0.00000    767
+     268  x    268   SBS        -1.14459        -0.31386           None            None          0.00000    768
+     269  x    269   SBS        -0.09050         0.53403           None            None          0.00000    769
+     270  x    270   SBS        -0.45787        -0.09134           None            None          0.00000    770
+     271  x    271   SBS        -0.79889         0.03962           None            None          0.00000    771
+     272  x    272   SBS        -0.53575        -0.45382           None            None          0.00000    772
+     273  x    273   SBS        -0.85039        -0.05837           None            None          0.00000    773
+     274  x    274   SBS        -0.51135         0.06152           None            None          0.00000    774
+     275  x    275   SBS        -0.19454         0.11439           None            None         -0.00000    775
+     276  x    276   SBS        -0.15421        -0.09207           None            None          0.00000    776
+     277  x    277   SBS         0.48479         0.69629           None            None          0.00000    777
+     278  x    278   SBS        -0.15314        -0.00647           None            None          0.00000    778
+     279  x    279   SBS        -0.26650         0.47387           None            None          0.00000    779
+     280  x    280   SBS        -0.74124        -0.35472           None            None          0.00000    780
+     281  x    281   SBS        -0.22148         0.15519           None            None         -0.00000    781
+     282  x    282   SBS        -1.18005        -0.66994           None            None          0.00000    782
+     283  x    283   SBS        -0.46518         0.08285           None            None          0.00000    783
+     284  x    284   SBS        -0.19565         0.36071           None            None         -0.00000    784
+     285  x    285   SBS        -1.10021        -0.58873           None            None          0.00000    785
+     286  x    286   SBS        -0.36394        -0.17718           None            None         -0.00000    786
+     287  x    287   SBS        -0.32007         0.42462           None            None          0.00000    787
+     288  x    288   SBS        -0.34177         0.13633           None            None          0.00000    788
+     289  x    289   SBS         0.28747         0.65799           None            None          0.00000    789
+     290  x    290   SBS        -1.35989        -0.54496           None            None          0.00000    790
+     291  x    291   SBS        -0.61091        -0.60922           None            None         -0.00000    791
+     292  x    292   SBS        -0.41174        -0.33191           None            None         -0.00000    792
+     293  x    293   SBS        -0.01061         0.74737           None            None          0.00000    793
+     294  x    294   SBS        -0.31569        -0.14046           None            None         -0.00000    794
+     295  x    295   SBS        -0.92666        -0.11132           None            None          0.00000    795
+     296  x    296   SBS        -0.93589        -0.51413           None            None         -0.00000    796
+     297  x    297   SBS        -0.00064         0.53119           None            None          0.00000    797
+     298  x    298   SBS        -0.91103        -0.38253           None            None          0.00000    798
+     299  x    299   SBS        -0.21802         0.64483           None            None          0.00000    799
+     300  x    300   SBS        -0.84826        -0.24137           None            None          0.00000    800
+     301  x    301   SBS         0.09727         0.70226           None            None          0.00000    801
+     302  x    302   SBS        -0.61512        -0.21472           None            None          0.00000    802
+     303  x    303   SBS        -0.44033         0.07789           None            None          0.00000    803
+     304  x    304   SBS        -0.54820         0.35718           None            None         -0.00000    804
+     305  x    305   SBS        -0.52814        -0.58469           None            None         -0.00000    805
+     306  x    306   SBS         0.26212         0.69667           None            None          0.00000    806
+     307  x    307   SBS         0.01709         0.14935           None            None         -0.00000    807
+     308  x    308   SBS        -0.08841         0.01571           None            None         -0.00000    808
+     309  x    309   SBS        -0.23733         0.16158           None            None          0.00000    809
+     310  x    310   SBS        -0.78703        -0.63556           None            None         -0.00000    810
+     311  x    311   SBS        -0.32288        -0.02264           None            None          0.00000    811
+     312  x    312   SBS        -1.06221        -0.26210           None            None          0.00000    812
+     313  x    313   SBS         0.18352         0.86847           None            None          0.00000    813
+     314  x    314   SBS        -0.75089         0.08341           None            None          0.00000    814
+     315  x    315   SBS         0.09493         0.11152           None            None         -0.00000    815
+     316  x    316   SBS         0.22838         0.39615           None            None          0.00000    816
+     317  x    317   SBS        -0.30562         0.24814           None            None          0.00000    817
+     318  x    318   SBS         0.37791         0.55155           None            None          0.00000    818
+     319  x    319   SBS         0.13936         0.29498           None            None         -0.00000    819
+     320  x    320   SBS        -0.26589        -0.22777           None            None         -0.00000    820
+     321  x    321   SBS        -1.78496        -1.00807           None            None          0.00000    821
+     322  x    322   SBS        -1.27235        -0.60481           None            None          0.00000    822
+     323  x    323   SBS         0.27168         0.91068           None            None          0.00000    823
+     324  x    324   SBS        -0.23090        -0.16937           None            None         -0.00000    824
+     325  x    325   SBS        -0.43195         0.48425           None            None         -0.00000    825
+     326  x    326   SBS        -0.94750        -0.23778           None            None          0.00000    826
+     327  x    327   SBS        -0.51260         0.13885           None            None          0.00000    827
+     328  x    328   SBS        -0.15115         0.10768           None            None         -0.00000    828
+     329  x    329   SBS        -0.25052        -0.21316           None            None         -0.00000    829
+     330  x    330   SBS        -1.47091        -0.66520           None            None          0.00000    830
+     331  x    331   SBS        -0.78221        -0.80199           None            None         -0.00000    831
+     332  x    332   SBS        -0.30786        -0.17121           None            None         -0.00000    832
+     333  x    333   SBS        -0.48272         0.12275           None            None         -0.00000    833
+     334  x    334   SBS         0.44282         1.11146           None            None          0.00000    834
+     335  x    335   SBS        -0.32622         0.05804           None            None          0.00000    835
+     336  x    336   SBS        -0.54562         0.22051           None            None          0.00000    836
+     337  x    337   SBS        -1.51969        -0.85797           None            None          0.00000    837
+     338  x    338   SBS        -0.08178         0.85014           None            None          0.00000    838
+     339  x    339   SBS         1.28015         1.46733           None            None          0.00000    839
+     340  x    340    BS         0.80982         1.01986           None            None          0.00000    840
+     341  x    341   SBS        -0.32855        -0.01537           None            None         -0.00000    841
+     342  x    342   SBS        -0.30650        -0.03790           None            None         -0.00000    842
+     343  x    343   SBS        -0.99817        -0.64235           None            None          0.00000    843
+     344  x    344   SBS        -0.73271         0.18296           None            None         -0.00000    844
+     345  x    345   SBS        -1.37623        -0.80352           None            None          0.00000    845
+     346  x    346   SBS        -1.40925        -0.75781           None            None          0.00000    846
+     347  x    347   SBS         0.10279         0.88458           None            None          0.00000    847
+     348  x    348   SBS         0.41160         1.21891           None            None          0.00000    848
+     349  x    349   SBS        -0.68838        -0.14828           None            None          0.00000    849
+     350  x    350    BS        -0.92074        -0.47182           None            None          0.00000    850
+     351  x    351   SBS        -0.26775         0.07790           None            None          0.00000    851
+     352  x    352   SBS        -0.86066        -0.58286           None            None         -0.00000    852
+     353  x    353   SBS        -0.55228         0.05012           None            None          0.00000    853
+     354  x    354   SBS         0.50476         1.02257           None            None          0.00000    854
+     355  x    355   SBS         0.12049         0.27071           None            None          0.00000    855
+     356  x    356   SBS         0.08522         0.32949           None            None         -0.00000    856
+     357  x    357   SBS        -0.79546        -0.65888           None            None         -0.00000    857
+     358  x    358   SBS        -0.79301        -0.28884           None            None         -0.00000    858
+     359  x    359   SBS        -0.01548         0.23495           None            None         -0.00000    859
+     360  x    360   SBS        -0.19928         0.47892           None            None          0.00000    860
+     361  x    361   SBS        -0.76833        -0.13538           None            None         -0.00000    861
+     362  x    362   SBS        -0.45287        -0.22986           None            None          0.00000    862
+     363  x    363   SBS        -0.40276         0.21486           None            None          0.00000    863
+     364  x    364   SBS        -1.41635        -0.63526           None            None          0.00000    864
+     365  x    365   SBS        -1.26700        -0.43400           None            None          0.00000    865
+     366  x    366   SBS         0.37670         0.48108           None            None         -0.00000    866
+     367  x    367   SBS         0.36222         0.43974           None            None          0.00000    867
+     368  x    368   SBS        -0.75342        -0.26968           None            None          0.00000    868
+     369  x    369   SBS        -0.34477        -0.04391           None            None          0.00000    869
+     370  x    370   SBS        -1.08857        -0.27327           None            None          0.00000    870
+     371  x    371   SBS         0.15419         0.67893           None            None          0.00000    871
+     372  x    372   SBS        -0.32369         0.19757           None            None         -0.00000    872
+     373  x    373   SBS        -0.59065        -0.20704           None            None          0.00000    873
+     374  x    374   SBS        -1.13683        -0.30729           None            None          0.00000    874
+     375  x    375   SBS        -0.64273        -0.17477           None            None         -0.00000    875
+     376  x    376   SBS         0.01828         0.12285           None            None          0.00000    876
+     377  x    377   SBS        -1.10313        -0.42787           None            None          0.00000    877
+     378  x    378    BS         0.36525         0.71955           None            None          0.00000    878
+     379  x    379   SBS         0.18940         0.44533           None            None         -0.00000    879
+     380  x    380   SBS        -0.50064        -0.51364           None            None         -0.00000    880
+     381  x    381   SBS         0.24166         0.89210           None            None          0.00000    881
+     382  x    382   SBS        -0.56915         0.14449           None            None          0.00000    882
+     383  x    383   SBS        -1.14371        -0.52405           None            None          0.00000    883
+     384  x    384   SBS        -1.01193        -0.22328           None            None          0.00000    884
+     385  x    385   SBS         0.37111         1.18890           None            None          0.00000    885
+     386  x    386   SBS        -0.20476        -0.15844           None            None         -0.00000    886
+     387  x    387   SBS        -1.13395        -0.77142           None            None          0.00000    887
+     388  x    388   SBS         0.09726         0.38679           None            None         -0.00000    888
+     389  x    389   SBS        -0.09768         0.12369           None            None         -0.00000    889
+     390  x    390   SBS        -1.25068        -0.75752           None            None          0.00000    890
+     391  x    391   SBS        -0.87313        -0.27913           None            None         -0.00000    891
+     392  x    392   SBS         0.20764         0.86325           None            None          0.00000    892
+     393  x    393   SBS         0.53939         0.70026           None            None          0.00000    893
+     394  x    394   SBS        -0.57140         0.31885           None            None          0.00000    894
+     395  x    395   SBS        -1.14625        -0.65610           None            None         -0.00000    895
+     396  x    396   SBS        -0.32248        -0.24061           None            None          0.00000    896
+     397  x    397   SBS        -0.28872        -0.02623           None            None         -0.00000    897
+     398  x    398   SBS        -0.27043         0.22518           None            None         -0.00000    898
+     399  x    399   SBS         0.44084         1.29923           None            None          0.00000    899
+     400  x    400   SBS        -0.22887         0.13865           None            None         -0.00000    900
+     401  x    401   SBS         0.04804         0.38977           None            None          0.00000    901
+     402  x    402   SBS        -0.07767         0.83767           None            None          0.00000    902
+     403  x    403   SBS        -0.17027        -0.13668           None            None         -0.00000    903
+     404  x    404   SBS         0.42598         0.60664           None            None         -0.00000    904
+     405  x    405   SBS        -1.16203        -0.45836           None            None          0.00000    905
+     406  x    406   SBS        -0.54461        -0.26734           None            None          0.00000    906
+     407  x    407   SBS         0.21020         0.42444           None            None          0.00000    907
+     408  x    408   SBS        -0.10844         0.33140           None            None         -0.00000    908
+     409  x    409   SBS        -1.36012        -0.73296           None            None          0.00000    909
+     410  x    410   SBS        -1.14769        -0.43128           None            None          0.00000    910
+     411  x    411   SBS         0.16888         0.52378           None            None          0.00000    911
+     412  x    412   SBS        -0.14082         0.84083           None            None          0.00000    912
+     413  x    413   SBS         0.27858         0.82124           None            None          0.00000    913
+     414  x    414   SBS        -0.19983         0.19542           None            None         -0.00000    914
+     415  x    415   SBS        -0.06530         0.87756           None            None          0.00000    915
+     416  x    416   SBS        -0.40769         0.20156           None            None         -0.00000    916
+     417  x    417   SBS        -0.74505        -0.12176           None            None         -0.00000    917
+     418  x    418   SBS         0.10593         0.21544           None            None          0.00000    918
+     419  x    419   SBS        -0.82785        -0.51557           None            None         -0.00000    919
+     420  x    420   SBS        -0.72834        -0.29097           None            None          0.00000    920
+     421  x    421   SBS        -1.46894        -0.86772           None            None          0.00000    921
+     422  x    422   SBS        -0.68738        -0.31462           None            None          0.00000    922
+     423  x    423   SBS        -0.54211        -0.19303           None            None         -0.00000    923
+     424  x    424   SBS         0.15098         0.26222           None            None          0.00000    924
+     425  x    425   SBS         0.36430         1.00500           None            None          0.00000    925
+     426  x    426   SBS        -0.88212        -0.38405           None            None          0.00000    926
+     427  x    427   SBS        -1.13157        -0.96376           None            None          0.00000    927
+     428  x    428   SBS        -0.25512        -0.22751           None            None         -0.00000    928
+     429  x    429   SBS         0.23076         0.59870           None            None         -0.00000    929
+     430  x    430   SBS        -0.09663         0.14425           None            None          0.00000    930
+     431  x    431    BS         0.31314         0.62072           None            None          0.00000    931
+     432  x    432   SBS        -1.36076        -0.95512           None            None          0.00000    932
+     433  x    433   SBS        -0.02955         0.01605           None            None         -0.00000    933
+     434  x    434   SBS        -0.14432         0.24841           None            None          0.00000    934
+     435  x    435   SBS        -0.83269        -0.50350           None            None          0.00000    935
+     436  x    436   SBS        -1.25085        -0.52976           None            None          0.00000    936
+     437  x    437   SBS        -1.00353        -0.59831           None            None          0.00000    937
+     438  x    438   SBS        -0.12028        -0.03238           None            None         -0.00000    938
+     439  x    439   SBS        -0.15867         0.07542           None            None          0.00000    939
+     440  x    440   SBS        -0.68628        -0.29733           None            None         -0.00000    940
+     441  x    441   SBS        -0.45078         0.21933           None            None          0.00000    941
+     442  x    442   SBS         1.08848         1.33107           None            None          0.00000    942
+     443  x    443   SBS        -0.51603        -0.19752           None            None          0.00000    943
+     444  x    444   SBS         0.27449         0.43865           None            None          0.00000    944
+     445  x    445   SBS        -0.87350        -0.41695           None            None          0.00000    945
+     446  x    446   SBS        -1.16130        -1.00355           None            None          0.00000    946
+     447  x    447   SBS        -0.51990        -0.28416           None            None          0.00000    947
+     448  x    448   SBS        -0.44781         0.20936           None            None          0.00000    948
+     449  x    449   SBS        -1.19320        -0.54385           None            None          0.00000    949
+     450  x    450   SBS        -0.38924        -0.42251           None            None          0.00000    950
+     451  x    451   SBS         0.53734         0.61520           None            None          0.00000    951
+     452  x    452   SBS        -0.33233        -0.11555           None            None          0.00000    952
+     453  x    453   SBS        -1.13901        -0.43297           None            None          0.00000    953
+     454  x    454   SBS        -1.61963        -1.02643           None            None          0.00000    954
+     455  x    455    BS         0.43583         1.15337           None            None          0.00000    955
+     456  x    456   SBS        -0.73158        -0.65314           None            None         -0.00000    956
+     457  x    457   SBS         0.13585         0.16973           None            None         -0.00000    957
+     458  x    458   SBS        -0.40894         0.38287           None            None         -0.00000    958
+     459  x    459   SBS         0.18624         0.50494           None            None         -0.00000    959
+     460  x    460   SBS        -0.87724        -0.16661           None            None          0.00000    960
+     461  x    461   SBS        -0.57229         0.33472           None            None          0.00000    961
+     462  x    462   SBS        -0.87909        -0.47543           None            None          0.00000    962
+     463  x    463   SBS        -0.07561         0.04398           None            None         -0.00000    963
+     464  x    464   SBS         0.51711         0.61212           None            None          0.00000    964
+     465  x    465   SBS        -0.58708        -0.18236           None            None         -0.00000    965
+     466  x    466   SBS        -0.23329        -0.19624           None            None         -0.00000    966
+     467  x    467   SBS         0.33556         1.06927           None            None          0.00000    967
+     468  x    468   SBS        -0.50315        -0.18527           None            None         -0.00000    968
+     469  x    469   SBS         0.22089         0.26873           None            None         -0.00000    969
+     470  x    470   SBS        -1.05903        -0.29828           None            None          0.00000    970
+     471  x    471   SBS        -0.61749         0.00081           None            None          0.00000    971
+     472  x    472   SBS        -1.17549        -0.50015           None            None          0.00000    972
+     473  x    473   SBS        -0.71417        -0.17066           None            None          0.00000    973
+     474  x    474   SBS        -0.31730        -0.19951           None            None          0.00000    974
+     475  x    475   SBS        -0.57572        -0.43065           None            None          0.00000    975
+     476  x    476   SBS        -0.39616        -0.35450           None            None          0.00000    976
+     477  x    477   SBS        -1.82410        -1.05522           None            None          0.00000    977
+     478  x    478   SBS        -1.17014        -1.19590           None            None          0.00000    978
+     479  x    479   SBS        -1.65423        -1.14223           None            None          0.00000    979
+     480  x    480   SBS         0.15009         0.19034           None            None         -0.00000    980
+     481  x    481   SBS        -0.44447        -0.12824           None            None         -0.00000    981
+     482  x    482   SBS        -0.18891        -0.07504           None            None         -0.00000    982
+     483  x    483   SBS         0.39792         1.14117           None            None          0.00000    983
+     484  x    484   SBS         0.00959         0.05646           None            None         -0.00000    984
+     485  x    485   SBS        -1.48394        -1.22346           None            None          0.00000    985
+     486  x    486   SBS        -0.31114        -0.10896           None            None          0.00000    986
+     487  x    487   SBS        -0.80678        -0.74758           None            None         -0.00000    987
+     488  x    488   SBS        -0.31062        -0.22057           None            None          0.00000    988
+     489  x    489   SBS        -0.16116         0.30055           None            None          0.00000    989
+     490  x    490   SBS         0.50384         0.60739           None            None          0.00000    990
+     491  x    491   SBS        -0.08385         0.62699           None            None          0.00000    991
+     492  x    492   SBS        -0.82781        -0.40839           None            None          0.00000    992
+     493  x    493   SBS        -0.59739        -0.20564           None            None          0.00000    993
+     494  x    494   SBS        -0.44925        -0.34981           None            None         -0.00000    994
+     495  x    495   SBS        -0.22643         0.19307           None            None          0.00000    995
+     496  x    496   SBS        -1.48307        -0.68437           None            None          0.00000    996
+     497  x    497   SBS        -0.22521         0.63410           None            None          0.00000    997
+     498  x    498   SBS         0.14374         0.59474           None            None          0.00000    998
+     499  x    499   SBS        -1.17894        -1.12670           None            None          0.00000    999
+     500  x    500   SBS         1.03086         1.20276           None            None          0.00000   1000
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                      19.99 seconds
+ Time for solution output                       0.01 seconds
+ Time for constraint functions                 12.86 seconds
+ Time for objective function                    0.00 seconds

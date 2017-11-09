@@ -1,0 +1,1 @@
+ grep -A 2 "Major Minors     Step" SNOPT_summary.out | awk '{if(NF > 2 && $1 != "Major") print $0}' > SNOPT_summary.out.processed
