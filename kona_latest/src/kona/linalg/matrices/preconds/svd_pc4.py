@@ -174,7 +174,7 @@ class SVDPC_CMU(BaseHessian):
             # self.Winv_U[:, j] = self.design_work.base.data
 
 
-        # self.Gamma_Nstar = np.dot(self.asa_S, self.asa_V.transpose()) 
+        self.Gamma_Nstar = np.dot(self.asa_S, self.asa_V.transpose()) 
         self.svd_ASA = np.dot(self.asa_U, np.dot(self.asa_S, self.asa_V.transpose()))
 
         beta_I = self.beta*np.ones(self.num_design) 
@@ -246,11 +246,11 @@ class SVDPC_CMU(BaseHessian):
 
         rhs_vx = u_x - self.design_work.base.data
 
-        v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
+        # v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
         # v_x2 = self.sherman_morrison(rhs_vx)
-        # v_x3 = self.sherman_morrison_betaI(rhs_vx)
+        v_x3 = self.sherman_morrison_betaI(rhs_vx)
         
-        v_x = v_x1
+        v_x = v_x3
 
 
         # solve v_g, v_s

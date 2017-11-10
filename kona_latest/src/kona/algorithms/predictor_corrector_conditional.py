@@ -315,7 +315,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             old_dldx = self._generate_kkt()
 
 
-         
         if self.ineq_factory is not None:
             self.info_file.write(
                 '# of design vars = %i\n' % len(x.primal.design.base.data) +
@@ -324,8 +323,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
-        EPS = np.finfo(np.float64).eps
-        # EPS = 1e-7
+        # EPS = np.finfo(np.float64).eps
+        EPS = 1e-7
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x.equals(x0)

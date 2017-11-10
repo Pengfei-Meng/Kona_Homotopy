@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssvd_stress2'%(os.path.sep)
+prefix += '%stemp'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -558,7 +558,7 @@ optns = {
         'inner_maxiter' : 2,
         'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 50.0*np.pi/180.,  # 1) Can be changed    
+        'nominal_angle' : 10.0*np.pi/180.,  # 1) Can be changed    
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,                  
