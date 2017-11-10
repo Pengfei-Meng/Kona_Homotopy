@@ -46,8 +46,8 @@ class SVDPC_CMU(BaseHessian):
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AT_Sig_A_mu = LowRankSVD(
             self.asa_mat_vec_mu, self.primal_factory, None, None, svd_optns)
-        # self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
-        # self.W_hat.norm_init = 1.0  
+        self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
+        self.W_hat.norm_init = 1.0  
         
         self._allocated = False
 
@@ -136,25 +136,8 @@ class SVDPC_CMU(BaseHessian):
         self.Ag.linearize(X.primal.design, state)
 
         # ---------- Hessian LBFGS approximation --------  
-        # dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
-        # self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
-
-        # self.W_hat.norm_init = 1.0  #(1-self.mu)*self.beta  + self.mu*1.0
-        # if inner_iters == 0:
-        #     self.W_hat.restart()
-        # else:
-        #     self.design_old.minus(X.primal.design)
-        #     self.design_old.times(-1.0)
-
-        #     # self.dldx.equals(dLdX_homo_oldual.primal.design)
-        #     # self.dldx_old.minus(self.dldx)
-        #     # self.dldx_old.times(-1.0)
-
-        #     self.dldx.equals(dLdX_homo.primal.design)
-        #     self.dldx.minus(dLdX_homo_oldual.primal.design)
-
-        #     self.W_hat.add_correction(self.design_old, self.dldx)
-        # self.design_old.equals(X.primal.design)
+        dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
+        self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
 
 
         # ----------- svd_AsT_SigS_As_mu -------------
@@ -169,9 +152,9 @@ class SVDPC_CMU(BaseHessian):
             self.asa_U[:, j] = self.svd_AT_Sig_A_mu.U[j].base.data
             self.asa_V[:, j] = self.svd_AT_Sig_A_mu.V[j].base.data
 
-            # self.design_work.equals(0.0)
-            # self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
-            # self.Winv_U[:, j] = self.design_work.base.data
+            self.design_work.equals(0.0)
+            self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
+            self.Winv_U[:, j] = self.design_work.base.data
 
         self.asa_U = (1-self.mu) * self.asa_U
         self.asa_V = (1-self.mu) * self.asa_V
@@ -248,11 +231,11 @@ class SVDPC_CMU(BaseHessian):
 
         rhs_vx = u_x - self.design_work.base.data
 
-        v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
-        # v_x2 = self.sherman_morrison(rhs_vx)
-        v_x3 = self.sherman_morrison_betaI(rhs_vx)
-        print 'PC: norm(v_x1), norm(v_x3) : ', np.linalg.norm(v_x1), np.linalg.norm(v_x3)
-        v_x = v_x3
+        # v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
+        v_x2 = self.sherman_morrison(rhs_vx)
+        # v_x3 = self.sherman_morrison_betaI(rhs_vx)
+
+        v_x = v_x2
 
 
         # solve v_g, v_s

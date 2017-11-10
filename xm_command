@@ -1,0 +1,13 @@
+nautilus .
+gp_noline 3:6:7:8:9 kona_hist_3_delete.dat
+
+xm Plot.agr
+
+vo kona_timings.dat kona_hist.dat 
+vO kona_timings.dat kona_hist.dat
+
+awk '{if($2==0 || $1==36) print $0}' kona_hist.dat > kona_hist_yyj.dat
+
+pr -Jmt kona_hist_yyj.dat kona_timings.dat > merged.dat
+
+xm ./Default.agr    # open the template

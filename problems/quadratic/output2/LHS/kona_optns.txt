@@ -3,15 +3,15 @@
  'homotopy': {'dmu_max': -0.0005,
               'dmu_min': -0.9,
               'init_homotopy_parameter': 1.0,
-              'init_step': 60.0,
+              'init_step': 150.0,
               'inner_maxiter': 2,
               'inner_tol': 0.1,
               'max_factor': 30.0,
               'min_factor': 0.001,
               'mu_correction': 1.0,
               'mu_pc_on': 1.0,
-              'nominal_angle': 0.3490658503988659,
-              'nominal_dist': 10.0,
+              'nominal_angle': 0.5235987755982988,
+              'nominal_dist': 30.0,
               'use_frac_to_bound': True},
  'info_file': './output2/LHS/kona_info.dat',
  'max_iter': 300,
@@ -41,8 +41,8 @@
             'primal_vec': True,
             'red_grad': True,
             'state_vec': False}}
-'Kona and SNOPT solution X maximum relative difference, 1.56416313411e-06'
-'Kona objective value at the solution, 10.0121739597'
-'SNOPT objective value at the solution, 10.012172871'
+'Kona and SNOPT solution X maximum relative difference, 1.08236554804e-06'
+'Kona objective value at the solution, -5.64109743654'
+'SNOPT objective value at the solution, -5.64073923746'
 'Positive dual, []'
 'Negative Slack, []'

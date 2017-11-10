@@ -1,0 +1,943 @@
+from kona.algorithms.base_algorithm import OptimizationAlgorithm
+import pdb, pickle
+class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
+
+    def __init__(self, primal_factory, state_factory,
+                 eq_factory, ineq_factory, optns=None):
+        # trigger base class initialization
+        super(PredictorCorrectorCnstrCond, self).__init__(
+            primal_factory, state_factory, eq_factory, ineq_factory, optns
+        )
+
+        # number of vectors required in solve() method
+        self.primal_factory.request_num_vectors(115)
+        self.state_factory.request_num_vectors(5)
+
+        if self.eq_factory is not None:
+            self.eq_factory.request_num_vectors(115)
+
+        if self.ineq_factory is not None:
+            self.ineq_factory.request_num_vectors(250)
+
+        # general options
+        ############################################################
+        self.factor_matrices = get_opt(self.optns, False, 'matrix_explicit')
+
+        # reduced hessian settings
+        ############################################################
+        self.hessian = ReducedKKTMatrix(
+            [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
+        self.mat_vec = self.hessian.product
+
+        # self.W = LagrangianHessian( 
+        #     [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
+        # self.Wv = self.W.product
+
+        # hessian preconditiner settings
+        ############################################################
+        self.precond = get_opt(self.optns, None, 'rsnk', 'precond')
+        
+        self.approx_adj = None
+        self.svd_pc = None
+        self.svd_pc_stress = None
+        self.svd_pc_cmu = None
+        self.uzawa = None
+        self.itersolver = None
+
+        if self.precond is 'approx_adjoint':
+            print 'approx_adjoint is used! '
+            self.approx_adj = APPROXADJOINT(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.approx_adj.solve
+
+        elif self.precond is 'svd_pc':
+            print 'svd_pc is used! '
+            svd_optns = {
+                'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
+                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+            }
+            self.svd_pc = SVDPC(
+                [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
+            self.precond = self.svd_pc.solve
+
+        elif self.precond is 'svd_pc_stress':
+            print 'svd_pc_stress is used! '
+            svd_optns = {
+                'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
+                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+                'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
+                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'mu_exact'),
+                'w_value'         : get_opt(self.optns, 0.1, 'svd', 'w_value'), 
+            }
+            self.svd_pc_stress = SVDPC_STRESS(
+                [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
+            self.precond = self.svd_pc_stress.solve   
+
+        elif self.precond is 'svd_pc_cmu': 
+            print 'svd_pc_cmu is used! '
+            svd_optns = {
+                # 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+                'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
+                'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
+                'beta'         : get_opt(self.optns, 1.0, 'svd', 'beta'), 
+                'cmin'         : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+                'fstopo'       : get_opt(self.optns, False, 'svd', 'fstopo'),
+            }
+            self.svd_pc_cmu = SVDPC_CMU(
+                [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
+            self.precond = self.svd_pc_cmu.solve            
+
+        elif self.precond == 'uzawa':
+            print 'uzawa is used! when mu = 0.0'
+            self.uzawa = UZAWA(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.uzawa.solve
+
+        elif self.precond == 'iterative':
+            print 'IterSolver is used! when mu = 0.0'
+            self.itersolver = IterSolver(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.itersolver.solve
+
+        else:
+            self.eye = IdentityMatrix()
+            self.precond = self.eye.product
+
+        self.eye = IdentityMatrix()
+        self.eye_precond = self.eye.product
+
+        # krylov solver settings
+        ############################################################
+        krylov_optns = {
+            'krylov_file'   : get_opt(
+                self.optns, 'kona_krylov.dat', 'rsnk', 'krylov_file'),
+            'subspace_size' : get_opt(self.optns, 10, 'rsnk', 'subspace_size'),
+            'check_res'     : get_opt(self.optns, True, 'rsnk', 'check_res'),
+            'rel_tol'       : get_opt(self.optns, 1e-2, 'rsnk', 'rel_tol'),
+        }
+        self.krylov = FGMRES(self.primal_factory, krylov_optns,
+                             eq_factory=self.eq_factory, ineq_factory=self.ineq_factory)
+
+        self.outdir = krylov_optns['krylov_file'].split('/')[1]
+        # homotopy options
+        ############################################################
+        self.mu = get_opt(self.optns, 1.0, 'homotopy', 'init_homotopy_parameter')
+        self.inner_tol = get_opt(self.optns, 1e-1, 'homotopy', 'inner_tol')
+        self.inner_maxiter = get_opt(self.optns, 50, 'homotopy', 'inner_maxiter')
+        self.step = get_opt(
+            self.optns, 0.05, 'homotopy', 'init_step')
+        self.nom_dcurve = get_opt(self.optns, 1.0, 'homotopy', 'nominal_dist')
+        self.nom_angl = get_opt(
+            self.optns, 5.0*np.pi/180., 'homotopy', 'nominal_angle')
+        self.max_factor = get_opt(self.optns, 2.0, 'homotopy', 'max_factor')
+        self.min_factor = get_opt(self.optns, 0.5, 'homotopy', 'min_factor')
+        self.dmu_max = get_opt(self.optns, -0.1, 'homotopy', 'dmu_max')
+        self.dmu_min = get_opt(self.optns, -0.9, 'homotopy', 'dmu_min')
+        self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
+        self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
+        self.precond_on_mu = get_opt(self.optns, 1.0, 'homotopy', 'mu_pc_on')
+
+        print 'self.use_frac_to_bound : ', self.use_frac_to_bound
+        print 'self.init_step: ', self.step
+        print 'self.precond_on_mu : ', self.precond_on_mu
+        # print 'self.mu: ', self.mu
+        # print 'self.inner_tol: ', self.inner_tol
+
+    def _write_header(self, opt_tol, feas_tol):
+        self.hist_file.write(
+            '# Kona Param. Contn. convergence history ' +
+            '(opt tol = %e | feas tol = %e)\n'%(opt_tol, feas_tol) +
+            '# outer' + ' '*5 +
+            'inner' + ' '*5 +
+            ' cost' + ' '*5 +
+            ' objective' + ' ' * 5 +
+            'lagrangian' + ' ' * 5 +
+            '  opt norm' + ' '*5 +
+            ' feas norm' + ' '*5 +
+            '  homotopy' + ' ' * 5 +
+            '   hom opt' + ' '*5 +
+            '  hom feas' + ' '*5 +
+            'mu        ' + ' '*5 +
+            # 'min(slack)' + ' '*5 +
+            # 'max(lamda)' + ' '*5 +
+            # 'ineq_norm2' + ' '*5 +
+            '\n'
+        )
+
+    def _write_outer(self, outer, cost, obj, lag, opt_norm, feas_norm, mu):
+        dummy0 = 0.0
+        dummy_fmt = '%.4e'%dummy0
+
+        if obj < 0.:
+            obj_fmt = '%.3e'%obj
+        else:
+            obj_fmt = ' %.3e'%obj
+        if lag < 0.:
+            lag_fmt = '%.3e'%lag
+        else:
+            lag_fmt = ' %.3e'%lag
+        self.hist_file.write(
+            '%7i' % outer + ' ' * 5 +
+            '%5i' % dummy0  + ' ' * 5 +
+            '%5i' % cost + ' ' * 5 +
+            obj_fmt + ' ' * 5 +
+            lag_fmt + ' ' * 5 +
+            '%.4e' % opt_norm + ' ' * 5 +
+            '%.4e' % feas_norm + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
+            dummy_fmt + ' ' * 5 +
+            '%1.4f' % mu + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
+            '\n'
+        )
+
+    def _write_inner(self, outer, inner,
+                     obj, lag, opt_norm, feas_norm,
+                     hom, hom_opt, hom_feas):         # min_slack, max_lamda, min_cnstr
+        if obj < 0.:
+            obj_fmt = '%.3e'%obj
+        else:
+            obj_fmt = ' %.3e'%obj
+        if lag < 0.:
+            lag_fmt = '%.3e'%lag
+        else:
+            lag_fmt = ' %.3e'%lag
+        if hom < 0.:
+            hom_fmt = '%.3e'%hom
+        else:
+            hom_fmt = ' %.3e'%hom
+        self.hist_file.write(
+            '%7i' % outer + ' ' * 5 +
+            '%5i' % inner + ' ' * 5 +
+            '%5i' % self.primal_factory._memory.cost + ' ' * 5 +
+            obj_fmt + ' ' * 5 +
+            lag_fmt + ' ' * 5 +
+            '%.4e' % opt_norm + ' ' * 5 +
+            '%.4e' % feas_norm + ' ' * 5 +
+            hom_fmt + ' ' * 5 +
+            '%.4e' % hom_opt + ' ' * 5 +
+            '%.4e' % hom_feas + ' ' * 5 +
+            '%.6e' % self.mu + ' ' * 10 +
+            # '%1.4f' % min_slack + ' ' * 5 +
+            # '%1.4f' % max_lamda + ' ' * 5 +
+            # '%1.4f' % min_cnstr + ' ' * 5 +            
+            '\n'
+        )
+
+    def _generate_primal(self):
+        if self.ineq_factory is None:
+            return self.primal_factory.generate()
+        else:
+            prim = self.primal_factory.generate()
+            dual_ineq = self.ineq_factory.generate()        
+            return CompositePrimalVector(prim, dual_ineq)
+
+    def _generate_dual(self):
+
+        if self.ineq_factory is not None:
+            if self.eq_factory is not None:
+                dual_eq = self.eq_factory.generate()
+                dual_ineq = self.ineq_factory.generate()
+                out = CompositeDualVector(dual_eq, dual_ineq)
+            else:    
+                out = self.ineq_factory.generate()
+        else:
+            out = self.eq_factory.generate()
+
+        return  out
+
+    def _generate_kkt(self):
+        primal = self._generate_primal()
+        dual = self._generate_dual()
+        return ReducedKKTVector(primal, dual)
+
+    def _mat_vec(self, in_vec, out_vec):
+
+        # design_work = self.primal_factory.generate()
+        # design_work2 = self.primal_factory.generate()
+
+        # self.W.multiply_W(in_vec.primal.design, design_work)
+
+        # design_work.times(1. - self.mu)
+
+        # design_work2.equals(in_vec.primal.design)
+        # design_work2.times(self.mu)
+        # design_work.plus(design_work2)
+
+        # print 'self.mu,  in_vec.design, out_vec.design, out/in ', self.mu,  in_vec.primal.design.norm2, \
+        #     design_work.norm2, design_work.norm2/in_vec.primal.design.norm2
+        # ---------------------------------------
+        # out_vec.equals(0.0)
+
+        self.hessian.product(in_vec, out_vec)
+        out_vec.times(1. - self.mu)
+
+        self.prod_work.equals(in_vec)
+        self.prod_work.times(self.mu)
+        # self.prod_work.primal.slack.times(self.current_x.primal.slack)
+
+        out_vec.primal.plus(self.prod_work.primal)
+        out_vec.dual.minus(self.prod_work.dual)
+
+    def find_step(self, max_mu_step, x, t):
+
+            # active constraints:    s = 0 ,   lam < 0
+            # inactive constraints:   s > 0,   lam = 0   
+
+            # # -- 2) new slack >= 0.0, new multipliers <= 0.0  
+            # --------- fraction to boundary rule ----------
+            thresh_0 = 1e-6
+
+            slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
+            if any(slack_steps > thresh_0):
+                max_slack_step = min(slack_steps[slack_steps > thresh_0])
+            else:
+                max_slack_step = max_mu_step
+
+            # --------- if a certain element of slack_steps (0, 1e-6) 
+            # --------- meaning this slack is hitting 0, active constraints. 
+            ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
+
+
+            ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
+
+            if any(ineq_steps > thresh_0):
+                max_ineq_step = min(ineq_steps[ineq_steps > thresh_0])
+            else:
+                max_ineq_step = max_mu_step
+
+            ind_inactive_1 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
+            ind_inactive_2 = np.where( (x.dual.base.data == 0.0) & (t.dual.base.data > 0) ) 
+            ind_inactive_lam0 = np.append(ind_inactive_1, ind_inactive_2)
+ 
+            # --------- if a certain element of ineq_steps (0, 1e-6) 
+            # --------- meaning this lam is hitting 0, inactive constraints. 
+            return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
+            
+    def solve(self):
+        self.info_file.write(
+            '\n' +
+            '**************************************************\n' +
+            '***        Using Parameter Continuation        ***\n' +
+            '**************************************************\n' +
+            '\n')
+
+        # get the vectors we need
+        x = self._generate_kkt()
+        x0 = self._generate_kkt()
+        x_save = self._generate_kkt()
+        x_temp = self._generate_kkt()
+        dJdX = self._generate_kkt()
+
+        dJdX_save = self._generate_kkt()
+        dJdX_hom = self._generate_kkt()
+        dx = self._generate_kkt()
+        dx_newt = self._generate_kkt()
+        rhs_vec = self._generate_kkt()
+        t = self._generate_kkt()
+        t_save = self._generate_kkt()
+        self.prod_work = self._generate_kkt()
+
+        self.current_x = self._generate_kkt()
+        kkt_work = self._generate_kkt()
+
+        state = self.state_factory.generate()
+        state_work = self.state_factory.generate()
+        state_save = self.state_factory.generate()
+        state_work_svd = self.state_factory.generate()
+        adj = self.state_factory.generate()
+        adj_save = self.state_factory.generate()
+        adj_work = self.state_factory.generate()
+
+        primal_work = self._generate_primal()
+        design_work = self.primal_factory.generate()
+        dual_work = self._generate_dual()
+        dual_work2 = self._generate_dual()
+
+        if self.svd_pc is not None:   
+            X_olddualS = self._generate_kkt()
+            dLdX_olddualS = self._generate_kkt()
+            old_x = self._generate_kkt()
+
+        if self.uzawa is not None:
+            X_olddual = self._generate_kkt()
+            dLdX_olddual = self._generate_kkt()
+            dLdX_oldprimal = self._generate_kkt()
+            old_x = self._generate_kkt()            
+
+        if self.ineq_factory is not None:
+            self.info_file.write(
+                '# of design vars = %i\n' % len(x.primal.design.base.data) +
+                '# of slack vars  = %i\n' % len(x.dual.base.data) +
+                '# of ineq cnstr    = %i\n' % len(x.dual.base.data) +
+                # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
+                '\n'
+            )
+        EPS = np.finfo(np.float64).eps
+        # EPS = 1e-7
+        # initialize the problem at the starting point
+        x0.equals_init_guess()
+
+        x.equals(x0)
+        self.current_x.equals(x0)
+
+        if not state.equals_primal_solution(x.primal):
+            raise RuntimeError('Invalid initial point! State-solve failed.')
+        if self.factor_matrices:
+            factor_linear_system(x.primal, state)
+
+        obj_fac = 1.
+        cnstr_fac = 1.
+
+        # compute the lagrangian adjoint
+        adj.equals_lagrangian_adjoint(
+            x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+        
+        # compute initial KKT conditions
+        dJdX.equals_KKT_conditions(
+            x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+        print 'dJdX.inner(x): ', dJdX.inner(x)
+        
+        # ----------------------- Outputing Information ----------------
+        # send solution to solver
+        solver_info = current_solution(
+            num_iter=0, curr_primal=x.primal, curr_state=state, curr_adj=adj,
+            curr_dual=x.dual)
+
+        if isinstance(solver_info, str) and solver_info != '':
+            self.info_file.write('\n' + solver_info + '\n')
+
+        # compute convergence metrics
+        opt_norm0 = dJdX.primal.norm2
+        feas_norm0 = dJdX.dual.norm2
+
+        opt_tol = self.primal_tol*opt_norm0
+        feas_tol = max(self.cnstr_tol*feas_norm0, 1e-6)
+        self._write_header(opt_tol, feas_tol)
+
+        # write the initial point
+        obj0 = objective_value(x.primal, state)
+        lag0 = obj_fac * obj0 + cnstr_fac * x0.dual.inner(dJdX.dual)
+        cost0 = self.primal_factory._memory.cost
+        mu0 = self.mu
+        self._write_outer(0, cost0, obj0, lag0, opt_norm0, feas_norm0, mu0)
+        self.hist_file.write('\n')
+        # ---------------------------------------------------------------- 
+
+        # compute the rhs vector for the predictor problem
+        rhs_vec.equals(dJdX)
+        rhs_vec.times(-1.)
+
+        kkt_work.equals(x)
+        kkt_work.minus(x0)
+        rhs_vec.primal.plus(kkt_work.primal)
+        rhs_vec.dual.minus(kkt_work.dual)
+
+        # compute the tangent vector    # steepest descent direction when mu = 1.0;  p = -dJdX
+        t.equals(0.0)
+        self.hessian.linearize(
+            x, state, adj,
+            obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+        # self.W.linearize(x, state, adj)
+        self.krylov.outer_iters = 0
+        self.krylov.inner_iters = 0
+        self.krylov.mu = 1.0
+        self.krylov.step = 'Predictor'
+        self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
+        # unpeal the S^-1 layer for the slack term
+        # t.primal.slack.times(self.current_x.primal.slack)
+        
+        # normalize tangent vector
+        tnorm = np.sqrt(t.inner(t) + 1.0)
+        t.times(1./tnorm)
+        dmu = -1./tnorm
+        # print 'dmu:', dmu
+
+        # START OUTER ITERATIONS
+        #########################
+        outer_iters = 1
+        inner_iters = 0
+        total_iters = 0
+        corrector = False
+
+        while self.mu > 0.0 and outer_iters <= self.max_iter:
+
+            self.info_file.write(
+                '==================================================\n')
+            self.info_file.write(
+                'Outer Homotopy iteration %i\n'%(outer_iters))
+            self.info_file.write('\n')
+
+            dJdX.equals_KKT_conditions(
+                x, state, adj,
+                obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+            opt_norm = dJdX.primal.norm2
+            feas_norm = dJdX.dual.norm2
+            self.info_file.write(
+                'opt_norm : opt_tol = %e : %e\n'%(
+                    opt_norm, opt_tol) +
+                'feas_norm : feas_tol = %e : %e\n' % (
+                    feas_norm, feas_tol))
+
+            # save current solution in case we need to revert
+            x_save.equals(x)
+            state_save.equals(state)
+            adj_save.equals(adj)
+            dJdX_save.equals(dJdX)
+            t_save.equals(t)
+            dmu_save = dmu
+            mu_save = self.mu
+
+            # influence of mu on step size
+            dmu_step = dmu * self.step
+            print 'dmu_step', dmu_step
+            dmu_step = max(self.dmu_min, dmu_step)
+            dmu_step = min(self.dmu_max, dmu_step)
+
+            tent_mu = self.mu + dmu_step
+            if tent_mu < 0.0:
+                tent_mu = 0.0
+            # -----------------------------
+            max_mu_step = (tent_mu - self.mu)/dmu
+
+            if self.mu < 1.0: 
+                if self.use_frac_to_bound is True:
+                    # print '\n Predictor outer %d '%outer_iters
+                    self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
+                    t.primal.slack.base.data[ind_active_s0] = 0.0
+                    t.dual.base.data[ind_inactive_lam0] = 0.0 
+
+                else:
+                    self.step = max_mu_step
+            else:
+                self.step = max_mu_step
+
+            x.equals_ax_p_by(1.0, x, self.step, t)
+            self.mu += self.step*dmu
+
+            self.info_file.write('\nmu after pred  = %.14f\n'%self.mu)
+
+            # solve states
+            if self.ineq_factory is not None:
+                x.primal.design.enforce_bounds()
+            else:
+                x.primal.enforce_bounds()
+
+            self.current_x.equals(x)
+
+            if not state.equals_primal_solution(x.primal):
+                raise RuntimeError(
+                    'Invalid predictor point! State-solve failed.')
+            if self.factor_matrices:
+                factor_linear_system(x.primal, state)
+
+            # # compute adjoint
+            adj.equals_lagrangian_adjoint(
+                x, state, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+            
+            if self.mu < self.mu_correction:              
+                
+                corrector = True
+                # START CORRECTOR (Newton) ITERATIONS
+                #####################################
+                max_newton = self.inner_maxiter
+                if self.mu < EPS:     
+                    max_newton = self.inner_maxiter*5
+
+                inner_iters = 0
+                
+                # print '0) self.mu: ', self.mu
+                # print '0) X coordinates before Corrector: ', x.primal.design.base.data, \
+                #     x.primal.slack.base.data, x.dual.base.data
+
+                dx_newt.equals(0.0)
+                for i in xrange(max_newton):
+
+                    self.info_file.write('\n')
+                    self.info_file.write('   Inner Newton iteration %i\n'%(i+1))
+                    self.info_file.write('   -------------------------------\n')
+
+                    # compute the KKT conditions
+                    dJdX.equals_KKT_conditions(
+                        x, state, adj,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                    if self.mu < EPS and inner_iters == 0:
+                        opt_norm_cur = dJdX.primal.norm2
+                        feas_norm_cur = dJdX.dual.norm2
+                        self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
+
+
+                    dJdX_hom.equals(dJdX)
+                    dJdX_hom.times(1. - self.mu)
+
+                    kkt_work.equals(x)
+                    kkt_work.minus(x0)
+                    xTx = kkt_work.primal.inner(kkt_work.primal)
+                    mTm = kkt_work.dual.inner(kkt_work.dual)
+                    kkt_work.times(self.mu)
+                    dJdX_hom.primal.plus(kkt_work.primal)
+                    dJdX_hom.dual.minus(kkt_work.dual)
+
+                    # get convergence norms
+                    if inner_iters == 0:
+                        # compute optimality norms
+                        hom_opt_norm0 = dJdX_hom.primal.norm2
+                        hom_opt_norm = hom_opt_norm0
+                        hom_opt_tol = self.inner_tol * hom_opt_norm0
+                        if hom_opt_tol < opt_tol or self.mu == 0.0:
+                            hom_opt_tol = opt_tol
+                        # compute feasibility norms
+                        hom_feas_norm0 = dJdX_hom.dual.norm2
+                        hom_feas_norm = hom_feas_norm0
+                        hom_feas_tol = self.inner_tol * hom_feas_norm0
+                        if hom_feas_tol < feas_tol or self.mu == 0.0:
+                            hom_feas_tol = feas_tol
+                    else:
+                        hom_opt_norm = dJdX_hom.primal.norm2
+                        hom_feas_norm = dJdX_hom.dual.norm2
+
+                    self.info_file.write(
+                        '   hom_opt_norm : hom_opt_tol = %e : %e\n'%(
+                            hom_opt_norm, hom_opt_tol) +
+                        '   hom_feas_norm : hom_feas_tol = %e : %e\n'%(
+                            hom_feas_norm, hom_feas_tol))
+
+                    obj = objective_value(x.primal, state)
+                    lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
+
+                    hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
+                    opt_norm = dJdX.primal.norm2
+                    feas_norm = dJdX.dual.norm2 
+
+                    self._write_inner(
+                        outer_iters, inner_iters,
+                        obj, lag, opt_norm, feas_norm,
+                        hom, hom_opt_norm, hom_feas_norm)
+
+                    # check convergence
+                    if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
+                        self.info_file.write('\n  Corrector step converged!\n')
+                        break
+
+                    # linearize the hessian at the new point
+                    self.hessian.linearize(
+                        x, state, adj,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    # self.W.linearize(x, state, adj)
+                    # ---------------------------------------------------------------------------
+                    # --------------------- Linearizing Preconditioners -------------------------
+                    # use other preconditioners only when mu < 0.2 and as indicated in the option
+                    if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
+                        if self.mu < 0.05:                           
+                            self.approx_adj.update_mat = True  
+                        self.approx_adj.linearize(x, state, adj, self.mu)
+
+                    if self.svd_pc is not None and self.mu <= self.precond_on_mu:
+                        if inner_iters == 0:
+                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
+                        else:
+                            X_olddualS.equals(x)
+                            X_olddualS.primal.design.equals(old_x.primal.design)
+
+                            if not state_work_svd.equals_primal_solution(X_olddualS.primal):
+                                raise RuntimeError(
+                                    'Invalid predictor point! State-solve failed.')
+                            adj_work.equals_lagrangian_adjoint(
+                                X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                            dLdX_olddualS.equals_KKT_conditions(
+                                X_olddualS, state_work_svd, adj_work) 
+                            dLdX_olddualS.times(1. - self.mu)
+
+                            kkt_work.equals(X_olddualS)
+                            kkt_work.minus(x0)
+                            kkt_work.times(self.mu)
+                            dLdX_olddualS.primal.plus(kkt_work.primal)
+                            dLdX_olddualS.dual.minus(kkt_work.dual)
+
+                            self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
+
+                        old_x.equals(x)
+
+                    if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
+                        self.svd_pc_stress.linearize(x, state, adj, self.mu)
+
+                    if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
+                        self.svd_pc_cmu.linearize(x, state, adj, self.mu)
+
+                    if self.uzawa is not None and self.mu <= self.precond_on_mu:
+                        if inner_iters == 0:
+                            self.uzawa.linearize(
+                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
+                        else:
+                            X_olddual.equals(x)
+                            X_olddual.primal.slack.equals(old_x.primal.slack)
+                            X_olddual.dual.equals(old_x.dual)
+                           
+                            dLdX_olddual.equals_KKT_conditions(
+                            X_olddual, state, adj)
+
+                            X_olddual.equals(x)
+                            X_olddual.primal.equals(old_x.primal)
+                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
+
+                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
+                        old_x.equals(x)
+
+                        
+                    self.krylov.outer_iters = outer_iters
+                    self.krylov.inner_iters = inner_iters
+                    self.krylov.mu = self.mu
+                    self.krylov.step = 'Corrector'
+
+                    # define the RHS vector for the homotopy system
+                    dJdX_hom.times(-1.)
+
+                    # solve the system
+                    dx.equals(0.0)
+
+                    if self.mu <= self.precond_on_mu:
+                        self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.precond)
+                    else:
+                        self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.eye_precond)
+
+                    # unpeal the S^-1 layer for the slack term
+                    # dx.primal.slack.times(self.current_x.primal.slack)
+
+                    # update the design
+                    x.plus(dx)
+
+
+                    if self.ineq_factory is not None:
+                        x.primal.design.enforce_bounds()
+                    else:
+                        x.primal.enforce_bounds()
+
+
+                    dx.equals(x)
+                    dx.minus(self.current_x)
+                    dx_newt.plus(dx)
+
+
+                    self.current_x.equals(x)
+
+                    # print '1) X coordinates inside Corrector: ', x.primal.design.base.data, \
+                    #     x.primal.slack.base.data, x.dual.base.data
+
+                    if not state.equals_primal_solution(x.primal):
+                        raise RuntimeError('Newton step failed!')
+                    if self.factor_matrices:
+                        factor_linear_system(x.primal, state)
+
+                    # compute the adjoint
+                    adj.equals_lagrangian_adjoint(
+                        x, state, state_work,
+                        obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                    if self.mu < EPS:
+                        solver_info = current_solution(
+                            num_iter=inner_iters, curr_primal=x.primal,
+                            curr_state=state, curr_adj=adj, curr_dual=x.dual)
+
+                    # advance iter counter
+                    inner_iters += 1
+                    total_iters += 1
+
+                # if we finished the corrector step at mu=0, we're done!
+                if self.mu < EPS:    
+                    self.info_file.write('\n>> Optimization DONE! <<\n')
+                    # send solution to solver
+                    solver_info = current_solution(
+                        num_iter=outer_iters, curr_primal=x.primal,
+                        curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                    if isinstance(solver_info, str) and solver_info != '':
+                        self.info_file.write('\n' + solver_info + '\n')
+                    return
+
+            # COMPUTE NEW TANGENT VECTOR
+            ############################
+            # compute the KKT conditions
+            dJdX.equals_KKT_conditions(
+                x, state, adj,
+                obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+            # assemble the predictor RHS
+            rhs_vec.equals(dJdX)
+            rhs_vec.times(-1.)
+
+            kkt_work.equals(x)
+            kkt_work.minus(x0)
+            rhs_vec.primal.plus(kkt_work.primal)
+            rhs_vec.dual.minus(kkt_work.dual)
+
+            # ---------------------------------
+            # for BFGS approximation of W = (1-mu)KKT + mu * I 
+            dJdX_hom.equals(dJdX)
+            dJdX_hom.times(1. - self.mu)
+
+            xTx = kkt_work.primal.inner(kkt_work.primal)
+            mTm = kkt_work.dual.inner(kkt_work.dual)
+            kkt_work.times(self.mu)
+            dJdX_hom.primal.plus(kkt_work.primal)
+            dJdX_hom.dual.minus(kkt_work.dual)
+
+            if corrector is False:
+                # ------------------------------------------------
+                # --------- write inner for predictor step -------
+                hom_opt_norm = dJdX_hom.primal.norm2
+                hom_feas_norm = dJdX_hom.dual.norm2
+
+                obj = objective_value(x.primal, state)
+                lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
+                hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
+                opt_norm = dJdX.primal.norm2
+                feas_norm = dJdX.dual.norm2  
+
+                self._write_inner(
+                    outer_iters, 0,
+                    obj, lag, opt_norm, feas_norm,
+                    hom, hom_opt_norm, hom_feas_norm)
+                # --------------------------------------------------
+
+            # compute the new tangent vector and predictor step
+            t.equals(0.0)
+            self.hessian.linearize(
+                x, state, adj,
+                obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+            # self.W.linearize(x, state, adj)
+            if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
+                if self.mu < 0.05:                           
+                    self.approx_adj.update_mat = True  
+                self.approx_adj.linearize(x, state, adj, self.mu)
+
+            if self.svd_pc is not None and self.mu <= self.precond_on_mu:
+                # BFGS Hessian approx
+                X_olddualS.equals(x)
+                X_olddualS.primal.design.equals(old_x.primal.design)
+
+                if not state_work_svd.equals_primal_solution(X_olddualS.primal):
+                    raise RuntimeError(
+                        'Invalid predictor point! State-solve failed.')
+
+                # # compute adjoint
+                adj_work.equals_lagrangian_adjoint(
+                    X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+                dLdX_olddualS.equals_KKT_conditions(
+                    X_olddualS, state_work_svd, adj_work) 
+                dLdX_olddualS.times(1. - self.mu)
+
+                kkt_work.equals(X_olddualS)
+                kkt_work.minus(x0)
+                kkt_work.times(self.mu)
+                dLdX_olddualS.primal.plus(kkt_work.primal)
+                dLdX_olddualS.dual.minus(kkt_work.dual)
+
+                self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
+                
+                old_x.equals(x)
+
+            if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
+                self.svd_pc_stress.linearize(x, state, adj, self.mu)
+
+            if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
+                self.svd_pc_cmu.linearize(x, state, adj, self.mu)
+
+            self.krylov.outer_iters = outer_iters 
+            self.krylov.inner_iters = inner_iters
+            self.krylov.mu = self.mu
+            self.krylov.step = 'Predictor'
+
+            if self.mu <= self.precond_on_mu:
+                self.krylov.solve(self._mat_vec, rhs_vec, t, self.precond)
+            else:
+                self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
+
+            # unpeal the S^-1 layer for the slack term                
+            # t.primal.slack.times(self.current_x.primal.slack)
+
+            # normalize the tangent vector
+            tnorm = np.sqrt(t.inner(t) + 1.0)
+            t.times(1./tnorm)
+            dmu = -1./tnorm
+            # print 'dmu:', dmu
+            # compute distance to curve
+            self.info_file.write('\n')
+            dcurve = dx_newt.norm2
+            self.info_file.write(
+                'dist to curve = %e\n' % dcurve)
+
+            # print '2) dx_newt: ', dx_newt.primal.design.base.data, \
+            #             dx_newt.primal.slack.base.data, dx_newt.dual.base.data
+            # print '2) dx_newt.norm2: ', dcurve
+            # compute angle between steps
+            uTv = t.inner(t_save) + (dmu * dmu_save)
+            angl = np.arccos(uTv)
+            self.info_file.write(
+                'angle         = %f\n' % (angl * 180. / np.pi))
+
+            # compute deceleration factor
+            dfac = max(np.sqrt(dcurve / self.nom_dcurve), angl / self.nom_angl)
+
+            self.info_file.write(
+                'dfac before cut out  = %f\n' % dfac )
+
+            dfac = max(min(dfac, self.max_factor), self.min_factor)
+
+            # apply the deceleration factor
+            self.info_file.write('step          = %f\n' % self.step)
+            self.info_file.write('factor        = %f\n' % dfac)
+            self.step /= dfac
+            self.info_file.write('step len      = %f\n' % self.step)
+
+            # if factor is bad, go back to the previous point with new factor
+            if dfac == self.max_factor:
+                self.info_file.write(
+                    'High curvature! Rejecting solution...\n')
+                # revert solution
+                x.equals(x_save)
+                self.mu = mu_save
+                t.equals(t_save)
+                dmu = dmu_save
+                state.equals(state_save)
+                adj.equals(adj_save)
+                dJdX.equals(dJdX_save)
+                if self.factor_matrices:
+                    factor_linear_system(x.primal, state)
+            else:
+                # # this step is accepted so send it to user
+                x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+                x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+                solver_info = current_solution(
+                    num_iter=outer_iters, curr_primal=x.primal,
+                    curr_state=state, curr_adj=adj, curr_dual=x.dual)
+                if isinstance(solver_info, str) and solver_info != '':
+                    self.info_file.write('\n' + solver_info + '\n')
+
+            # advance iteration counter
+            outer_iters += 1
+            self.info_file.write('\n')
+            self.hist_file.write('\n')
+
+# imports here to prevent circular errors
+import numpy as np
+from kona.options import BadKonaOption, get_opt
+from kona.linalg.common import current_solution, factor_linear_system, objective_value
+from kona.linalg.vectors.composite import ReducedKKTVector
+from kona.linalg.matrices.common import IdentityMatrix
+from kona.linalg.matrices.hessian import ReducedKKTMatrix
+from kona.linalg.matrices.preconds import APPROXADJOINT
+from kona.linalg.matrices.preconds import SVDPC
+from kona.linalg.matrices.preconds import SVDPC_STRESS
+from kona.linalg.matrices.preconds import SVDPC_CMU
+from kona.linalg.matrices.preconds import UZAWA
+from kona.linalg.matrices.preconds import IterSolver
+from kona.linalg.solvers.krylov import FGMRES
+from kona.linalg.vectors.composite import CompositePrimalVector
+from kona.linalg.vectors.composite import CompositeDualVector
+from kona.linalg.matrices.hessian import LagrangianHessian

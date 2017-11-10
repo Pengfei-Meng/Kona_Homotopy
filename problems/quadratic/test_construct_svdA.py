@@ -18,7 +18,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output2/temp'
+        self.outdir = './output2/SM_What3'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 

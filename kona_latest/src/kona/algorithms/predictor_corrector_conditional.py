@@ -346,6 +346,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
         # print 'dJdX.inner(x): ', dJdX.inner(x)
+
+        self.current_dldx.equals(dJdX)
+        self.current_x.equals(x)
+        state_old.equals(state)
+        adj_old.equals(adj)
         
         # ----------------------- Outputing Information ----------------
         # send solution to solver
@@ -436,10 +441,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dmu_save = dmu
             mu_save = self.mu
 
-            # self.current_dldx.equals(dJdX)
-            self.current_x.equals(x)
-            # state_old.equals(state)
-            # adj_old.equals(adj)
 
             # influence of mu on step size
             dmu_step = dmu * self.step
@@ -510,31 +511,31 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # # --------------------------------
-                    # dx_bfgs.equals(x)
-                    # dx_bfgs.minus(self.current_x)
+                    # --------------------------------
+                    dx_bfgs.equals(x)
+                    dx_bfgs.minus(self.current_x)
                     
-                    # X_oldx.equals(x)
-                    # X_oldx.primal.design.equals(self.current_x.primal.design)
+                    X_oldx.equals(x)
+                    X_oldx.primal.design.equals(self.current_x.primal.design)
 
-                    # # if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                    # #     raise RuntimeError(
-                    # #         'Invalid predictor point! State-solve failed.')
-                    # # adj_work.equals_lagrangian_adjoint(
-                    # #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-                    # # dldx_bfgs.equals_KKT_conditions(
-                    # #     X_oldx, state_work_svd, adj_work) 
+                    if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                        raise RuntimeError(
+                            'Invalid predictor point! State-solve failed.')
+                    adj_work.equals_lagrangian_adjoint(
+                        X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    dldx_bfgs.equals_KKT_conditions(
+                        X_oldx, state_work_svd, adj_work) 
 
                     # dldx_bfgs.equals_KKT_conditions(
                     #     X_oldx, state_old, adj_old) 
 
-                    # dldx_bfgs.minus(dJdX)
-                    # dldx_bfgs.times(-1.0)
+                    dldx_bfgs.minus(dJdX)
+                    dldx_bfgs.times(-1.0)
 
                     self.current_x.equals(x)
-                    # self.current_dldx.equals(dJdX)
-                    # state_old.equals(state)
-                    # adj_old.equals(adj)
+                    self.current_dldx.equals(dJdX)
+                    state_old.equals(state)
+                    adj_old.equals(adj)
 
                     # --------------------------------
 
@@ -631,34 +632,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
-
-                    # if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-                    #     # self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
-                    #     if inner_iters == 0:
-                    #         self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
-                    #     else:
-                    #         X_olddualS.equals(x)
-                    #         X_olddualS.primal.design.equals(old_x.primal.design)
-
-                    #         if not state_work_svd.equals_primal_solution(X_olddualS.primal):
-                    #             raise RuntimeError(
-                    #                 'Invalid predictor point! State-solve failed.')
-                    #         adj_work.equals_lagrangian_adjoint(
-                    #             X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-                    #         dLdX_olddualS.equals_KKT_conditions(
-                    #             X_olddualS, state_work_svd, adj_work) 
-                    #         dLdX_olddualS.times(1. - self.mu)
-
-                    #         kkt_work.equals(X_olddualS)
-                    #         kkt_work.minus(x0)
-                    #         kkt_work.times(self.mu)
-                    #         dLdX_olddualS.primal.plus(kkt_work.primal)
-                    #         dLdX_olddualS.dual.minus(kkt_work.dual)
-
-                    #         self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
-
-                    #     old_x.equals(x)
                     
                     if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
                         self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
@@ -695,7 +668,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.minus(self.current_x)
                     dx_newt.plus(dx)
 
-                    self.current_x.equals(x)
 
                     if not state.equals_primal_solution(x.primal):
                         raise RuntimeError('Newton step failed!')
@@ -734,32 +706,32 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-            # if i == self.inner_maxiter-1:
-            #     # --------------------------------
-            #     dx_bfgs.equals(x)
-            #     dx_bfgs.minus(self.current_x)
+            if i == self.inner_maxiter-1:
+                # --------------------------------
+                dx_bfgs.equals(x)
+                dx_bfgs.minus(self.current_x)
 
-            #     X_oldx.equals(x)
-            #     X_oldx.primal.design.equals(self.current_x.primal.design)
+                X_oldx.equals(x)
+                X_oldx.primal.design.equals(self.current_x.primal.design)
 
-            #     # if not state_work_svd.equals_primal_solution(X_oldx.primal):
-            #     #     raise RuntimeError(
-            #     #         'Invalid predictor point! State-solve failed.')
-            #     # adj_work.equals_lagrangian_adjoint(
-            #     #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-            #     # dldx_bfgs.equals_KKT_conditions(
-            #     #     X_oldx, state_work_svd, adj_work) 
+                if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                    raise RuntimeError(
+                        'Invalid predictor point! State-solve failed.')
+                adj_work.equals_lagrangian_adjoint(
+                    X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                dldx_bfgs.equals_KKT_conditions(
+                    X_oldx, state_work_svd, adj_work) 
 
-            #     dldx_bfgs.equals_KKT_conditions(
-            #         X_oldx, state_old, adj_old) 
+                # dldx_bfgs.equals_KKT_conditions(
+                #     X_oldx, state_old, adj_old) 
 
-            #     dldx_bfgs.minus(dJdX)
-            #     dldx_bfgs.times(-1.0)
+                dldx_bfgs.minus(dJdX)
+                dldx_bfgs.times(-1.0)
 
-            #     self.current_x.equals(x)
-            #     self.current_dldx.equals(dJdX)
-            #     state_old.equals(state)
-            #     adj_old.equals(adj)
+                self.current_x.equals(x)
+                self.current_dldx.equals(dJdX)
+                state_old.equals(state)
+                adj_old.equals(adj)
 
 
             # assemble the predictor RHS
