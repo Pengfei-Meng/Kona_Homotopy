@@ -18,11 +18,11 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output2/sm_W'
+        self.outdir = './output2/temp'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        size_prob = 100
+        size_prob = 500
 
         self.num_design = size_prob
         self.num_ineq = size_prob
@@ -49,9 +49,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 60.0,                # 100-500 : 60 100 100 100 150 
-                'nominal_dist' : 10.0,              # 100-500 : 10 10 20 30  30
-                'nominal_angle' : 20.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
+                'init_step' : 150.0,                # 100-500 : 60 100 100 100 150 
+                'nominal_dist' : 30.0,              # 100-500 : 10 10 20 30  30
+                'nominal_angle' : 30.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       

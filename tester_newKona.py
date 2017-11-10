@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssvd_stress'%(os.path.sep)
+prefix += '%ssvd_stress2'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)

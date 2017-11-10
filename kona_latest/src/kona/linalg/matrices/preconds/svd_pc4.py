@@ -74,7 +74,7 @@ class SVDPC_CMU(BaseHessian):
         # out_vec.times(1.0-self.mu)
 
 
-    def linearize(self, X, state, adjoint, mu):  # dLdX_homo, dLdX_homo_oldual, inner_iters  dx_bfgs, dldx_bfgs
+    def linearize(self, X, state, adjoint, mu, dx_bfgs, dldx_bfgs):   # dLdX_homo, dLdX_homo_oldual, inner_iters  
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
