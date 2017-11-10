@@ -37,7 +37,7 @@ class SVDPC_STRESS(BaseHessian):
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
-        self.w_value = get_opt(optns, 0.1, 'w_value')
+        self.beta = get_opt(optns, 0.1, 'beta')
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AsT_SigS_As_mu = LowRankSVD(
@@ -106,10 +106,12 @@ class SVDPC_STRESS(BaseHessian):
 
         # ------ Data to use --------------
         self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data + self.mu*self.at_slack_data
+        # self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.num_ineq)
         self.lam_aug_inv = 1./self.lam_aug
 
         # I''Lam'^{-1} S' - I'
         self.sig_aug_inv = (1.0 - self.mu)**2 *self.at_slack_data* self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
+        # self.sig_aug_inv = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
         self.sig_aug = 1.0/self.sig_aug_inv
 
         self.sig_aug_lower = self.sig_aug[: self.num_design]
@@ -155,7 +157,7 @@ class SVDPC_STRESS(BaseHessian):
         rhs_vx = u_x - self.design_work.base.data
 
         # LHS  v_x, svd on whole AsT_SigS_As    # 0.1 for tiny case;  0.001 for small case
-        W_approx = self.w_value*np.ones(self.num_design)      # 0.0001
+        W_approx = self.beta*np.ones(self.num_design)      # 0.0001
 
         W = (1-self.mu)*W_approx + self.mu*np.ones(self.num_design)
 

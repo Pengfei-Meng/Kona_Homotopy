@@ -29,15 +29,28 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
         self.mat_vec = self.hessian.product
 
+        # self.W = LagrangianHessian( 
+        #     [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
+        # self.Wv = self.W.product
+
         # hessian preconditiner settings
         ############################################################
         self.precond = get_opt(self.optns, None, 'rsnk', 'precond')
         
+        self.approx_adj = None
         self.svd_pc = None
         self.svd_pc_stress = None
         self.svd_pc_cmu = None
+        self.uzawa = None
+        self.itersolver = None
 
-        if self.precond is 'svd_pc':
+        if self.precond is 'approx_adjoint':
+            print 'approx_adjoint is used! '
+            self.approx_adj = APPROXADJOINT(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.approx_adj.solve
+
+        elif self.precond is 'svd_pc':
             print 'svd_pc is used! '
             svd_optns = {
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
@@ -63,16 +76,28 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         elif self.precond is 'svd_pc_cmu': 
             print 'svd_pc_cmu is used! '
             svd_optns = {
-                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+                # 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
-                'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
-                'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
-                'fstopo'          : get_opt(self.optns, False, 'svd', 'fstopo'),
+                'beta'         : get_opt(self.optns, 1.0, 'svd', 'beta'), 
+                'cmin'         : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+                'fstopo'       : get_opt(self.optns, False, 'svd', 'fstopo'),
             }
             self.svd_pc_cmu = SVDPC_CMU(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
             self.precond = self.svd_pc_cmu.solve            
+
+        elif self.precond == 'uzawa':
+            print 'uzawa is used! when mu = 0.0'
+            self.uzawa = UZAWA(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.uzawa.solve
+
+        elif self.precond == 'iterative':
+            print 'IterSolver is used! when mu = 0.0'
+            self.itersolver = IterSolver(
+                [primal_factory, state_factory, eq_factory, ineq_factory])
+            self.precond = self.itersolver.solve
 
         else:
             self.eye = IdentityMatrix()
@@ -112,6 +137,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
         self.precond_on_mu = get_opt(self.optns, 1.0, 'homotopy', 'mu_pc_on')
 
+        print 'self.use_frac_to_bound : ', self.use_frac_to_bound
+        print 'self.init_step: ', self.step
+        print 'self.precond_on_mu : ', self.precond_on_mu
+        # print 'self.mu: ', self.mu
+        # print 'self.inner_tol: ', self.inner_tol
 
     def _write_header(self, opt_tol, feas_tol):
         self.hist_file.write(
@@ -128,6 +158,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             '   hom opt' + ' '*5 +
             '  hom feas' + ' '*5 +
             'mu        ' + ' '*5 +
+            # 'min(slack)' + ' '*5 +
+            # 'max(lamda)' + ' '*5 +
+            # 'ineq_norm2' + ' '*5 +
             '\n'
         )
 
@@ -155,12 +188,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dummy_fmt + ' ' * 5 +
             dummy_fmt + ' ' * 5 +
             '%1.4f' % mu + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
+            # '-'*10 + ' ' * 5 +
             '\n'
         )
 
     def _write_inner(self, outer, inner,
                      obj, lag, opt_norm, feas_norm,
-                     hom, hom_opt, hom_feas):          
+                     hom, hom_opt, hom_feas):         # min_slack, max_lamda, min_cnstr
         if obj < 0.:
             obj_fmt = '%.3e'%obj
         else:
@@ -184,7 +220,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             hom_fmt + ' ' * 5 +
             '%.4e' % hom_opt + ' ' * 5 +
             '%.4e' % hom_feas + ' ' * 5 +
-            '%.6e' % self.mu + ' ' * 10 +         
+            '%.6e' % self.mu + ' ' * 10 +
+            # '%1.4f' % min_slack + ' ' * 5 +
+            # '%1.4f' % max_lamda + ' ' * 5 +
+            # '%1.4f' % min_cnstr + ' ' * 5 +            
             '\n'
         )
 
@@ -216,6 +255,22 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         return ReducedKKTVector(primal, dual)
 
     def _mat_vec(self, in_vec, out_vec):
+
+        # design_work = self.primal_factory.generate()
+        # design_work2 = self.primal_factory.generate()
+
+        # self.W.multiply_W(in_vec.primal.design, design_work)
+
+        # design_work.times(1. - self.mu)
+
+        # design_work2.equals(in_vec.primal.design)
+        # design_work2.times(self.mu)
+        # design_work.plus(design_work2)
+
+        # print 'self.mu,  in_vec.design, out_vec.design, out/in ', self.mu,  in_vec.primal.design.norm2, \
+        #     design_work.norm2, design_work.norm2/in_vec.primal.design.norm2
+        # ---------------------------------------
+        # out_vec.equals(0.0)
 
         self.hessian.product(in_vec, out_vec)
         out_vec.times(1. - self.mu)
@@ -281,15 +336,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dJdX_hom = self._generate_kkt()
         dx = self._generate_kkt()
         dx_newt = self._generate_kkt()
-        dx_bfgs = self._generate_kkt()
         rhs_vec = self._generate_kkt()
         t = self._generate_kkt()
         t_save = self._generate_kkt()
         self.prod_work = self._generate_kkt()
 
         self.current_x = self._generate_kkt()
-        self.current_dldx = self._generate_kkt()
-        dldx_bfgs = self._generate_kkt()
         kkt_work = self._generate_kkt()
 
         state = self.state_factory.generate()
@@ -305,15 +357,17 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dual_work = self._generate_dual()
         dual_work2 = self._generate_dual()
 
-        if self.svd_pc is not None or self.svd_pc_cmu is not None:
+        if self.svd_pc is not None:   
             X_olddualS = self._generate_kkt()
             dLdX_olddualS = self._generate_kkt()
             old_x = self._generate_kkt()
-            old_dldx = self._generate_kkt()
-            X_oldx = self._generate_kkt()
-            state_old = self.state_factory.generate()
-            adj_old = self.state_factory.generate()
-         
+
+        if self.uzawa is not None:
+            X_olddual = self._generate_kkt()
+            dLdX_olddual = self._generate_kkt()
+            dLdX_oldprimal = self._generate_kkt()
+            old_x = self._generate_kkt()            
+
         if self.ineq_factory is not None:
             self.info_file.write(
                 '# of design vars = %i\n' % len(x.primal.design.base.data) +
@@ -328,7 +382,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         x0.equals_init_guess()
 
         x.equals(x0)
-        
+        self.current_x.equals(x0)
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
@@ -346,8 +400,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         dJdX.equals_KKT_conditions(
             x, state, adj, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-
-        # print 'dJdX.inner(x): ', dJdX.inner(x)
+        print 'dJdX.inner(x): ', dJdX.inner(x)
         
         # ----------------------- Outputing Information ----------------
         # send solution to solver
@@ -389,7 +442,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.hessian.linearize(
             x, state, adj,
             obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+        # self.W.linearize(x, state, adj)
         self.krylov.outer_iters = 0
         self.krylov.inner_iters = 0
         self.krylov.mu = 1.0
@@ -402,6 +455,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         tnorm = np.sqrt(t.inner(t) + 1.0)
         t.times(1./tnorm)
         dmu = -1./tnorm
+        # print 'dmu:', dmu
 
         # START OUTER ITERATIONS
         #########################
@@ -438,11 +492,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dmu_save = dmu
             mu_save = self.mu
 
-            self.current_dldx.equals(dJdX)
-            self.current_x.equals(x)
-            state_old.equals(state)
-            adj_old.equals(adj)
-
             # influence of mu on step size
             dmu_step = dmu * self.step
             print 'dmu_step', dmu_step
@@ -478,6 +527,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
 
+            self.current_x.equals(x)
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -499,8 +549,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     max_newton = self.inner_maxiter*5
 
                 inner_iters = 0
-                dx_newt.equals(0.0)
+                
+                # print '0) self.mu: ', self.mu
+                # print '0) X coordinates before Corrector: ', x.primal.design.base.data, \
+                #     x.primal.slack.base.data, x.dual.base.data
 
+                dx_newt.equals(0.0)
                 for i in xrange(max_newton):
 
                     self.info_file.write('\n')
@@ -512,42 +566,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    # --------------------------------
-                    dx_bfgs.equals(x)
-                    dx_bfgs.minus(self.current_x)
-                    
-                    # dldx_bfgs.equals(dJdX)
-                    # dldx_bfgs.minus(self.current_dldx)
-                    # self.current_dldx.equals(dJdX)
-
-                    X_oldx.equals(x)
-                    X_oldx.primal.design.equals(self.current_x.primal.design)
-
-                    if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                        raise RuntimeError(
-                            'Invalid predictor point! State-solve failed.')
-                    adj_work.equals_lagrangian_adjoint(
-                        X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-                    # dldx_bfgs.equals_KKT_conditions(
-                    #     X_oldx, state_old, adj_old) 
-                    dldx_bfgs.equals_KKT_conditions(
-                        X_oldx, state_work_svd, adj_work) 
-
-                    dldx_bfgs.minus(dJdX)
-                    dldx_bfgs.times(-1.0)
-
-                              
-                    self.current_x.equals(x)
-                    state_old.equals(state)
-                    adj_old.equals(adj)
-
-                    # --------------------------------
-
                     if self.mu < EPS and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
+
 
                     dJdX_hom.equals(dJdX)
                     dJdX_hom.times(1. - self.mu)
@@ -605,9 +628,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.hessian.linearize(
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+                    # self.W.linearize(x, state, adj)
+                    # ---------------------------------------------------------------------------
                     # --------------------- Linearizing Preconditioners -------------------------
-                    
+                    # use other preconditioners only when mu < 0.2 and as indicated in the option
+                    if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
+                        if self.mu < 0.05:                           
+                            self.approx_adj.update_mat = True  
+                        self.approx_adj.linearize(x, state, adj, self.mu)
+
                     if self.svd_pc is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
@@ -639,34 +668,28 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-                        # self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                        self.svd_pc_cmu.linearize(x, state, adj, self.mu)
+
+                    if self.uzawa is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
-                            self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
+                            self.uzawa.linearize(
+                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
                         else:
-                            X_olddualS.equals(x)
-                            X_olddualS.primal.design.equals(old_x.primal.design)
+                            X_olddual.equals(x)
+                            X_olddual.primal.slack.equals(old_x.primal.slack)
+                            X_olddual.dual.equals(old_x.dual)
+                           
+                            dLdX_olddual.equals_KKT_conditions(
+                            X_olddual, state, adj)
 
-                            if not state_work_svd.equals_primal_solution(X_olddualS.primal):
-                                raise RuntimeError(
-                                    'Invalid predictor point! State-solve failed.')
-                            adj_work.equals_lagrangian_adjoint(
-                                X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                            X_olddual.equals(x)
+                            X_olddual.primal.equals(old_x.primal)
+                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
 
-                            dLdX_olddualS.equals_KKT_conditions(
-                                X_olddualS, state_work_svd, adj_work) 
-                            dLdX_olddualS.times(1. - self.mu)
-
-                            kkt_work.equals(X_olddualS)
-                            kkt_work.minus(x0)
-                            kkt_work.times(self.mu)
-                            dLdX_olddualS.primal.plus(kkt_work.primal)
-                            dLdX_olddualS.dual.minus(kkt_work.dual)
-
-                            self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
-
+                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
                         old_x.equals(x)
 
-
+                        
                     self.krylov.outer_iters = outer_iters
                     self.krylov.inner_iters = inner_iters
                     self.krylov.mu = self.mu
@@ -685,15 +708,26 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # unpeal the S^-1 layer for the slack term
                     # dx.primal.slack.times(self.current_x.primal.slack)
-                    # pdb.set_trace()
+
                     # update the design
                     x.plus(dx)
+
 
                     if self.ineq_factory is not None:
                         x.primal.design.enforce_bounds()
                     else:
                         x.primal.enforce_bounds()
 
+
+                    dx.equals(x)
+                    dx.minus(self.current_x)
+                    dx_newt.plus(dx)
+
+
+                    self.current_x.equals(x)
+
+                    # print '1) X coordinates inside Corrector: ', x.primal.design.base.data, \
+                    #     x.primal.slack.base.data, x.dual.base.data
 
                     if not state.equals_primal_solution(x.primal):
                         raise RuntimeError('Newton step failed!')
@@ -731,32 +765,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dJdX.equals_KKT_conditions(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-            if i == self.inner_maxiter-1:
-                # --------------------------------
-                dx_bfgs.equals(x)
-                dx_bfgs.minus(self.current_x)
-
-                X_oldx.equals(x)
-                X_oldx.primal.design.equals(self.current_x.primal.design)
-
-                if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                    raise RuntimeError(
-                        'Invalid predictor point! State-solve failed.')
-                adj_work.equals_lagrangian_adjoint(
-                    X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-                # dldx_bfgs.equals_KKT_conditions(
-                #     X_oldx, state_old, adj_old) 
-                dldx_bfgs.equals_KKT_conditions(
-                    X_oldx, state_work_svd, adj_work) 
-
-                dldx_bfgs.minus(dJdX)
-                dldx_bfgs.times(-1.0)
-
-                self.current_x.equals(x)
-                state_old.equals(state)
-                adj_old.equals(adj)
 
             # assemble the predictor RHS
             rhs_vec.equals(dJdX)
@@ -801,7 +809,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.hessian.linearize(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
+            # self.W.linearize(x, state, adj)
+            if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
+                if self.mu < 0.05:                           
+                    self.approx_adj.update_mat = True  
+                self.approx_adj.linearize(x, state, adj, self.mu)
 
             if self.svd_pc is not None and self.mu <= self.precond_on_mu:
                 # BFGS Hessian approx
@@ -834,34 +846,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
             if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-                # self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
-
-                # BFGS Hessian approx
-                X_olddualS.equals(x)
-                X_olddualS.primal.design.equals(old_x.primal.design)
-
-                if not state_work_svd.equals_primal_solution(X_olddualS.primal):
-                    raise RuntimeError(
-                        'Invalid predictor point! State-solve failed.')
-
-                # # compute adjoint
-                adj_work.equals_lagrangian_adjoint(
-                    X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-                dLdX_olddualS.equals_KKT_conditions(
-                    X_olddualS, state_work_svd, adj_work) 
-                dLdX_olddualS.times(1. - self.mu)
-
-                kkt_work.equals(X_olddualS)
-                kkt_work.minus(x0)
-                kkt_work.times(self.mu)
-                dLdX_olddualS.primal.plus(kkt_work.primal)
-                dLdX_olddualS.dual.minus(kkt_work.dual)
-
-                self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
-                
-                old_x.equals(x)
-
+                self.svd_pc_cmu.linearize(x, state, adj, self.mu)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters
@@ -887,6 +872,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.info_file.write(
                 'dist to curve = %e\n' % dcurve)
 
+            # print '2) dx_newt: ', dx_newt.primal.design.base.data, \
+            #             dx_newt.primal.slack.base.data, dx_newt.dual.base.data
+            # print '2) dx_newt.norm2: ', dcurve
             # compute angle between steps
             uTv = t.inner(t_save) + (dmu * dmu_save)
             angl = np.arccos(uTv)

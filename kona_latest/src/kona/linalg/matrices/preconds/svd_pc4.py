@@ -46,8 +46,8 @@ class SVDPC_CMU(BaseHessian):
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AT_Sig_A_mu = LowRankSVD(
             self.asa_mat_vec_mu, self.primal_factory, None, None, svd_optns)
-        self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
-        self.W_hat.norm_init = 1.0  
+        # self.W_hat = LimitedMemoryBFGS(self.primal_factory, bfgs_optns)  
+        # self.W_hat.norm_init = 1.0  
         
         self._allocated = False
 
@@ -58,7 +58,7 @@ class SVDPC_CMU(BaseHessian):
         else:
             self.Ag.approx.product(in_vec, self.dual_work1)
 
-        self.dual_work1.times(1.0-self.mu)
+        # self.dual_work1.times(1.0-self.mu)
         
         self.dual_work2.equals(0.0)
         if self.fstopo is True:                          
@@ -71,10 +71,10 @@ class SVDPC_CMU(BaseHessian):
         else:
            self.Ag.T.approx.product(self.dual_work2, out_vec)
 
-        out_vec.times(1.0-self.mu)
+        # out_vec.times(1.0-self.mu)
 
 
-    def linearize(self, X, state, adjoint, mu, dLdX_homo, dLdX_homo_oldual, inner_iters):  # dx_bfgs, dldx_bfgs
+    def linearize(self, X, state, adjoint, mu):  # dLdX_homo, dLdX_homo_oldual, inner_iters  dx_bfgs, dldx_bfgs
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
@@ -138,31 +138,29 @@ class SVDPC_CMU(BaseHessian):
         # ---------- Hessian LBFGS approximation --------  
         # dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
         # self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
-        self.W_hat.norm_init = 1.0  #(1-self.mu)*self.beta  + self.mu*1.0
 
-        if inner_iters == 0:
-            self.W_hat.restart()
+        # self.W_hat.norm_init = 1.0  #(1-self.mu)*self.beta  + self.mu*1.0
+        # if inner_iters == 0:
+        #     self.W_hat.restart()
+        # else:
+        #     self.design_old.minus(X.primal.design)
+        #     self.design_old.times(-1.0)
 
-        else:
-            self.design_old.minus(X.primal.design)
-            self.design_old.times(-1.0)
+        #     # self.dldx.equals(dLdX_homo_oldual.primal.design)
+        #     # self.dldx_old.minus(self.dldx)
+        #     # self.dldx_old.times(-1.0)
 
-            # self.dldx.equals(dLdX_homo_oldual.primal.design)
-            # self.dldx_old.minus(self.dldx)
-            # self.dldx_old.times(-1.0)
+        #     self.dldx.equals(dLdX_homo.primal.design)
+        #     self.dldx.minus(dLdX_homo_oldual.primal.design)
 
-            self.dldx.equals(dLdX_homo.primal.design)
-            self.dldx.minus(dLdX_homo_oldual.primal.design)
-
-            self.W_hat.add_correction(self.design_old, self.dldx)
-
-        self.design_old.equals(X.primal.design)
+        #     self.W_hat.add_correction(self.design_old, self.dldx)
+        # self.design_old.equals(X.primal.design)
 
 
         # ----------- svd_AsT_SigS_As_mu -------------
         self.svd_AT_Sig_A_mu.linearize()      
 
-        self.asa_S = self.svd_AT_Sig_A_mu.S
+        self.asa_S = self.svd_AT_Sig_A_mu.S 
         self.asa_U = np.zeros((self.num_design, len( self.svd_AT_Sig_A_mu.U ) ))
         self.asa_V = np.zeros((self.num_design, len( self.svd_AT_Sig_A_mu.V ) ))
         self.Winv_U = np.zeros((self.num_design, self.asa_S.shape[0] ))
@@ -171,12 +169,12 @@ class SVDPC_CMU(BaseHessian):
             self.asa_U[:, j] = self.svd_AT_Sig_A_mu.U[j].base.data
             self.asa_V[:, j] = self.svd_AT_Sig_A_mu.V[j].base.data
 
-            self.design_work.equals(0.0)
-            self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
-            self.Winv_U[:, j] = self.design_work.base.data
+            # self.design_work.equals(0.0)
+            # self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
+            # self.Winv_U[:, j] = self.design_work.base.data
 
 
-        self.Gamma_Nstar = np.dot(self.asa_S, self.asa_V.transpose()) 
+        # self.Gamma_Nstar = np.dot(self.asa_S, self.asa_V.transpose()) 
         self.svd_ASA = np.dot(self.asa_U, np.dot(self.asa_S, self.asa_V.transpose()))
 
         beta_I = self.beta*np.ones(self.num_design) 
@@ -186,7 +184,7 @@ class SVDPC_CMU(BaseHessian):
             self.LHS = np.diag(self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
                 self.sig_aug[self.num_design : 2*self.num_design ]) ) + (1.0-self.mu)**2 * self.svd_ASA 
         else:
-            self.LHS = np.diag(self.W_mu) + self.svd_ASA 
+            self.LHS = np.diag(self.W_mu) + (1.0-self.mu)**2 * self.svd_ASA 
 
 
     def sherman_morrison(self, rhs_vx):
@@ -248,11 +246,11 @@ class SVDPC_CMU(BaseHessian):
 
         rhs_vx = u_x - self.design_work.base.data
 
-        # v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
-        v_x2 = self.sherman_morrison(rhs_vx)
+        v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
+        # v_x2 = self.sherman_morrison(rhs_vx)
         # v_x3 = self.sherman_morrison_betaI(rhs_vx)
         
-        v_x = v_x2
+        v_x = v_x1
 
 
         # solve v_g, v_s
