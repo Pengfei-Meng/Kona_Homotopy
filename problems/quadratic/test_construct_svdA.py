@@ -8,7 +8,7 @@ from kona import Optimizer
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 # from kona.examples import Constructed_SVDA
 from construct_svdA import Constructed_SVDA
-import time
+import time, timeit
 import pdb
 from pyoptsparse import Optimization, OPT
 from kona.linalg.matrices.hessian import LimitedMemoryBFGS
@@ -18,7 +18,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output2/SM_What3'
+        self.outdir = './output3/temp'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -49,15 +49,15 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 150.0,                # 100-500 : 60 100 100 100 150 
-                'nominal_dist' : 30.0,              # 100-500 : 10 10 20 30  30
-                'nominal_angle' : 30.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
+                'init_step' : 120.0,                # 100-500 : 60 100 100 100 150 
+                'nominal_dist' : 10.0,              # 100-500 : 10 10 20 30  30
+                'nominal_angle' : 20.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
-                'use_frac_to_bound' : True,
+                'use_frac_to_bound' : False,
                 'mu_pc_on' : 1.0,      
             }, 
 
@@ -65,7 +65,7 @@ class InequalityTestCase(unittest.TestCase):
                 'lanczos_size'    : 5, 
                 'bfgs_max_stored' : 10, 
                 'beta'         : 1.0, 
-                'cmin'         : 1e-1,   # negative value, cut-off ineffective; 
+                'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
             }, 
 
             'rsnk' : {
@@ -113,7 +113,6 @@ class InequalityTestCase(unittest.TestCase):
         self.kona_x = self.solver.curr_design
         print 'postive dual:   ', self.solver.curr_dual[self.solver.curr_dual > 1e-5]
         print 'negative slack: ', self.solver.curr_slack[self.solver.curr_slack < -1e-5]
-        # import pdb; pdb.set_trace()
 
     def objfunc(self, xdict):
         self.iteration += 1
@@ -197,6 +196,29 @@ class InequalityTestCase(unittest.TestCase):
 
     def test_snopt(self):
 
+        # ------ Kona Opt --------
+
+        self.solver.iterations = 0
+        self.solver.duration = 0.
+        self.solver.totalTime = 0.
+        self.solver.startTime = 0.
+        self.solver.startTime = time.clock()
+        file = open(self.outdir+'/kona_timings.dat', 'w')
+        file.write('# Constructed_SVDA iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
+        file.write(titles)
+        file.close()
+
+        time1 = timeit.default_timer()
+        self.kona_optimize()
+        elapsed = timeit.default_timer() - time1
+
+
+        print 'Total Time in Kona: ', elapsed
+
+
+
         self.iteration = 0
         self.fun_obj_counter = 0
         self.sens_counter = 0
@@ -219,22 +241,9 @@ class InequalityTestCase(unittest.TestCase):
         self.optimize('snopt', optOptions)
         
 
-        # ------ Kona Opt --------
 
-        self.solver.iterations = 0
-        self.solver.duration = 0.
-        self.solver.totalTime = 0.
-        self.solver.startTime = 0.
-        self.solver.startTime = time.clock()
-        file = open(self.outdir+'/kona_timings.dat', 'w')
-        file.write('# Constructed_SVDA iteration timing history\n')
-        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
-            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
-        file.write(titles)
-        file.close()
+        # ----------------------------------------
 
-        self.kona_optimize()
-        
         diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
 
 
@@ -257,7 +266,7 @@ class InequalityTestCase(unittest.TestCase):
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)
 
-
+        # pdb.set_trace()
 
         # print 'kona_x', self.kona_x
         # print 'pyopt_x', self.pyopt_x

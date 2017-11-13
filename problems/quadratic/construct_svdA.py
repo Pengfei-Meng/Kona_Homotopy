@@ -2,7 +2,7 @@ import numpy as np
 from kona.user import UserSolver
 import pdb
 from scipy import optimize
-import time
+import time, timeit
 
 class Constructed_SVDA(UserSolver):
     """
@@ -52,6 +52,19 @@ class Constructed_SVDA(UserSolver):
 
         print 'Condition no. self.A: ', np.linalg.cond(self.A)
         print 'Condition no. self.Q: ', np.linalg.cond(self.Q)
+
+        # internal optimization bookkeeping
+        self.iterations = 0
+        self.duration = 0.
+        self.totalTime = 0.
+        self.startTime = 0.
+        self.startTime = time.clock()
+        file = open(self.outdir+'/kona_timings.dat', 'w')
+        file.write('# Constructed_SVDA iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
+        file.write(titles)
+        file.close()
 
     def eval_obj(self, at_design, at_state):
 

@@ -327,6 +327,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         EPS = 1e-7
         # initialize the problem at the starting point
         x0.equals_init_guess()
+        x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+        x0.dual.base.data[x.dual.base.data > 0.0] = 0.0
         x.equals(x0)
         
         if not state.equals_primal_solution(x.primal):
@@ -476,6 +478,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.design.enforce_bounds()
             else:
                 x.primal.enforce_bounds()
+            x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
 
             if not state.equals_primal_solution(x.primal):
@@ -691,6 +695,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # if we finished the corrector step at mu=0, we're done!
                 if self.mu < EPS:    
                     self.info_file.write('\n>> Optimization DONE! <<\n')
+                    x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+                    x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+                    
                     # send solution to solver
                     solver_info = current_solution(
                         num_iter=outer_iters, curr_primal=x.primal,
@@ -808,35 +815,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             if self.svd_pc_stress is not None and self.mu <= self.precond_on_mu:
                 self.svd_pc_stress.linearize(x, state, adj, self.mu)
-
-            # if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-            #     # self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
-
-            #     # BFGS Hessian approx
-            #     X_olddualS.equals(x)
-            #     X_olddualS.primal.design.equals(old_x.primal.design)
-
-            #     if not state_work_svd.equals_primal_solution(X_olddualS.primal):
-            #         raise RuntimeError(
-            #             'Invalid predictor point! State-solve failed.')
-
-            #     # # compute adjoint
-            #     adj_work.equals_lagrangian_adjoint(
-            #         X_olddualS, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-
-            #     dLdX_olddualS.equals_KKT_conditions(
-            #         X_olddualS, state_work_svd, adj_work) 
-            #     dLdX_olddualS.times(1. - self.mu)
-
-            #     kkt_work.equals(X_olddualS)
-            #     kkt_work.minus(x0)
-            #     kkt_work.times(self.mu)
-            #     dLdX_olddualS.primal.plus(kkt_work.primal)
-            #     dLdX_olddualS.dual.minus(kkt_work.dual)
-
-            #     self.svd_pc_cmu.linearize(x, state, adj, self.mu, dJdX_hom, dLdX_olddualS, inner_iters)
-                
-            #     old_x.equals(x)
 
             if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
                 self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
