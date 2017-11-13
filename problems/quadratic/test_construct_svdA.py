@@ -18,7 +18,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output3/temp'
+        self.outdir = './output3/temp5'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -139,7 +139,7 @@ class InequalityTestCase(unittest.TestCase):
         # ---------- recording ----------
         self.iteration += 1
         self.sens_counter += 1
-        self.endTime_sn = time.clock()
+        self.endTime_sn = timeit.default_timer()  # time.clock()
         self.duration_sn = self.endTime_sn - self.startTime_sn
         self.totalTime_sn += self.duration_sn
         self.startTime_sn = self.endTime_sn
@@ -198,24 +198,24 @@ class InequalityTestCase(unittest.TestCase):
 
         # ------ Kona Opt --------
 
-        self.solver.iterations = 0
-        self.solver.duration = 0.
-        self.solver.totalTime = 0.
-        self.solver.startTime = 0.
-        self.solver.startTime = time.clock()
-        file = open(self.outdir+'/kona_timings.dat', 'w')
-        file.write('# Constructed_SVDA iteration timing history\n')
-        titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
-            'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
-        file.write(titles)
-        file.close()
+        # self.solver.iterations = 0
+        # self.solver.duration = 0.
+        # self.solver.totalTime = 0.
+        # self.solver.startTime = 0.
+        # self.solver.startTime = timeit.default_timer()  #time.clock()
+        # file = open(self.outdir+'/kona_timings.dat', 'w')
+        # file.write('# Constructed_SVDA iteration timing history\n')
+        # titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
+        #     'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
+        # file.write(titles)
+        # file.close()
 
-        time1 = timeit.default_timer()
+        # time1 = timeit.default_timer()
         self.kona_optimize()
-        elapsed = timeit.default_timer() - time1
+        # elapsed = timeit.default_timer() - time1
 
 
-        print 'Total Time in Kona: ', elapsed
+        # print 'Total Time in Kona: ', elapsed
 
 
 
@@ -223,7 +223,7 @@ class InequalityTestCase(unittest.TestCase):
         self.fun_obj_counter = 0
         self.sens_counter = 0
 
-        self.startTime_sn = time.clock()
+        self.startTime_sn = timeit.default_timer() #time.clock()
         self.totalTime_sn = 0
         self.endTime_sn = 0
         file = open(self.outdir+'/SNOPT_timings.dat', 'w')

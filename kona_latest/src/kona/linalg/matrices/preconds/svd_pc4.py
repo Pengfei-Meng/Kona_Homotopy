@@ -234,9 +234,11 @@ class SVDPC_CMU(BaseHessian):
         # v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
         v_x2 = self.sherman_morrison(rhs_vx)
         # v_x3 = self.sherman_morrison_betaI(rhs_vx)
-
+        # print 'PC: norm(v_x1), (v_x3) : ', np.linalg.norm(v_x1), np.linalg.norm(v_x3)
         v_x = v_x2
 
+        # if self.mu < 1e-5:
+        #     pdb.set_trace()
 
         # solve v_g, v_s
         self.design_work2.base.data = v_x

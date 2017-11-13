@@ -572,7 +572,7 @@ optns = {
         'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
         'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
-        'cmin'            : -1e-5,          # negative value -> cut-off ineffective; 
+        'cmin'            : 1e-2,          # negative value -> cut-off ineffective; 
         'fstopo'          : True, 
         'bfgs_max_stored' : 10, 
     }, 
