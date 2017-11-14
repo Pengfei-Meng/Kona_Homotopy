@@ -58,7 +58,7 @@ class Constructed_SVDA(UserSolver):
         self.duration = 0.
         self.totalTime = 0.
         # self.startTime = 0.
-        self.startTime = timeit.default_timer()  #time.clock()
+        self.startTime = timeit.default_timer()
         file = open(self.outdir+'/kona_timings.dat', 'w')
         file.write('# Constructed_SVDA iteration timing history\n')
         titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
@@ -111,7 +111,7 @@ class Constructed_SVDA(UserSolver):
         self.curr_slack = curr_slack
 
         # time the iteration
-        self.endTime = timeit.default_timer()    #time.clock()
+        self.endTime = timeit.default_timer()    
         self.duration = self.endTime - self.startTime
         self.totalTime += self.duration
         self.startTime = self.endTime

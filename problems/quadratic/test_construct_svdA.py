@@ -139,7 +139,7 @@ class InequalityTestCase(unittest.TestCase):
         # ---------- recording ----------
         self.iteration += 1
         self.sens_counter += 1
-        self.endTime_sn = timeit.default_timer()  # time.clock()
+        self.endTime_sn = timeit.default_timer()
         self.duration_sn = self.endTime_sn - self.startTime_sn
         self.totalTime_sn += self.duration_sn
         self.startTime_sn = self.endTime_sn
@@ -185,7 +185,7 @@ class InequalityTestCase(unittest.TestCase):
         else:
             histFileName = None
 
-        sol = opt(optProb, sens=self.sens, storeHistory=histFileName)   # 
+        sol = opt(optProb, sens=self.sens, storeHistory=histFileName)  
 
         
         # Check Solution
@@ -210,12 +210,12 @@ class InequalityTestCase(unittest.TestCase):
         # file.write(titles)
         # file.close()
 
-        # time1 = timeit.default_timer()
+        time1 = timeit.default_timer()
         self.kona_optimize()
-        # elapsed = timeit.default_timer() - time1
+        elapsed = timeit.default_timer() - time1
 
 
-        # print 'Total Time in Kona: ', elapsed
+        print 'Total Time in Kona: ', elapsed
 
 
 
@@ -223,7 +223,7 @@ class InequalityTestCase(unittest.TestCase):
         self.fun_obj_counter = 0
         self.sens_counter = 0
 
-        self.startTime_sn = timeit.default_timer() #time.clock()
+        self.startTime_sn = timeit.default_timer()  
         self.totalTime_sn = 0
         self.endTime_sn = 0
         file = open(self.outdir+'/SNOPT_timings.dat', 'w')
