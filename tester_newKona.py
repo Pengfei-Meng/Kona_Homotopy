@@ -561,7 +561,7 @@ optns = {
         'nominal_angle' : 10.0*np.pi/180.,  # 1) Can be changed    
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
-        'dmu_max' : -0.005,                  
+        'dmu_max' : -0.0005,
         'dmu_min' : -0.9,   
         'mu_correction' : 1.0,  
         'use_frac_to_bound' : True,  
@@ -572,7 +572,7 @@ optns = {
         'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
         'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
-        'cmin'            : 1e-6,          # negative value -> cut-off ineffective; 
+        'cmin'            : -1e-4,          # negative value -> cut-off ineffective; 
         'fstopo'          : True, 
         'bfgs_max_stored' : 10, 
     }, 

@@ -502,6 +502,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     max_newton = self.inner_maxiter*5
 
                 inner_iters = 0
+                corrector_succeed = False
                 dx_newt.equals(0.0)
 
                 for i in xrange(max_newton):
@@ -522,16 +523,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     X_oldx.equals(x)
                     X_oldx.primal.design.equals(self.current_x.primal.design)
 
-                    if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                        raise RuntimeError(
-                            'Invalid predictor point! State-solve failed.')
-                    adj_work.equals_lagrangian_adjoint(
-                        X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-                    dldx_bfgs.equals_KKT_conditions(
-                        X_oldx, state_work_svd, adj_work) 
-
+                    # if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                    #     raise RuntimeError(
+                    #         'Invalid predictor point! State-solve failed.')
+                    # adj_work.equals_lagrangian_adjoint(
+                    #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
                     # dldx_bfgs.equals_KKT_conditions(
-                    #     X_oldx, state_old, adj_old) 
+                    #     X_oldx, state_work_svd, adj_work) 
+
+                    dldx_bfgs.equals_KKT_conditions(
+                        X_oldx, state_old, adj_old) 
 
                     dldx_bfgs.minus(dJdX)
                     dldx_bfgs.times(-1.0)
@@ -598,6 +599,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # check convergence
                     if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
                         self.info_file.write('\n  Corrector step converged!\n')
+                        corrector_succeed = True
                         break
 
                     # linearize the hessian at the new point
@@ -713,7 +715,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-            if i == self.inner_maxiter-1:
+            if corrector_succeed is False:
                 # --------------------------------
                 dx_bfgs.equals(x)
                 dx_bfgs.minus(self.current_x)
@@ -721,16 +723,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 X_oldx.equals(x)
                 X_oldx.primal.design.equals(self.current_x.primal.design)
 
-                if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                    raise RuntimeError(
-                        'Invalid predictor point! State-solve failed.')
-                adj_work.equals_lagrangian_adjoint(
-                    X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-                dldx_bfgs.equals_KKT_conditions(
-                    X_oldx, state_work_svd, adj_work) 
-
+                # if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                #     raise RuntimeError(
+                #         'Invalid predictor point! State-solve failed.')
+                # adj_work.equals_lagrangian_adjoint(
+                #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
                 # dldx_bfgs.equals_KKT_conditions(
-                #     X_oldx, state_old, adj_old) 
+                #     X_oldx, state_work_svd, adj_work) 
+
+                dldx_bfgs.equals_KKT_conditions(
+                    X_oldx, state_old, adj_old) 
 
                 dldx_bfgs.minus(dJdX)
                 dldx_bfgs.times(-1.0)
