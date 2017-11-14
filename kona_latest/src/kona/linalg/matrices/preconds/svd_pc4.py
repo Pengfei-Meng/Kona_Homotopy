@@ -167,9 +167,9 @@ class SVDPC_CMU(BaseHessian):
 
         if self.fstopo is True:                           
             self.LHS = np.diag(self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
-                self.sig_aug[self.num_design : 2*self.num_design ]) ) +  self.svd_ASA   #(1.0-self.mu)**2 *
+                self.sig_aug[self.num_design : 2*self.num_design ]) ) +  self.svd_ASA    
         else:
-            self.LHS = np.diag(self.W_mu) + self.svd_ASA  #(1.0-self.mu)**2 *
+            self.LHS = np.diag(self.W_mu) + self.svd_ASA   
 
 
     def sherman_morrison(self, rhs_vx):
@@ -193,7 +193,14 @@ class SVDPC_CMU(BaseHessian):
 
     def sherman_morrison_betaI(self, rhs_vx):
 
-        W_mu_inv = np.linalg.inv(np.diag(self.W_mu))
+        if self.fstopo is True: 
+            W_aug = self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
+                self.sig_aug[self.num_design : 2*self.num_design ])  
+            W_mu_inv = np.diag(1.0/W_aug)
+
+        else: 
+            W_mu_inv = np.diag(1.0/self.W_mu)
+
 
         work_1 = np.dot(self.Gamma_Nstar,  np.dot(W_mu_inv, rhs_vx))    
 
@@ -231,14 +238,11 @@ class SVDPC_CMU(BaseHessian):
 
         rhs_vx = u_x - self.design_work.base.data
 
-        # v_x1 = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx) 
-        v_x2 = self.sherman_morrison(rhs_vx)
-        # v_x3 = self.sherman_morrison_betaI(rhs_vx)
-        # print 'PC: norm(v_x1), (v_x3) : ', np.linalg.norm(v_x1), np.linalg.norm(v_x3)
-        v_x = v_x2
-
-        # if self.mu < 1e-5:
-        #     pdb.set_trace()
+        # v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx)         
+        if self.fstopo is True: 
+            v_x = self.sherman_morrison_betaI(rhs_vx)
+        else: 
+            v_x = self.sherman_morrison(rhs_vx)
 
         # solve v_g, v_s
         self.design_work2.base.data = v_x
