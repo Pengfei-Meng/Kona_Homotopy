@@ -31,16 +31,16 @@ class InequalityTestCase(unittest.TestCase):
 
         init_x = lb + (ub - lb) * np.random.random(num_design)  
         # init_x = np.array([0.7])
-        print 'init_x', init_x
+        print 'np.linalg.norm(init_x)', np.linalg.norm(init_x)
 
-        self.solver = NONCONVEX(num_design, init_x, lb, ub, self.outdir)
+        self.solver = NONCONVEX(num_design, init_x, -1, 1, self.outdir)
 
 
     def test_kona_optimize(self):
 
         # Optimizer
         optns = {
-            'max_iter' : 2000,
+            'max_iter' : 300,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
             'info_file' : self.outdir+'/kona_info.dat',
@@ -55,20 +55,22 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,                         # Hessian : num_design 
                 'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
                 'init_step' : 0.05,                       # 0.5         0.05
-                'nominal_dist' : 20,                     # 20           40
+                'nominal_dist' : 10,                     # 20           40
                 'nominal_angle' : 10.0*np.pi/180.,          # 50           50
                 'max_factor' : 50.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,        # -0.0005
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
-                'use_frac_to_bound' : True,
+                'use_frac_to_bound' : False,
                 'mu_pc_on' : 1.0,      
             }, 
 
             'svd' : {
                 'lanczos_size'    : 5, 
                 'bfgs_max_stored' : 10, 
+                'beta'         : 1.0, 
+                'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
             }, 
 
             'rsnk' : {
@@ -124,9 +126,9 @@ class InequalityTestCase(unittest.TestCase):
 
         # self.solver.D
         diff = sum(abs(x_kona - x_true))
-        print 'self.solver.D: ', self.solver.D
-        print 'kona_solution: ', self.kona_x
-        print 'true_solution: ', x_true
+        # print 'self.solver.D: ', self.solver.D
+        # print 'kona_solution: ', self.kona_x
+        # print 'true_solution: ', x_true
         print 'number of wrong solutions: ',  diff
 
         D_str = 'self.solver.D: ' + str(self.solver.D)

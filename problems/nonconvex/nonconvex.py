@@ -57,7 +57,8 @@ class NONCONVEX(UserSolver):
         return self.init_x
 
     def init_slack(self):
-        at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        # at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        at_slack = 5*np.ones(self.num_ineq)
         return (at_slack, 0)
 
     def enforce_bounds(self, design_vec):

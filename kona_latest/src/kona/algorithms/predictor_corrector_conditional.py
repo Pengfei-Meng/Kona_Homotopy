@@ -446,7 +446,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # influence of mu on step size
             dmu_step = dmu * self.step
-            print 'dmu_step', dmu_step
+            # print 'dmu_step', dmu_step
             dmu_step = max(self.dmu_min, dmu_step)
             dmu_step = min(self.dmu_max, dmu_step)
 

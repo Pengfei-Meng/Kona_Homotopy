@@ -18,7 +18,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output3/temp5'
+        self.outdir = './output3/temp5_False'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -83,7 +83,7 @@ class InequalityTestCase(unittest.TestCase):
                 'krylov_file'   : self.outdir+'/kona_krylov.dat',
                 'subspace_size' : 20,                                    
                 'check_res'     : False,
-                'rel_tol'       : 1e-4,        
+                'rel_tol'       : 1e-2,        
             },
 
             'verify' : {
