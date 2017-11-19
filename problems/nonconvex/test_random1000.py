@@ -25,7 +25,7 @@ parser.add_argument("--task", help='what to do', choices=['opt','post'], default
 args = parser.parse_args()
 
 
-outdir = args.output    # './random'
+outdir = args.output    
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
@@ -37,7 +37,7 @@ lb = -2
 ub = 2
 
 num_design = 100
-num_case = 1000
+num_case = 10
 
 
 if args.task == 'opt': 
@@ -256,7 +256,7 @@ if args.task=='post':
     for k in np.arange(0, max(wrong_sols)+1, 1):
 
         cout = sum(wrong_sols == k)
-        text = "{0:.0f}%".format(cout*1.0/num_case * 100) + ", or " + str(cout) 
+        text = "{0:.1f}%".format(cout*1.0/num_case * 100) + ", or " + str(cout) 
         ax.text(6.5, k, text, ha="center", va="center", size=12,
                 bbox=bbox_props)        
 

@@ -2,7 +2,7 @@ import numpy as np
 from kona.user import UserSolver
 import pdb
 from scipy import optimize
-import time
+import timeit
 
 class NONCONVEX(UserSolver):
     """
@@ -27,6 +27,21 @@ class NONCONVEX(UserSolver):
 
         self.lb = lb
         self.ub = ub
+
+        self.outdir = outdir
+        
+        # internal optimization bookkeeping
+        self.iterations = 0
+        self.duration = 0.
+        self.totalTime = 0.
+        self.startTime = timeit.default_timer()
+        file = open(self.outdir+'/kona_timings.dat', 'w')
+        file.write('# Constructed_SVDA iteration timing history\n')
+        titles = '# {0:s}    {1:s}    {2:s}    {3:s}   \n'.format(
+            'Iter', 'Time (s)', 'Total Time (s)', 'Objective' )
+        file.write(titles)
+        file.close()
+
 
 
     def eval_obj(self, at_design, at_state):
@@ -71,6 +86,23 @@ class NONCONVEX(UserSolver):
         self.curr_state = curr_state
         self.curr_dual = curr_ineq
         self.curr_slack = curr_slack
+
+
+        # write timing to file
+        # time the iteration
+        self.endTime = timeit.default_timer()    
+        self.duration = self.endTime - self.startTime
+        self.totalTime += self.duration
+        self.startTime = self.endTime
+
+        objVal = self.eval_obj(curr_design, curr_state)
+
+        timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}    \n'.format(
+            num_iter, self.duration, self.totalTime, objVal )
+        file = open(self.outdir+'/kona_timings.dat', 'a')
+        file.write(timing)
+        file.close()
+
 
         # print 'Current X: ', self.curr_design
 
