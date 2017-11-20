@@ -6,7 +6,6 @@ import os
 import kona
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
-# from kona.examples import Constructed_SVDA
 from construct_svdA import Constructed_SVDA
 import time, timeit
 import pdb
@@ -18,40 +17,54 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output3/temp5_False'
+        self.outdir = './output/200'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        size_prob = 500
+        size_prob = 200
 
         self.num_design = size_prob
         self.num_ineq = size_prob
         np.random.seed(0) 
         self.init_x = np.random.rand(size_prob)    
 
-        self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir)
-
-    def kona_optimize(self):
+    def kona_optimize(self, pc):
 
         # Optimizer
+        if pc is 'svd_pc_cmu':
+            f_info = self.outdir+'/kona_svd_info.dat'
+            f_hist = self.outdir+'/kona_svd_hist.dat'
+            f_krylov = self.outdir+'/kona_svd_krylov.dat'
+            f_verify = self.outdir+'/kona_svd_verify.dat'
+            f_optns = self.outdir+'/kona_svd_optns.dat'
+            f_timing = self.outdir+'/kona_svd_timings.dat'
+            krylov_sub = 20
+        else:
+            f_info = self.outdir+'/kona_eye_info.dat'
+            f_hist = self.outdir+'/kona_eye_hist.dat'
+            f_krylov = self.outdir+'/kona_eye_krylov.dat'
+            f_verify = self.outdir+'/kona_eye_verify.dat'
+            f_optns = self.outdir+'/kona_eye_optns.dat'
+            f_timing = self.outdir+'/kona_eye_timings.dat'
+            krylov_sub = 20
+
+
+        self.solver = Constructed_SVDA(self.num_design, self.num_ineq, self.init_x, self.outdir, f_timing)
+
         optns = {
             'max_iter' : 300,
             'opt_tol' : 1e-7,
             'feas_tol' : 1e-7,        
-            'info_file' : self.outdir+'/kona_info.dat',
-            'hist_file' : self.outdir+'/kona_hist.dat',
-
-            'quasi_newton' : {
-                'type' : LimitedMemoryBFGS
-            },
+            'info_file' : f_info,
+            'hist_file' : f_hist,
 
             'homotopy' : {
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 120.0,                # 100-500 : 60 100 100 100 150 
-                'nominal_dist' : 10.0,              # 100-500 : 10 10 20 30  30
-                'nominal_angle' : 20.0*np.pi/180.,  # 100-500 : 20 20 20 30  30
+                'init_step' : 80,                  # 200, 500 :  80, 120
+                'nominal_dist' : 10.0,             # 200, 500 :  10,  10
+                'nominal_angle' : 20.0*np.pi/180., # 200, 500 :  20,  20
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -69,7 +82,7 @@ class InequalityTestCase(unittest.TestCase):
             }, 
 
             'rsnk' : {
-                'precond'       : 'svd_pc_cmu',    #None, #,  #'svd_pc_cmu',                  
+                'precond'       : pc,  #'svd_pc_cmu',   #None,   #'svd_pc_cmu',                  
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -80,8 +93,8 @@ class InequalityTestCase(unittest.TestCase):
                 'grad_scale'    : 1.0,
                 'feas_scale'    : 1.0,
                 # FLECS solver settings
-                'krylov_file'   : self.outdir+'/kona_krylov.dat',
-                'subspace_size' : 20,                                    
+                'krylov_file'   : f_krylov,
+                'subspace_size' : krylov_sub,                                    
                 'check_res'     : False,
                 'rel_tol'       : 1e-2,        
             },
@@ -97,12 +110,12 @@ class InequalityTestCase(unittest.TestCase):
                 'cnstr_jac_in'   : True,
                 'red_grad'       : True,
                 'lin_solve'      : True,
-                'out_file'       : self.outdir+'/kona_verify.dat',
+                'out_file'       : f_verify,
             },
         }
 
         # pprint.pprint(optns['homotopy'])
-        with open(self.outdir+'/kona_optns.txt', 'w') as file:
+        with open(f_optns, 'w') as file:
             pprint.pprint(optns, file)
         # algorithm = kona.algorithms.Verifier
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
@@ -197,27 +210,13 @@ class InequalityTestCase(unittest.TestCase):
     def test_snopt(self):
 
         # ------ Kona Opt --------
-
-        # self.solver.iterations = 0
-        # self.solver.duration = 0.
-        # self.solver.totalTime = 0.
-        # self.solver.startTime = 0.
-        # self.solver.startTime = timeit.default_timer()  #time.clock()
-        # file = open(self.outdir+'/kona_timings.dat', 'w')
-        # file.write('# Constructed_SVDA iteration timing history\n')
-        # titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
-        #     'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
-        # file.write(titles)
-        # file.close()
-
-        time1 = timeit.default_timer()
-        self.kona_optimize()
-        elapsed = timeit.default_timer() - time1
+        self.kona_optimize(None)
 
 
-        print 'Total Time in Kona: ', elapsed
+        self.kona_optimize('svd_pc_cmu')
 
 
+        # ------ SNOPT Opt -------
 
         self.iteration = 0
         self.fun_obj_counter = 0

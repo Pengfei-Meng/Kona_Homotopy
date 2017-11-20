@@ -10,7 +10,7 @@ class Constructed_SVDA(UserSolver):
     s.t.  g = Ax - b >= 0
     """
 
-    def __init__(self, numdesign, numineq, init_x, outdir):
+    def __init__(self, numdesign, numineq, init_x, outdir, file_timing):
 
         super(Constructed_SVDA, self).__init__(
             num_design=numdesign, num_state=0, num_eq=0, num_ineq=numineq)
@@ -27,9 +27,9 @@ class Constructed_SVDA(UserSolver):
         #--------- constructing Q and A ------------  
         A_sigma = 1./np.array(range(1, numdesign+1))**2 
         A_sigma[8:] = A_sigma[8]*np.ones(len(A_sigma[8:]))
-        A_sigma = 10*np.diag( A_sigma )    
+        A_sigma = np.diag( A_sigma )    #10* 
 
-        np.random.seed(0)   
+        # np.random.seed(0)   
         A_U = np.random.randint(10, size=(numineq, numdesign))   #((numineq, numdesign))  
         A_V = np.random.randint(10, size=(numdesign, numdesign))   #((numdesign, numdesign))  
 
@@ -40,13 +40,13 @@ class Constructed_SVDA(UserSolver):
 
         self.A = Q_U.dot(A_sigma).dot(Q_V)    #np.eye(self.num_ineq, self.num_design)     
         self.g = np.random.rand(numdesign)    #np.zeros(numdesign)              
-        self.b = np.random.rand(numineq)      #np.ones(numdesign)             
+        self.b = np.random.rand(numineq)/10      #np.ones(numdesign)             
         
         self.outdir = outdir
 
-        self.Q_diag = 1./np.array(range(1, numdesign+1))         #np.eye(numdesign)  # 
+        self.Q_diag = 1./np.array(range(1, numdesign+1))       
         self.Q_diag[8:] = self.Q_diag[8]*np.ones( len(self.Q_diag[8:]) )
-        self.Q = 10*np.diag( self.Q_diag )    # 10* 
+        self.Q = np.diag( self.Q_diag )    # 10* 
         # self.Q = np.eye(numdesign) 
         # import pdb; pdb.set_trace()
 
@@ -58,8 +58,9 @@ class Constructed_SVDA(UserSolver):
         self.duration = 0.
         self.totalTime = 0.
         # self.startTime = 0.
+        self.file_timing = file_timing
         self.startTime = timeit.default_timer()
-        file = open(self.outdir+'/kona_timings.dat', 'w')
+        file = open(file_timing, 'w')
         file.write('# Constructed_SVDA iteration timing history\n')
         titles = '# {0:s}    {1:s}    {2:s}    {3:s}    {4:s}   {5:s}   {6:s}\n'.format(
             'Iter', 'Time (s)', 'Total Time (s)', 'Objective', 'max(abs(-S*Lam))', 'negative S', 'postive Lam' )
@@ -125,7 +126,7 @@ class Constructed_SVDA(UserSolver):
         # write timing to file
         timing = '  {0:3d}        {1:4.2f}        {2:4.2f}        {3:4.6g}       {4:4.4f}    {5:3d}   {6:3d}\n'.format(
             num_iter, self.duration, self.totalTime, objVal,   slack_lamda, neg_S, pos_Lam )
-        file = open(self.outdir+'/kona_timings.dat', 'a')
+        file = open(self.file_timing, 'a')
         file.write(timing)
         file.close()
 

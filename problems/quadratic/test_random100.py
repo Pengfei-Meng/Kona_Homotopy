@@ -6,19 +6,19 @@ import matplotlib.pyplot as plt
 import kona
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
-from nonconvex import NONCONVEX
+from construct_svdA import Constructed_SVDA
 import time
 import pdb
 from pyoptsparse import Optimization, OPT
 from kona.linalg.matrices.hessian import LimitedMemoryBFGS
 import argparse
 
-""" 1000 randomly generated initial points for 
-    1000 randomly generated nonconvex quadratic problems
-    remember to comment out the np.random.seed(0) in NONCONVEX problem.
+""" 100 randomly generated initial points for 
+    100 randomly generated quadratic problems
+    Remember to comment out all the np.random.seed(0) in Constructed_SVDA problem
+    For each num_design = 100, 200, 300, 400, 500
 """
 
-# np.random.seed(1) 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", help='Output directory', type=str, default='./random')

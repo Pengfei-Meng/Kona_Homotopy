@@ -323,8 +323,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
-        # EPS = np.finfo(np.float64).eps
-        EPS = 1e-7
+        EPS = np.finfo(np.float64).eps
+        # EPS = 1e-7
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
@@ -498,8 +498,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu < EPS:     
-                    max_newton = self.inner_maxiter*5
+                if self.mu < EPS:
+                    if self.svd_pc_cmu is not None:     
+                        max_newton = self.inner_maxiter*5
+                    else:
+                        max_newton = self.inner_maxiter*10   # to make noPC run longer
 
                 inner_iters = 0
                 corrector_succeed = False
