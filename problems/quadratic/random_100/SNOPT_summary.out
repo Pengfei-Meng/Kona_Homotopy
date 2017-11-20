@@ -1,0 +1,84 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints     400     Linear constraints       0
+ Nonlinear variables       400     Linear variables         0
+ Jacobian  variables       400     Objective variables    400
+ Total constraints         400     Total variables        400
+ 
+
+ 
+ The user has defined  160000   out of  160000   constraint gradients.
+ The user has defined     400   out of     400   objective  gradients.
+ 
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100 -2.7E+02                  6.1E-12  2.0794260E+02    14
+          200                           1.5E-12  9.8383758E+01    56
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0    265               1  1.0E-02  8.0E-03  9.7691542E+01    99           r  T
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100  6.7E-01                  2.2E-01  2.3058274E+01   149
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     1    180  1.1E-01      2  9.4E-03  1.1E-02  9.9270531E+01   198 6.4E+02 n rl T
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100                           6.5E-13 -4.9936352E+02   241
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     2    166  7.1E-02      3  9.1E-03  2.3E-02  7.9095822E+01   297 9.3E+01 s  l T
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100  6.2E-02                  1.7E-12 -9.9247758E+02   369
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     3    115  2.0E-01      4  3.7E-03  3.6E-02 -1.3655379E+02   384 8.2E+01    l
+     4     22  2.3E-01      5  1.0E-03  2.7E-01 -3.3159864E+02   387 8.2E+01    l
+     5      6  3.8E-01      7  4.0E-04  9.5E-02 -4.6684319E+02   387 8.2E+01
+     6      3  4.0E-01      9  2.1E-04  5.8E-03 -5.2227831E+02   386 8.2E+01
+     7      1  3.4E-01     11  1.4E-04  1.4E-03 -5.2164032E+02   386 1.1E+02
+     8      1  1.0E+00     12 (6.9E-18) 1.8E-03 -5.2128086E+02   386 2.5E+02
+     9      1  1.0E+00     13 (7.5E-18) 9.2E-04 -5.2129801E+02   386 2.5E+02
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  1.0E+00     14 (7.3E-18) 1.5E-04 -5.2130439E+02   386 2.5E+02
+    11      1  1.0E+00     15 (7.3E-18) 1.1E-04 -5.2130449E+02   386 2.5E+02
+    12      1  1.0E+00     16 (8.3E-18)(7.8E-07)-5.2130458E+02   386 2.5E+02   R
+ 
+ SNOPTC EXIT   0 -- finished successfully
+ SNOPTC INFO   1 -- optimality conditions satisfied
+
+ Problem name                 quadra
+ No. of iterations                 763   Objective value     -5.2130457904E+02
+ No. of major iterations            12   Linear objective     0.0000000000E+00
+ Penalty parameter           2.481E+02   Nonlinear objective -5.2130457904E+02
+ No. of calls to funobj             17   No. of calls to funcon             17
+ No. of superbasics                386   No. of basic nonlinears            14
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                     353 1.0E+01   Max pi                    221 4.8E+01
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             3 3.8E-05
+ Nonlinear constraint violn    7.1E-16
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       9.67 seconds
+ Time for solution output                       0.02 seconds
+ Time for constraint functions                  7.16 seconds
+ Time for objective function                    0.00 seconds

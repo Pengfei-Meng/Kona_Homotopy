@@ -7,7 +7,7 @@ import kona
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from construct_svdA import Constructed_SVDA
-import time
+import time, timeit
 import pdb
 from pyoptsparse import Optimization, OPT
 from kona.linalg.matrices.hessian import LimitedMemoryBFGS
@@ -22,9 +22,14 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", help='Output directory', type=str, default='./random')
-parser.add_argument("--task", help='what to do', choices=['opt','post'], default='opt')
+parser.add_argument("--task", help='what to do', choices=['opt','post'], default='post')
+parser.add_argument("--num_design", type=int, default=100)
+parser.add_argument("--num_case", type=int, default=10)
 args = parser.parse_args()
 
+num_design = args.num_design
+num_ineq = num_design
+num_case = args.num_case
 
 outdir = args.output    
 if not os.path.isdir(outdir):
@@ -32,16 +37,25 @@ if not os.path.isdir(outdir):
 
 print args.task
 
-post_dir = './random_1000'
-
-lb = -2
-ub = 2
-
-num_design = 100
-num_case = 10
-
 
 if args.task == 'opt': 
+
+    optOptions = {'Print file': outdir + '/SNOPT_print.out',
+                  'Summary file': outdir + '/SNOPT_summary.out',
+                  'Problem Type':'Minimize',
+                  }
+    storeHistory=False
+
+    if num_design==100:
+        init_s = 40
+    if num_design==200:
+        init_s = 60
+    if num_design==300:
+        init_s = 80  
+    if num_design==400:
+        init_s = 100  
+    if num_design==500:
+        init_s = 120  
 
     # Optimizer
     optns = {
@@ -55,10 +69,10 @@ if args.task == 'opt':
             'init_homotopy_parameter' : 1.0, 
             'inner_tol' : 0.1,                         # Hessian : num_design 
             'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
-            'init_step' : 0.05,                       # 0.5         0.05
+            'init_step' : init_s,                       # 0.5         0.05
             'nominal_dist' : 10,                     # 20           40
-            'nominal_angle' : 10.0*np.pi/180.,          # 50           50
-            'max_factor' : 50.0,                  
+            'nominal_angle' : 20.0*np.pi/180.,          # 50           50
+            'max_factor' : 30.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
             'dmu_min' : -0.9,      
@@ -68,14 +82,14 @@ if args.task == 'opt':
         }, 
 
         'svd' : {
-            'lanczos_size'    : 5, 
+            'lanczos_size'    : 2, 
             'bfgs_max_stored' : 10, 
             'beta'         : 1.0, 
-            'cmin'         : -1e-3,   # negative value, cut-off ineffective; 
+            'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
         }, 
 
         'rsnk' : {
-            'precond'       : None, #'svd_pc',                  
+            'precond'       : 'svd_pc_cmu',                  
             # rsnk algorithm settings
             'dynamic_tol'   : False,
             'nu'            : 0.95,
@@ -89,7 +103,7 @@ if args.task == 'opt':
             'krylov_file'   : outdir+'/kona_krylov.dat',
             'subspace_size' : 20,                                    
             'check_res'     : False,
-            'rel_tol'       : 1e-4,        
+            'rel_tol'       : 1e-2,        
         },
 
         'verify' : {
@@ -110,69 +124,140 @@ if args.task == 'opt':
     with open(outdir+'/kona_optns.txt', 'w') as file:
         pprint.pprint(optns, file)
 
-
-    init_norms = np.zeros(num_case)
-    wrong_sols = np.zeros(num_case)
+    kona_times = np.zeros(num_case)
+    snopt_times = np.zeros(num_case)
 
     for i in xrange(num_case):
         print 'Starting case %d'%i
-        init_x = lb + (ub - lb) * np.random.random(num_design)  
-        init_norms[i] = np.linalg.norm(init_x)
 
-        solver = NONCONVEX(num_design, init_x, -1, 1, outdir)
+        init_x = np.random.random(num_design)  
+        solver = Constructed_SVDA(num_design, num_ineq, init_x, outdir, 'kona_timings.dat')
 
+        start_kona_i = timeit.default_timer()
+        # --------- Kona Optimize ----------
         algorithm = kona.algorithms.PredictorCorrectorCnstrCond
         optimizer = kona.Optimizer(solver, algorithm, optns)
         optimizer.solve()
 
         kona_obj = solver.eval_obj(solver.curr_design, solver.curr_state)
         kona_x = solver.curr_design
+        #---------------------------------
+        end_kona_i = timeit.default_timer()
 
-        x_true = np.zeros(num_design)
-        x_true[solver.D < 0] = 1.0 
+        kona_times[i] = end_kona_i - start_kona_i
 
-        x_kona = np.rint(abs(kona_x))
 
-        diff = sum(abs(x_kona - x_true))
-        wrong_sols[i] = diff
+        start_snopt_i = timeit.default_timer()
+        # --------- Entering SNOPT Optimization ---------
+
+        def objfunc(xdict):
+
+            x = xdict['xvars']
+            funcs = {}
+            funcs['obj'] = 0.5 * np.dot(x.T, np.dot(solver.Q, x)) + np.dot(solver.g, x) 
+
+            conval = np.dot(solver.A,x) - solver.b
+            funcs['con'] = conval
+            fail = False
+
+            return funcs, fail
+
+        def sens(xdict, funcs):
+            x = xdict['xvars']
+            funcsSens = {}
+            funcsSens['obj'] = {'xvars': np.dot(x.T, solver.Q) + solver.g }
+            funcsSens['con'] = {'xvars': solver.A }
+            fail = False
+
+            return funcsSens, fail
+
+
+        # --------- SNOPT Optimize ---------
+        # Optimization Object
+        optProb = Optimization('quadra', objfunc)
+
+        # Design Variables
+        optProb.addVarGroup('xvars', num_design, value=init_x)
+
+        # Constraints
+        lower = np.zeros(num_ineq)
+        upper = [None]*num_ineq
+        optProb.addConGroup('con', num_ineq, lower = lower, upper = upper)
+
+        # Objective
+        optProb.addObj('obj')
+
+        # Optimizer
+        opt = OPT('snopt', options=optOptions)
+
+        # Solution
+        if storeHistory:
+            histFileName = '%s.hst' % (optName.lower())
+        else:
+            histFileName = None
+
+        sol = opt(optProb, sens=sens, storeHistory=histFileName)  
+        
+        # Check Solution
+        pyopt_obj = sol.objectives['obj'].value
+        pyopt_x = np.array(map(lambda x:  sol.variables['xvars'][x].value, xrange(num_design)))
+
+        # ----------------------------------
+        end_snopt_i = timeit.default_timer()
+        snopt_times[i] = end_snopt_i - start_snopt_i
+
+        # --------- Comparing difference Kona, SNOPT -----------
+        diff = max( abs( (kona_x - pyopt_x)/np.linalg.norm(pyopt_x) ) )
 
         # ------------- output ------------ #
         sep_str = '----------- Case %d ------------'%i
-        D_str = 'solver.D: ' + str(solver.D)
-        init_xs = 'init x: ' + str(init_x)
-        # kona_sol = 'kona_solution: ' + str(kona_x)
-        x_kona = 'kona_solution: ' + str(x_kona)
-        true_sol = 'true solution: ' + str(x_true)
-        err_diff = 'number of wrong solutions: ' + str(diff)
+        err_diff = 'Kona and SNOPT solution X maximum relative difference, ' + str(diff)
+        kona_obj = 'Kona obj, ' + str(kona_obj)
+        pyopt_obj = 'SNOPT obj, ' + str(pyopt_obj)
 
         with open(outdir+'/kona_optns.txt', 'a') as file:
-            pprint.pprint(sep_str, file)
-            pprint.pprint(D_str, file)
-            pprint.pprint(init_xs, file)
-            pprint.pprint(x_kona, file)
-            pprint.pprint(true_sol, file)
             pprint.pprint(err_diff, file)
+            pprint.pprint(kona_obj, file)
+            pprint.pprint(pyopt_obj, file) 
+
 
     #---- write init_norms, wrong_sols ---- # 
-    file_ =  outdir + '/design'     
+    file_ =  outdir +'/'+ str(num_design) + '_time'     
     A_file = open(file_, 'w')
-    pickle.dump([init_norms, wrong_sols], A_file)
+    pickle.dump([kona_times, snopt_times], A_file)
     A_file.close()
 
 
 if args.task=='post':
-    # ------------------ Make Plots ------------------
-    file_ =  post_dir + '/design' 
-    A_file = open(file_, 'r')
-    a = pickle.load(A_file)
-    A_file.close()
 
-    init_norms = a[0]
-    wrong_sols = a[1]
+    num_designs = np.array([100,200,300,400,500])
+    num_cases = len(num_designs) 
 
-    sols_mean = np.mean(wrong_sols)
-    sols_std = np.std(wrong_sols)
+    kona_mean_all = np.zeros(num_cases)
+    kona_std_all = np.zeros(num_cases)
 
+    snopt_mean_all = np.zeros(num_cases)
+    snopt_std_all = np.zeros(num_cases)
+
+    for k in range(num_cases):
+        num_design = num_designs[k]
+
+        file_ =  outdir +'/'+ str(num_design) + '_time' 
+        A_file = open(file_, 'r')
+        a = pickle.load(A_file)
+        A_file.close()
+
+        kona_times = a[0]
+        snopt_times = a[1]
+
+        kona_mean_all[k] = np.mean(kona_times)
+        kona_std_all[k] = np.std(kona_times)
+
+        snopt_mean_all[k] = np.mean(snopt_times)
+        snopt_std_all[k] = np.std(snopt_times)
+
+    pdb.set_trace()
+    # ---------------------------------------------
     # plot the data
     # ms = markersize
     # mfc = markerfacecolor     mec = 'k'
@@ -187,24 +272,28 @@ if args.task=='post':
     ax = fig.add_subplot(111)
 
     # plot the data
-    # ms = markersize
     # mfc = markerfacecolor
+    # mec = markeredgecolor
+    # ms = markersize
     # mew = markeredgewidth
-    dynamic = ax.plot(init_norms, wrong_sols, 'ko', linewidth=1.5, ms=8.0, \
-                  mfc=(0.35,0.35,0.35), mew=1.5, mec='k')
-    #qn = ax.plot(ndv, qn/flow_cost, '-k^', linewidth=2.0, ms=8.0, mfc='w', mew=1.5, \
-    #         color=(0.35, 0.35, 0.35), mec=(0.35, 0.35, 0.35))
+    kona_plt = ax.errorbar(num_designs, kona_mean_all, kona_std_all, fmt='k-o', elinewidth=1.5, 
+        linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k')
+
+    snopt_plt = ax.errorbar(num_designs, snopt_mean_all, snopt_std_all, fmt='k-s', elinewidth=1.5,  
+        linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k')
+    # elinewidth    
+
 
     # Tweak the appeareance of the axes
-    ax.axis([0, max(init_norms)+3, -1, max(wrong_sols)+1])  # axes ranges
+    ax.axis([min(num_designs)-30, max(num_designs)+30, 0, max(snopt_mean_all+snopt_std_all)+1])  # axes ranges
     ax.set_position([0.12, 0.13, 0.86, 0.83]) # position relative to figure edges
-    ax.set_xlabel('Norm of Initial Starting Point', fontsize=axis_fs, weight='bold')
-    ax.set_ylabel('Number of Stationery Points', fontsize=axis_fs, weight='bold', \
+    ax.set_xlabel('Number of Design Variables', fontsize=axis_fs, weight='bold')
+    ax.set_ylabel('CPU time', fontsize=axis_fs, weight='bold', \
                   labelpad=12)
     ax.grid(which='major', axis='y', linestyle='--')
     ax.set_axisbelow(True) # grid lines are plotted below
     rect = ax.patch # a Rectangle instance
-    ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols)+1.5, 1))
+    #ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols)+1.5, 1))
     #rect.set_facecolor('white')
     #rect.set_ls('dashed')
     rect.set_linewidth(axis_lw)
@@ -226,7 +315,7 @@ if args.task=='post':
 
 
     # define and format the minor ticks
-    ax.xaxis.set_ticks(np.arange(0,max(init_norms)+3,1),minor=True)
+    # ax.xaxis.set_ticks(np.arange(0,max(init_norms)+3,1),minor=True)
     ax.xaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
     # ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols)+2,1),minor=True)
     # ax.set_yticklabels([i for i in wrong_sols])
@@ -248,22 +337,5 @@ if args.task=='post':
     # for t in leg.get_texts():
     #     t.set_fontsize(12)    # the legend text fontsize
 
-    # --------------- Text ---------------
-    # ------------- Counting -------------
-    bbox_props = dict(boxstyle="round", fc="w", ec="0.5", alpha=0.9)
-
-
-
-    for k in np.arange(0, max(wrong_sols)+1, 1):
-
-        cout = sum(wrong_sols == k)
-        text = "{0:.1f}%".format(cout*1.0/num_case * 100) + ", or " + str(cout) 
-        ax.text(6.5, k, text, ha="center", va="center", size=12,
-                bbox=bbox_props)        
-
-    # text = "Mean: .1f}".format(sols_mean) + '\n' + " STD: {%.1f}".format(sols_std)
-    text = "Mean: %.2f"%(sols_mean) + '\n' + " STD: %.2f"%(sols_std)
-    ax.text(3, 2.5, text, ha="center", va="center", size=12,
-        bbox=bbox_props)  
 
     plt.show()
