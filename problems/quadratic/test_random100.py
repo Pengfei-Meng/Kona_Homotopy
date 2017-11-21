@@ -256,7 +256,6 @@ if args.task=='post':
         snopt_mean_all[k] = np.mean(snopt_times)
         snopt_std_all[k] = np.std(snopt_times)
 
-    pdb.set_trace()
     # ---------------------------------------------
     # plot the data
     # ms = markersize
@@ -328,14 +327,11 @@ if args.task=='post':
     #for tick in ax.yaxis.get_major_ticks():
     #    tick.tick2On = False
 
-    # # plot and tweak the legend
-    # leg = ax.legend(('fixed tol.'), loc=(0.02,0.75), numpoints=1, \
-    #                 borderpad=0.75, \
-    #                 handlelength=4) # handlelength controls the width of the legend
-    # rect = leg.get_frame()
-    # rect.set_linewidth(axis_lw)
-    # for t in leg.get_texts():
-    #     t.set_fontsize(12)    # the legend text fontsize
 
-
+    leg = ax.legend([kona_plt, snopt_plt], ['Homotopy RSNK', 'SNOPT'], \
+                    loc=(0.02, 0.80), numpoints=1, prop={'size':6},  borderpad=0.75, handlelength=4)
+    rect = leg.get_frame()
+    rect.set_linewidth(axis_lw)
+    for t in leg.get_texts():
+        t.set_fontsize(12)    
     plt.show()

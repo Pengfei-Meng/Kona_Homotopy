@@ -17,16 +17,27 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './output/200'
+        num_design = 500
+
+        self.outdir = './output/' + str(num_design) + '/eye2'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
-        size_prob = 200
-
-        self.num_design = size_prob
-        self.num_ineq = size_prob
+        self.num_design = num_design
+        self.num_ineq = num_design
         np.random.seed(0) 
-        self.init_x = np.random.rand(size_prob)    
+        self.init_x = np.random.rand(num_design)  
+
+        if num_design==100:
+            self.init_s = 40
+        if num_design==200:
+            self.init_s = 60
+        if num_design==300:
+            self.init_s = 80  
+        if num_design==400:
+            self.init_s = 100  
+        if num_design==500:
+            self.init_s = 10  
 
     def kona_optimize(self, pc):
 
@@ -62,9 +73,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
-                'init_step' : 80,                  # 200, 500 :  80, 120
-                'nominal_dist' : 10.0,             # 200, 500 :  10,  10
-                'nominal_angle' : 20.0*np.pi/180., # 200, 500 :  20,  20
+                'init_step' : self.init_s,
+                'nominal_dist' : 1.0,
+                'nominal_angle' : 20.0*np.pi/180.,
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -78,11 +89,11 @@ class InequalityTestCase(unittest.TestCase):
                 'lanczos_size'    : 5, 
                 'bfgs_max_stored' : 10, 
                 'beta'         : 1.0, 
-                'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
+                'cmin'         : 1e-3,     # negative value, cut-off ineffective; 
             }, 
 
             'rsnk' : {
-                'precond'       : pc,  #'svd_pc_cmu',   #None,   #'svd_pc_cmu',                  
+                'precond'       : pc,      #'svd_pc_cmu',                 
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,
@@ -239,8 +250,6 @@ class InequalityTestCase(unittest.TestCase):
 
         self.optimize('snopt', optOptions)
         
-
-
         # ----------------------------------------
 
         diff = max( abs( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) ) )
@@ -264,62 +273,6 @@ class InequalityTestCase(unittest.TestCase):
 
         print 'kona_obj %f, '%(self.kona_obj)
         print 'pyopt_obj %f, '%(self.pyopt_obj)
-
-        # pdb.set_trace()
-
-        # print 'kona_x', self.kona_x
-        # print 'pyopt_x', self.pyopt_x
-        # print 'max A', max(self.solver.A.max(axis=0))
-        # print 'min A', min(self.solver.A.min(axis=0))
-
-        # self.optimize('slsqp')
-        # diff = max( abs(self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
-
-        # print 'SLSQP relative difference, ', diff
-        # print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
-        # print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
-
-    # def test_slsqp(self):
-    #     self.optimize('slsqp')
-    #     self.kona_optimize()
-
-    #     diff = max( (self.kona_x - self.pyopt_x)/np.linalg.norm(self.pyopt_x) )
-
-    #     print 'SLSQP relative difference, ', diff
-    #     print 'kona_obj %f, time %f'%(self.kona_obj, self.kona_time)
-    #     print 'pyopt_obj %f, time %f'%(self.pyopt_obj, self.pyopt_time)
-
-    # def test_nlpqlp(self):
-    #     self.optimize('nlpqlp')
-
-    # def test_fsqp(self):
-    #     self.optimize('fsqp')
-
-    # def test_ipopt(self):
-    #     self.optimize('ipopt')
-
-
-    # def test_conmin(self):
-    #     self.optimize('conmin')
-
-    # def test_psqp(self):
-    #     self.optimize('psqp')
-
-        #    optOptions = {
-        #               'Major feasibility tolerance':1.0e-6,
-        #               'Major optimality tolerance':1.00e-6, 
-        #               'Major print level':1,
-        #               'Minor print level':1,        
-        #               'Major iterations limit':500,
-        #               'Minor iterations limit':500,
-        #               'Major step limit':.01,
-        #               'Nonderivative linesearch':None,
-        #               'Function precision':1.0e-6,
-        #               'Print file':self.outdir + '/SNOPT_print.out',
-        #               'Summary file':self.outdir + '/SNOPT_summary.out',
-        #               'Problem Type':'Minimize',
-        #               'Timing level': 3,
-        #              }
 
 
 if __name__ == "__main__":
