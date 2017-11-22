@@ -487,7 +487,7 @@ ub = x.duplicate()
 # pdb.set_trace()
 # Set the file prefix
 if thickness_flag:
-    prefix = 'TEMP'
+    prefix = 'output_kona'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -558,7 +558,7 @@ optns = {
         'inner_maxiter' : 2,
         'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 10.0*np.pi/180.,  # 1) Can be changed    
+        'nominal_angle' : 10.0*np.pi/180.,      # 1) Can be changed    
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,
