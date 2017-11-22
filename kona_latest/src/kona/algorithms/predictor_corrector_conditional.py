@@ -36,6 +36,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.svd_pc = None
         self.svd_pc_stress = None
         self.svd_pc_cmu = None
+        self.fstopo = False
 
         if self.precond is 'svd_pc':
             print 'svd_pc is used! '
@@ -72,7 +73,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             }
             self.svd_pc_cmu = SVDPC_CMU(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
-            self.precond = self.svd_pc_cmu.solve            
+            self.precond = self.svd_pc_cmu.solve    
+            self.fstopo = get_opt(self.optns, False, 'svd', 'fstopo')        
 
         else:
             self.eye = IdentityMatrix()
@@ -323,8 +325,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
-        EPS = np.finfo(np.float64).eps
-        # EPS = 1e-7
+
+        if self.fstopo is True:
+            EPS = 1e-7
+        else:
+            EPS = np.finfo(np.float64).eps
         # initialize the problem at the starting point
         x0.equals_init_guess()
         x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
@@ -520,31 +525,31 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
                     # --------------------------------
-                    dx_bfgs.equals(x)
-                    dx_bfgs.minus(self.current_x)
-                    
-                    X_oldx.equals(x)
-                    X_oldx.primal.design.equals(self.current_x.primal.design)
+                    if self.fstopo is False:
+                        dx_bfgs.equals(x)
+                        dx_bfgs.minus(self.current_x)
+                        
+                        X_oldx.equals(x)
+                        X_oldx.primal.design.equals(self.current_x.primal.design)
 
-                    # if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                    #     raise RuntimeError(
-                    #         'Invalid predictor point! State-solve failed.')
-                    # adj_work.equals_lagrangian_adjoint(
-                    #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-                    # dldx_bfgs.equals_KKT_conditions(
-                    #     X_oldx, state_work_svd, adj_work) 
+                        # if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                        #     raise RuntimeError(
+                        #         'Invalid predictor point! State-solve failed.')
+                        # adj_work.equals_lagrangian_adjoint(
+                        #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                        # dldx_bfgs.equals_KKT_conditions(
+                        #     X_oldx, state_work_svd, adj_work) 
 
-                    dldx_bfgs.equals_KKT_conditions(
-                        X_oldx, state_old, adj_old) 
+                        dldx_bfgs.equals_KKT_conditions(
+                            X_oldx, state_old, adj_old) 
 
-                    dldx_bfgs.minus(dJdX)
-                    dldx_bfgs.times(-1.0)
+                        dldx_bfgs.minus(dJdX)
+                        dldx_bfgs.times(-1.0)
 
+                        self.current_dldx.equals(dJdX)
+                        state_old.equals(state)
+                        adj_old.equals(adj)
                     self.current_x.equals(x)
-                    self.current_dldx.equals(dJdX)
-                    state_old.equals(state)
-                    adj_old.equals(adj)
-
                     # --------------------------------
 
                     if self.mu < EPS and inner_iters == 0:
@@ -719,32 +724,32 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
             if corrector_succeed is False:
-                # --------------------------------
-                dx_bfgs.equals(x)
-                dx_bfgs.minus(self.current_x)
+                if self.fstopo is False:
+                    # --------------------------------
+                    dx_bfgs.equals(x)
+                    dx_bfgs.minus(self.current_x)
 
-                X_oldx.equals(x)
-                X_oldx.primal.design.equals(self.current_x.primal.design)
+                    X_oldx.equals(x)
+                    X_oldx.primal.design.equals(self.current_x.primal.design)
 
-                # if not state_work_svd.equals_primal_solution(X_oldx.primal):
-                #     raise RuntimeError(
-                #         'Invalid predictor point! State-solve failed.')
-                # adj_work.equals_lagrangian_adjoint(
-                #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
-                # dldx_bfgs.equals_KKT_conditions(
-                #     X_oldx, state_work_svd, adj_work) 
+                    # if not state_work_svd.equals_primal_solution(X_oldx.primal):
+                    #     raise RuntimeError(
+                    #         'Invalid predictor point! State-solve failed.')
+                    # adj_work.equals_lagrangian_adjoint(
+                    #     X_oldx, state_work_svd, state_work, obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+                    # dldx_bfgs.equals_KKT_conditions(
+                    #     X_oldx, state_work_svd, adj_work) 
 
-                dldx_bfgs.equals_KKT_conditions(
-                    X_oldx, state_old, adj_old) 
+                    dldx_bfgs.equals_KKT_conditions(
+                        X_oldx, state_old, adj_old) 
 
-                dldx_bfgs.minus(dJdX)
-                dldx_bfgs.times(-1.0)
+                    dldx_bfgs.minus(dJdX)
+                    dldx_bfgs.times(-1.0)
 
+                    self.current_dldx.equals(dJdX)
+                    state_old.equals(state)
+                    adj_old.equals(adj)
                 self.current_x.equals(x)
-                self.current_dldx.equals(dJdX)
-                state_old.equals(state)
-                adj_old.equals(adj)
-
 
             # assemble the predictor RHS
             rhs_vec.equals(dJdX)

@@ -38,7 +38,7 @@ class SVDPC_CMU(BaseHessian):
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
         self.beta = get_opt(optns, 1.0, 'beta')
-        self.cmin = get_opt(optns, 1e-3, 'cmin')
+        self.cmin = get_opt(optns, -1e-3, 'cmin')
         self.fstopo = get_opt(optns, False, 'fstopo')
 
         print 'fstopo Problem ? ', self.fstopo
@@ -135,9 +135,10 @@ class SVDPC_CMU(BaseHessian):
         # ---------- Linearize ----------
         self.Ag.linearize(X.primal.design, state)
 
-        # ---------- Hessian LBFGS approximation --------  
-        dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
-        self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
+        if self.fstopo is False:
+            # ---------- Hessian LBFGS approximation --------  
+            dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
+            self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
 
 
         # ----------- svd_AsT_SigS_As_mu -------------
@@ -152,9 +153,10 @@ class SVDPC_CMU(BaseHessian):
             self.asa_U[:, j] = self.svd_AT_Sig_A_mu.U[j].base.data
             self.asa_V[:, j] = self.svd_AT_Sig_A_mu.V[j].base.data
 
-            self.design_work.equals(0.0)
-            self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
-            self.Winv_U[:, j] = self.design_work.base.data
+            if self.fstopo is False:
+                self.design_work.equals(0.0)
+                self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
+                self.Winv_U[:, j] = self.design_work.base.data
 
         self.asa_U = (1-self.mu) * self.asa_U
         self.asa_V = (1-self.mu) * self.asa_V
@@ -241,6 +243,7 @@ class SVDPC_CMU(BaseHessian):
         # v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx)         
         if self.fstopo is True: 
             v_x = self.sherman_morrison_betaI(rhs_vx)
+            # v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx)  
         else: 
             v_x = self.sherman_morrison(rhs_vx)
 

@@ -1,7 +1,7 @@
 import sys
 import os
 import numpy as np
-import pdb, time
+import pdb, timeit
 import unittest
 import pprint
 
@@ -493,7 +493,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results4'
+    prefix = 'output'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -692,7 +692,7 @@ def sens(xdict, funcs):
     # ---------- recording ----------
     iteration += 1
     sens_counter += 1
-    endTime_sn = time.clock()
+    endTime_sn = timeit.default_timer()
     duration_sn = endTime_sn - startTime_sn
     totalTime_sn += duration_sn
     startTime_sn = endTime_sn
@@ -715,7 +715,7 @@ sens_counter = 0
 
 
 # -------------- begin optimization -------------------
-startTime_sn = time.clock()
+startTime_sn = timeit.default_timer()
 totalTime_sn = 0
 endTime_sn = 0
 file = open(outdir+'/SNOPT_timings.dat', 'w')
