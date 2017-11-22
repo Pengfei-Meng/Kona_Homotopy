@@ -342,12 +342,17 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
                 '\n'
             )
+        self.fstopo = True
+        if self.fstopo is True:
+            EPS = 1e-6
+        else:
+            EPS = np.finfo(np.float64).eps        
 
         # initialize the problem at the starting point
         x0.equals_init_guess()
 
         x.equals(x0)
-        self.current_x.equals(x0)
+        
 
         if not state.equals_primal_solution(x.primal):
             raise RuntimeError('Invalid initial point! State-solve failed.')
@@ -367,6 +372,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         print 'dJdX.inner(x): ', dJdX.inner(x)
         
+
+        self.current_x.equals(x0)
+
         # ----------------------- Outputing Information ----------------
         # send solution to solver
         solver_info = current_solution(
@@ -509,7 +517,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # START CORRECTOR (Newton) ITERATIONS
                 #####################################
                 max_newton = self.inner_maxiter
-                if self.mu < 1e-6:    
+                if self.mu < EPS:    
                     max_newton = self.inner_maxiter*10
 
                 inner_iters = 0
@@ -525,7 +533,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.mu < 1e-6 and inner_iters == 0:
+                    if self.mu < EPS and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
                         self.inner_tol = min(opt_tol/opt_norm_cur, feas_tol/feas_norm_cur)
@@ -666,7 +674,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.primal.slack.times(self.current_x.primal.slack)
 
 
-                    dx_newt.plus(dx)
+            
                     # update the design
                     x.plus(dx)
 
@@ -675,6 +683,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x.primal.design.enforce_bounds()
                     else:
                         x.primal.enforce_bounds()
+
+
+                    dx.equals(x)
+
+                    dx.minus(self.current_x)
+                    dx_newt.plus(dx)
 
                     self.current_x.equals(x)
 
@@ -688,7 +702,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, state_work,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
-                    if self.mu < 1e-6:
+                    if self.mu < EPS:
                         solver_info = current_solution(
                             num_iter=inner_iters, curr_primal=x.primal,
                             curr_state=state, curr_adj=adj, curr_dual=x.dual)
@@ -714,6 +728,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dJdX.equals_KKT_conditions(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+            self.current_x.equals(x)
 
             # assemble the predictor RHS
             rhs_vec.equals(dJdX)

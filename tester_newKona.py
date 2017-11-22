@@ -487,7 +487,7 @@ ub = x.duplicate()
 
 # Set the file prefix
 if thickness_flag:
-    prefix = 'results4'
+    prefix = 'resultsX'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -530,7 +530,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%stemp_TRY'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
