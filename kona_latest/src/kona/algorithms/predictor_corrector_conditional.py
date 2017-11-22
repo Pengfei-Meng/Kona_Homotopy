@@ -533,6 +533,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         x, state, adj,
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
+                    self.current_x.equals(x)
+                    
                     if self.mu < EPS and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
@@ -635,25 +637,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
 
-                    if self.uzawa is not None and self.mu <= self.precond_on_mu:
-                        if inner_iters == 0:
-                            self.uzawa.linearize(
-                                x, state, adj, self.mu, dJdX, dJdX, dJdX)                    
-                        else:
-                            X_olddual.equals(x)
-                            X_olddual.primal.slack.equals(old_x.primal.slack)
-                            X_olddual.dual.equals(old_x.dual)
-                           
-                            dLdX_olddual.equals_KKT_conditions(
-                            X_olddual, state, adj)
-
-                            X_olddual.equals(x)
-                            X_olddual.primal.equals(old_x.primal)
-                            dLdX_oldprimal.equals_KKT_conditions(X_olddual, state, adj)
-
-                            self.uzawa.linearize(x, state, adj, self.mu, dJdX, dLdX_olddual, dLdX_oldprimal)
-                        old_x.equals(x)
-
                         
                     self.krylov.outer_iters = outer_iters
                     self.krylov.inner_iters = inner_iters
@@ -712,7 +695,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     total_iters += 1
 
                 # if we finished the corrector step at mu=0, we're done!
-                if self.mu < 1e-6:    # 0.0:
+                if self.mu < EPS:    # 0.0:
                     self.info_file.write('\n>> Optimization DONE! <<\n')
                     # send solution to solver
                     solver_info = current_solution(
