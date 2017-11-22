@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%ssmall'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -569,16 +569,16 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 80,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
-        'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
+        'beta'            : 0.0001,           # 5) Tiny: 0.1;   Small: 0.0001
         'cmin'            : -1e-4,          # negative value -> cut-off ineffective; 
         'fstopo'          : True, 
         'bfgs_max_stored' : 10, 
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc_cmu',   #'svd_pc_cmu',   #   #'approx_adjoint',   #'svd_pc',                             
+        'precond'       : 'svd_pc_stress',   #'svd_pc_cmu',   #   #'approx_adjoint',   #'svd_pc',                             
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,

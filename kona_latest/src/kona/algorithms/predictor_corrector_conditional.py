@@ -224,7 +224,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         self.prod_work.equals(in_vec)
         self.prod_work.times(self.mu)
-        # self.prod_work.primal.slack.times(self.current_x.primal.slack)
+        self.prod_work.primal.slack.times(self.current_x.primal.slack)
 
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
@@ -332,8 +332,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             EPS = np.finfo(np.float64).eps
         # initialize the problem at the starting point
         x0.equals_init_guess()
-        x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-        x0.dual.base.data[x.dual.base.data > 0.0] = 0.0
+        # x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+        # x0.dual.base.data[x.dual.base.data > 0.0] = 0.0
         x.equals(x0)
         
         if not state.equals_primal_solution(x.primal):
@@ -405,8 +405,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.krylov.mu = 1.0
         self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
-        # unpeal the S^-1 layer for the slack term
-        # t.primal.slack.times(self.current_x.primal.slack)
+        # AAA unpeal the S^-1 layer for the slack term
+        t.primal.slack.times(self.current_x.primal.slack)
         
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -483,8 +483,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.design.enforce_bounds()
             else:
                 x.primal.enforce_bounds()
-            x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+            # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+            # x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
 
             if not state.equals_primal_solution(x.primal):
@@ -666,8 +666,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.eye_precond)
 
-                    # unpeal the S^-1 layer for the slack term
-                    # dx.primal.slack.times(self.current_x.primal.slack)
+                    # AAA unpeal the S^-1 layer for the slack term
+                    dx.primal.slack.times(self.current_x.primal.slack)
 
                     # update the design
                     x.plus(dx)
@@ -839,8 +839,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
 
-            # unpeal the S^-1 layer for the slack term                
-            # t.primal.slack.times(self.current_x.primal.slack)
+            # # AAA # unpeal the S^-1 layer for the slack term                
+            t.primal.slack.times(self.current_x.primal.slack)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
