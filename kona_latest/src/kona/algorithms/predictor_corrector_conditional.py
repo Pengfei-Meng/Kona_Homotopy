@@ -499,7 +499,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
 
-            self.current_x.equals(x)
+
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -534,7 +534,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         obj_scale=obj_fac, cnstr_scale=cnstr_fac)
 
                     self.current_x.equals(x)
-                    
+
                     if self.mu < EPS and inner_iters == 0:
                         opt_norm_cur = dJdX.primal.norm2
                         feas_norm_cur = dJdX.dual.norm2
@@ -600,11 +600,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
                     # ---------------------------------------------------------------------------
                     # --------------------- Linearizing Preconditioners -------------------------
-                    # use other preconditioners only when mu < 0.2 and as indicated in the option
-                    if self.approx_adj is not None and self.mu <= self.precond_on_mu: 
-                        if self.mu < 0.05:                           
-                            self.approx_adj.update_mat = True  
-                        self.approx_adj.linearize(x, state, adj, self.mu)
 
                     if self.svd_pc is not None and self.mu <= self.precond_on_mu:
                         if inner_iters == 0:
@@ -673,7 +668,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx.minus(self.current_x)
                     dx_newt.plus(dx)
 
-                    self.current_x.equals(x)
+                    
 
                     if not state.equals_primal_solution(x.primal):
                         raise RuntimeError('Newton step failed!')
