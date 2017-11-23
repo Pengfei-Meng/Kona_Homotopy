@@ -530,7 +530,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp_TRY'%(os.path.sep)
+prefix += '%stemp_TRY4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -571,6 +571,7 @@ optns = {
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-6;  Small: 1e-3
         'sig_exact'       : 1.0, 
         'w_value'         : 0.0001,           # 5) Tiny: 0.1;   Small: 0.0001
+        'fstopo'          : True, 
     }, 
 
     'rsnk' : {
