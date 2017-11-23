@@ -502,7 +502,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
 
-
+            # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+            # x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
@@ -768,7 +769,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     self.current_dldx.equals(dJdX)
                     state_old.equals(state)
                     adj_old.equals(adj)
-            self.current_x.equals(x)
+                self.current_x.equals(x)
 
             # assemble the predictor RHS
             rhs_vec.equals(dJdX)
