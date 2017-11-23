@@ -327,7 +327,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             )
 
         if self.fstopo is True:
-            EPS = 1e-7
+            EPS = 1e-6
         else:
             EPS = np.finfo(np.float64).eps
         # initialize the problem at the starting point
