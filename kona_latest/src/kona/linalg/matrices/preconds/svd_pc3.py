@@ -37,6 +37,7 @@ class SVDPC_STRESS(BaseHessian):
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
+        self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.beta = get_opt(optns, 0.1, 'beta')
 
         self.Ag = TotalConstraintJacobian( vector_factories )
@@ -52,7 +53,7 @@ class SVDPC_STRESS(BaseHessian):
         else:
             self.Ag.approx.product(in_vec, self.dual_work1)
             
-        if self.mu < 1.0:
+        if self.mu < self.sig_exact:
             self.dual_work2.equals(0.0)
             self.dual_work2.base.data[-self.num_design:] = self.sig_aug_stress * self.dual_work1.base.data[-self.num_design:]
         else:
@@ -106,12 +107,10 @@ class SVDPC_STRESS(BaseHessian):
 
         # ------ Data to use --------------
         self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data + self.mu*self.at_slack_data
-        # self.lam_aug = -(1.0-self.mu)*self.at_dual_ineq_data + self.mu*np.ones(self.num_ineq)
         self.lam_aug_inv = 1./self.lam_aug
 
         # I''Lam'^{-1} S' - I'
         self.sig_aug_inv = (1.0 - self.mu)**2 *self.at_slack_data* self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
-        # self.sig_aug_inv = (1.0 - self.mu)**2 * self.lam_aug_inv * self.at_slack_data + self.mu*np.ones(self.at_dual_ineq_data.shape)
         self.sig_aug = 1.0/self.sig_aug_inv
 
         self.sig_aug_lower = self.sig_aug[: self.num_design]

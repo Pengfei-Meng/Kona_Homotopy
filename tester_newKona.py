@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssmall'%(os.path.sep)
+prefix += '%ssmall4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -571,7 +571,8 @@ optns = {
     'svd' : {
         'lanczos_size'    : 80,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
-        'beta'            : 0.0001,           # 5) Tiny: 0.1;   Small: 0.0001
+        'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
+        'sig_exact'       : 1e-3, 
         'cmin'            : -1e-4,          # negative value -> cut-off ineffective; 
         'fstopo'          : True, 
         'bfgs_max_stored' : 10, 

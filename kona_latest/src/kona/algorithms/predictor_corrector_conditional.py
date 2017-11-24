@@ -52,10 +52,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             print 'svd_pc_stress is used! '
             svd_optns = {
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
-                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
-                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'mu_exact'),
-                'w_value'         : get_opt(self.optns, 0.1, 'svd', 'w_value'), 
+                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
+                'beta'         : get_opt(self.optns, 0.1, 'svd', 'beta'), 
             }
             self.svd_pc_stress = SVDPC_STRESS(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
