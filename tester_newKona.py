@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%ssmall4'%(os.path.sep)
+prefix += '%stiny_pc4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -556,9 +556,9 @@ optns = {
         'init_homotopy_parameter' : 1.0, 
         'inner_tol' : 0.1,
         'inner_maxiter' : 2,
-        'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.2 converge!   Medium: 0.8        
+        'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.05  Medium: 0.8        
         'nominal_dist' : 1.0,
-        'nominal_angle' : 10.0*np.pi/180.,      # 1) Can be changed    
+        'nominal_angle' : 10.0*np.pi/180.,       
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,
@@ -569,9 +569,9 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 80,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
-        'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.0001
+        'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.1
         'sig_exact'       : 1e-3, 
         'cmin'            : -1e-4,          # negative value -> cut-off ineffective; 
         'fstopo'          : True, 
@@ -579,7 +579,7 @@ optns = {
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc_stress',   #'svd_pc_cmu',   #   #'approx_adjoint',   #'svd_pc',                             
+        'precond'       : 'svd_pc_cmu',    # 'svd_pc_stress',                             
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,
