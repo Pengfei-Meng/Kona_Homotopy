@@ -36,7 +36,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.svd_pc = None
         self.svd_pc_stress = None
         self.svd_pc_cmu = None
-        self.fstopo = False
+        self.fstopo = get_opt(self.optns, False, 'svd', 'fstopo') 
 
         if self.precond is 'svd_pc':
             print 'svd_pc is used! '
@@ -60,6 +60,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.svd_pc_stress = SVDPC_STRESS(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
             self.precond = self.svd_pc_stress.solve   
+                   
 
         elif self.precond is 'svd_pc_cmu': 
             print 'svd_pc_cmu is used! '
