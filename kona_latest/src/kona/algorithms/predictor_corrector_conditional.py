@@ -25,8 +25,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # reduced hessian settings
         ############################################################
+        self.symmetric = get_opt(self.optns, False, 'symmetric')
+
+        kkt_optns = {
+            'symmetric'   : get_opt(self.optns, False, 'symmetric'), 
+            'product_fac' : get_opt(self.optns, 0.001, 'rsnk', 'product_fac'),
+            'lambda'      : get_opt(self.optns, 0.0, 'rsnk', 'lambda' ),
+            'scale'       : get_opt(self.optns, 1.0, 'rsnk', 'scale' ),
+            'dynamic_tol'  : get_opt(self.optns, False,'rsnk', 'dynamic_tol'),  
+        }
+
         self.hessian = ReducedKKTMatrix(
-            [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory])
+            [self.primal_factory, self.state_factory, self.eq_factory, self.ineq_factory], kkt_optns)
         self.mat_vec = self.hessian.product
 
         # hessian preconditiner settings
@@ -113,7 +123,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
         self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
         self.precond_on_mu = get_opt(self.optns, 1.0, 'homotopy', 'mu_pc_on')
-
+        
 
     def _write_header(self, opt_tol, feas_tol):
         self.hist_file.write(
@@ -224,7 +234,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         self.prod_work.equals(in_vec)
         self.prod_work.times(self.mu)
-        self.prod_work.primal.slack.times(self.current_x.primal.slack)
+
+        if self.symmetric is True: 
+            self.prod_work.primal.slack.times(self.current_x.primal.slack)
 
         out_vec.primal.plus(self.prod_work.primal)
         out_vec.dual.minus(self.prod_work.dual)
@@ -405,8 +417,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.krylov.mu = 1.0
         self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
-        # AAA unpeal the S^-1 layer for the slack term
-        t.primal.slack.times(self.current_x.primal.slack)
+
+        if self.symmetric is True: 
+            # unpeal the S^-1 layer for the slack term
+            t.primal.slack.times(self.current_x.primal.slack)
         
         # normalize tangent vector
         tnorm = np.sqrt(t.inner(t) + 1.0)
@@ -666,8 +680,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.eye_precond)
 
-                    # AAA unpeal the S^-1 layer for the slack term
-                    dx.primal.slack.times(self.current_x.primal.slack)
+                    if self.symmetric is True: 
+                        # unpeal the S^-1 layer for the slack term
+                        dx.primal.slack.times(self.current_x.primal.slack)
 
                     # update the design
                     x.plus(dx)
@@ -839,8 +854,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
 
-            # # AAA # unpeal the S^-1 layer for the slack term                
-            t.primal.slack.times(self.current_x.primal.slack)
+            if self.symmetric is True: 
+                # unpeal the S^-1 layer for the slack term                
+                t.primal.slack.times(self.current_x.primal.slack)
 
             # normalize the tangent vector
             tnorm = np.sqrt(t.inner(t) + 1.0)
