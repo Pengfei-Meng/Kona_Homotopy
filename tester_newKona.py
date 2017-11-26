@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%smedium_pc4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -551,7 +551,7 @@ optns = {
     'feas_tol' : 1e-4,        
     'info_file' : prefix+'/kona_info.dat',
     'hist_file' : prefix+'/kona_hist.dat',
-    'symmetric' : True,
+    'symmetric' : False,
 
     'homotopy' : {
         'init_homotopy_parameter' : 1.0, 
@@ -570,7 +570,7 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 80,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 320,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
         'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.1
         'sig_exact'       : 1e-3, 
@@ -580,7 +580,7 @@ optns = {
     }, 
 
     'rsnk' : {
-        'precond'       : 'svd_pc_stress',    # 'svd_pc_stress',                             
+        'precond'       : 'svd_pc_cmu',    # 'svd_pc_stress',                             
         # rsnk algorithm settings  
         'dynamic_tol'   : False,
         'nu'            : 0.95,

@@ -37,6 +37,7 @@ class SVDPC_CMU(BaseHessian):
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
+        self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.beta = get_opt(optns, 1.0, 'beta')
         self.cmin = get_opt(optns, -1e-3, 'cmin')
         self.fstopo = get_opt(optns, False, 'fstopo')
@@ -61,8 +62,11 @@ class SVDPC_CMU(BaseHessian):
         # self.dual_work1.times(1.0-self.mu)  # (1-mu) considered in linearization
         
         self.dual_work2.equals(0.0)
-        if self.fstopo is True:                          
-            self.dual_work2.base.data[-self.num_design:] = self.sig_aug[2*self.num_design:] * self.dual_work1.base.data[-self.num_design:]
+        if self.fstopo is True:     
+            if self.mu < self.sig_exact:                 
+                self.dual_work2.base.data[-self.num_design:] = self.sig_aug[2*self.num_design:] * self.dual_work1.base.data[-self.num_design:]
+            else:
+                self.dual_work2.equals(self.dual_work1)
         else: 
             self.dual_work2.base.data = self.sig_aug * self.dual_work1.base.data 
 

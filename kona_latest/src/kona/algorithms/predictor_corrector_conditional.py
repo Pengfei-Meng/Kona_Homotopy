@@ -77,6 +77,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
+                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
                 'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
                 'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
                 'fstopo'          : get_opt(self.optns, False, 'svd', 'fstopo'),
