@@ -1,7 +1,13 @@
 # fstopo_kona_latest
 This folder is connected with Developer/kona_mengp2 folder on my Lenovo Ubuntu Laptop. 
-It contains the work on testing homotopy inequality and approximate-adjoint preconditioner,\
-SVD Jacobian preconditioner on Graeme's structural problem, Toy problem. 
+It contains the work on testing homotopy inequality optimization algorithm, and matrix-free preconditioner
+tseted on Graeme's fstopo problem, Quadratic problem. 
+
+
+
+
+
+
 
 Major achievements so far:
 1. Homotopy Inequality working for Cuter test problem sets

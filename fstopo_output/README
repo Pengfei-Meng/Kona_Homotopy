@@ -1,0 +1,13 @@
+Results from the updated PC, svd_pc4_cmu in November, 2017. 
+
+what's new: 
+
+    1) used timeit.default_timer() in all the time-counting files.
+    2) used svd_pc4.py,  which is the PC as described in the paper,
+            using Sherman-Morrison, W=beta I to compute the augmented Lagrangian system
+
+    3) Both the analytical problems, and the fstopo problem use svd_pc4.py as the Preconditioner 
+
+        a) A switch self.fstopo = True or False, controls whether W = beta*I or W = BFGS approximation
+        b) FSTOPO problem use W = beta*I, not W = BFGS, mainly because it is not possible (I think)
+            to separate the bound constraint Jacobin with Stress Jacobian using W = BFGS PC formulation
