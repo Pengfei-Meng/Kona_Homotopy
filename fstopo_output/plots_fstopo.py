@@ -1,27 +1,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-import pdb
+import pdb, argparse
 
-# #  for plotting results4
 
-# # Plotting SVD results
-case = 'tiny'
+parser = argparse.ArgumentParser()
+parser.add_argument("--case", help='tiny, small, medium', type=str, default='tiny')
+parser.add_argument("--color", help='True, False', type=int, default=1)
+args = parser.parse_args()
 
-num_design, nlcost, dt_onesolve = 128, 9, 0.0153
-# num_design, nlcost, dt_onesolve = 512, 10, 0.0632
-# num_design, nlcost, dt_onesolve = 2048, 12, 0.2988
+case = args.case
+pic_color = args.color
 
-# xax = 'time'
-xax = 'cost'
+if case == 'tiny':
+    num_design, nlcost, dt_onesolve = 128, 9, 0.0153
+if case == 'small':
+    num_design, nlcost, dt_onesolve = 512, 10, 0.0632
+if case == 'medium':
+    num_design, nlcost, dt_onesolve = 2048, 12, 0.2988
 
-pcd = 'svd'
-dir_konahist = '../results4/' + case + '_' + pcd + '/'
-fname = dir_konahist + 'kona_hist.dat'
+folder = '/home/pengfei/Developer/kona_mengp2/fstopo_output/'
+
+
+pcd = 'pc4'                             # results from  svd_pc_cmu, or svd_pc4.py 
+dir_kona = folder + case + '_' + pcd + '/'
+
+fname = dir_kona + 'kona_hist.dat'
 dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('cost', 'i4'), ('objective', 'float64'), ('optimality', 'float'), ('feasibility', 'float64')])
-kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 3, usecols = (0,1,2, 3,5,6))
+kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 3, usecols = (0,1,2,3,5,6))
 
-tname = dir_konahist + 'kona_timings.dat'
+tname = dir_kona + 'kona_timings.dat'
 dtype_cols2 = np.dtype([('outer_iter', 'i4'), ('time', 'float64')])
 kona_timings = np.loadtxt(tname, dtype=dtype_cols2, skiprows = 2, usecols = (0,2))
 
@@ -31,19 +39,17 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-if xax is 'cost':
-    kona_time_svd = kona_timings['time'][:-1] / dt_onesolve
-if xax is 'time':
-    kona_time_svd = kona_timings['time'] / dt_onesolve
+kona_time_svd = kona_timings['time'][:-1] / dt_onesolve
 kona_data_svd = kona_datas[new_indices]
 
 # --------------- Add the Identity PC for comparison ----------------
 pcd = 'eye_long'
-dir_konahist2 = '../results4/' + case + '_' + pcd + '/'
-fname2 = dir_konahist2 + 'kona_hist.dat'
+dir_kona = folder + case + '_' + pcd + '/'
+
+fname2 = dir_kona + 'kona_hist.dat'
 kona_datas2 = np.loadtxt(fname2, dtype=dtype_cols, skiprows = 2, usecols = (0,1,2, 3,5,6))
 
-tname2 = dir_konahist2 + 'kona_timings.dat'
+tname2 = dir_kona + 'kona_timings.dat'
 kona_timings2 = np.loadtxt(tname2, dtype=dtype_cols2, skiprows = 2, usecols = (0,2))
 
 # when inner_iter > 1 before mu = 0, display only one inner_iter, to make plots clean
@@ -53,24 +59,23 @@ last_inners2 = range(last_indices2+1, len(kona_datas2['outer_iter']))
 new_indices2 = np.hstack([indices2, np.array(last_inners2)])
 
 kona_data_eye = kona_datas2[new_indices2.astype(int)]
-if xax is 'cost':
-    kona_time_eye = kona_timings2['time'][:-1] / dt_onesolve
-    
-if xax is 'time':
-    kona_time_eye = kona_timings2['time'] / dt_onesolve
-    kona_data_eye = np.delete(kona_data_eye, -2, 0)
+
+kona_time_eye = kona_timings2['time'] / dt_onesolve
+kona_data_eye = np.delete(kona_data_eye, -2, 0)
 
 # ------------- SNOPT data -----------------
 # --------------------------------------------------------------------
 ##### result files stored in  ~/Developer/kona_mengp2/results3/SNOPT/
 pcd = 'snopt'
-dir_konahist = '../results4/' + case + '_' + pcd + '/'
-snopt_name = dir_konahist + 'SNOPT_summary.awk'
+
+dir_snopt = folder + case + '_' + pcd + '/'
+
+snopt_name = dir_snopt + 'SNOPT_summary.awk'
 dtype_sn = np.dtype([('outer_iter', 'i4'),('nCon', 'i4'), ('feasibility', 'float64'),('optimality', 'float'), ('merit', 'float')])
 snopt_data = np.loadtxt(snopt_name, dtype=dtype_sn, skiprows = 1, usecols = (0,3,4,5,6))
 nCon_idx = snopt_data['nCon']
 
-tname = dir_konahist + 'SNOPT_timings.dat'
+tname = dir_snopt + 'SNOPT_timings.dat'
 dtype_cols2 = np.dtype([('ncon', 'i4'), ('cost', 'i4'), ('time', 'float64')])
 snopt_time_s = np.loadtxt(tname, dtype=dtype_cols2, skiprows = 0, usecols = (0,1,3))
 
@@ -89,11 +94,11 @@ axis_lw = 1.0 # line width used for axis box, legend, and major ticks
 label_fs = 10 # axis labels' font size
 
 
-fig = plt.figure(figsize=(6,4), facecolor=None)
+fig = plt.figure(figsize=(7,4), facecolor=None)
 # fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
 
-if xax is 'time':
+if pic_color == 1:
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line2, = ax.semilogy(kona_time_eye, kona_data_eye['feasibility'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
@@ -103,25 +108,20 @@ if xax is 'time':
     line5, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
     line6, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
-    ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
-    ax.set_xlabel('Cost (equivalent PDE solutions)', fontsize=axis_fs, weight='bold')
+else:
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['feasibility'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    xmax = max(kona_time_eye[-1], kona_time_svd[-1], snopt_time[-1])
+    line3, = ax.semilogy(kona_time_svd, kona_data_svd['optimality']/kona_data_svd['optimality'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line4, = ax.semilogy(kona_time_svd, kona_data_svd['feasibility'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-if xax is 'cost':
-    line1, = ax.semilogy(kona_data_eye['cost']/nlcost, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_data_eye['cost']/nlcost, kona_data_eye['feasibility'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line5, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
+    line6, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
-    line3, = ax.semilogy(kona_data_svd['cost']/nlcost, kona_data_svd['optimality']/kona_data_svd['optimality'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line4, = ax.semilogy(kona_data_svd['cost']/nlcost, kona_data_svd['feasibility'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line5, = ax.semilogy(snopt_cost/nlcost, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
-    line6, = ax.semilogy(snopt_cost/nlcost, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
-    ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges    mfc=(0.35, 0.35, 0.35)
-    ax.set_xlabel('PDE Solves', fontsize=axis_fs, weight='bold')
-
-    xmax = max(kona_data_eye['cost'][-1]/nlcost, kona_data_svd['cost'][-1]/nlcost, snopt_cost[-1]/nlcost)
+ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
+ax.set_xlabel('Cost (equivalent DE solutions)', fontsize=axis_fs, weight='bold')
 
 ax.set_ylabel('Relative optimality/Feasibility', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
@@ -174,23 +174,9 @@ plt.show()
 
  
 
-# plt.subplot(111)
-
-# line1, = plt.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], marker='^', linestyle='-', color='g', label='eye_optimality') 
-# line2, = plt.semilogy(kona_time_eye, kona_data_eye['feasibility'], marker='o', linestyle='-', color='g', label='eye_feasibility')  
-
-# line3, = plt.semilogy(kona_time, kona_data['optimality']/kona_data['optimality'][0], marker='^', linestyle='-', color='r', label='kona_optimality') 
-# line4, = plt.semilogy(kona_time, kona_data['feasibility'], marker='o', linestyle='-', color='r', label='kona_feasibility')  
-
-# line5, = plt.semilogy(snopt_time, snopt_data['optimality'], marker='^', linestyle='-.', color='b', label='snopt_optimality')    
-# line6, = plt.semilogy(snopt_time, snopt_data['feasibility'], marker='o', linestyle='-.', color='b', label='snopt_feasibility')
-
-# # --------------------------------------------------------------------
-
-# plt.legend([line1, line2, line3, line4, line5, line6], ['Eye_optimality', 'Eye_feasibility', 'SVD_optimality', 'SVD_feasibility',  'SNOPT_optimality', 'SNOPT_feasibility'], prop={'size':10})
-# plt.xlabel('cpu time seconds', fontsize=12)
-# plt.tick_params(labelsize=12)
-# plt.title(case)
-
-
-# plt.show()     
+if pic_color == 1:
+    fig_name = folder + case + '_color.eps' 
+    fig.savefig(fig_name, format='eps', dpi=1200)
+else:
+    fig_name = folder + case + '_nocolor.eps' 
+    fig.savefig(fig_name, format='eps', dpi=1200)    
