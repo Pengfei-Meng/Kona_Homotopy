@@ -171,11 +171,11 @@ class SVDPC_CMU(BaseHessian):
         beta_I = self.beta*np.ones(self.num_design) 
         self.W_mu = (1-self.mu)*beta_I + self.mu*np.ones(self.num_design)
 
-        if self.fstopo is True:                           
-            self.LHS = np.diag(self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
-                self.sig_aug[self.num_design : 2*self.num_design ]) ) +  self.svd_ASA    
-        else:
-            self.LHS = np.diag(self.W_mu) + self.svd_ASA   
+        # if self.fstopo is True:                           
+        #     self.LHS = np.diag(self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
+        #         self.sig_aug[self.num_design : 2*self.num_design ]) ) +  self.svd_ASA    
+        # else:
+        #     self.LHS = np.diag(self.W_mu) + self.svd_ASA   
 
 
     def sherman_morrison(self, rhs_vx):
