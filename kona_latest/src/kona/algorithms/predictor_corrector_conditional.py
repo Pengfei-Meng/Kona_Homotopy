@@ -342,7 +342,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         if self.fstopo is True:
             EPS = 1e-6
         else:
-            EPS = np.finfo(np.float64).eps
+            EPS = 1e-9
         # initialize the problem at the starting point
         x0.equals_init_guess()
         # x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
