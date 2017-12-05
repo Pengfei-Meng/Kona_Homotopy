@@ -79,7 +79,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
                 'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
                 'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
-                # 'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+                'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
                 'fstopo'          : get_opt(self.optns, False, 'svd', 'fstopo'),
             }
             self.svd_pc_cmu = SVDPC_CMU(
@@ -342,11 +342,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         if self.fstopo is True:
             EPS = 1e-6
         else:
-            EPS = 1e-9
+            EPS = np.finfo(np.float64).eps
         # initialize the problem at the starting point
         x0.equals_init_guess()
-        # x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-        # x0.dual.base.data[x.dual.base.data > 0.0] = 0.0
+        x0.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+        x0.dual.base.data[x.dual.base.data > 0.0] = 0.0
         x.equals(x0)
         
         if not state.equals_primal_solution(x.primal):
@@ -498,8 +498,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.design.enforce_bounds()
             else:
                 x.primal.enforce_bounds()
-            # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-            # x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+            x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
 
             if not state.equals_primal_solution(x.primal):
