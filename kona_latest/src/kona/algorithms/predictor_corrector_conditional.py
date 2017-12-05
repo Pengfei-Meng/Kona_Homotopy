@@ -498,8 +498,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 x.primal.design.enforce_bounds()
             else:
                 x.primal.enforce_bounds()
-            x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+            # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+            # x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
 
             if not state.equals_primal_solution(x.primal):
