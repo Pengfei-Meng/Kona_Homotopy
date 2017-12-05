@@ -62,19 +62,12 @@ class InequalityTestCase(unittest.TestCase):
                 'dmu_max' : -0.0005,        # -0.0005
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
-                'use_frac_to_bound' : False,
+                'use_frac_to_bound' : True,
                 'mu_pc_on' : 1.0,      
             }, 
 
-            'svd' : {
-                'lanczos_size'    : 5, 
-                'bfgs_max_stored' : 10, 
-                'beta'         : 1.0, 
-                'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
-            }, 
-
             'rsnk' : {
-                'precond'       : None, #'svd_pc',                  
+                'precond'       : None,                   
                 # rsnk algorithm settings
                 'dynamic_tol'   : False,
                 'nu'            : 0.95,

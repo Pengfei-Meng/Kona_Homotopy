@@ -18,8 +18,8 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         num_design = 500
-
-        self.outdir = './output/' + str(num_design) + '/eye2'
+        self.outdir = './temp'  
+        # self.outdir = './temp/' + str(num_design) + '/eye2'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -74,22 +74,22 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
                 'init_step' : self.init_s,
-                'nominal_dist' : 1.0,
+                'nominal_dist' : 10.0,
                 'nominal_angle' : 20.0*np.pi/180.,
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
                 'dmu_min' : -0.9,      
                 'mu_correction' : 1.0,  
-                'use_frac_to_bound' : False,
+                'use_frac_to_bound' : True,
                 'mu_pc_on' : 1.0,      
             }, 
 
             'svd' : {
-                'lanczos_size'    : 5, 
+                'lanczos_size'    : 8, 
                 'bfgs_max_stored' : 10, 
                 'beta'         : 1.0, 
-                'cmin'         : 1e-3,     # negative value, cut-off ineffective; 
+                # 'cmin'         : 1e-3,     # negative value, cut-off ineffective; 
             }, 
 
             'rsnk' : {

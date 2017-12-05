@@ -223,7 +223,7 @@ class ReducedKKTVector(CompositeVector):
 
     # init_dual = 0.0    #-0.1
     init_eq = 0.0
-    init_ineq = 0.0 #-0.1
+    init_ineq = -0.0
 
     def __init__(self, primal_vec, dual_vec):
         if isinstance(primal_vec, DesignVector):
@@ -255,7 +255,8 @@ class ReducedKKTVector(CompositeVector):
         if isinstance(self.dual, DualVectorEQ):
             self.dual.equals(self.init_eq)
         elif isinstance(self.dual, CompositeDualVector):
-            self.dual.equals_init_dual()
+            self.dual.eq.equals(self.init_eq)
+            self.dual.ineq.equals(self.init_ineq)
         elif isinstance(self.dual, DualVectorINEQ):     
             self.dual.equals(self.init_ineq)
 
@@ -377,8 +378,6 @@ class CompositeDualVector(CompositeVector):
     ineq : DualVectorINEQ
         Inequality Constraints
     """
-    init_eq = 0.0
-    init_ineq = -10.0
 
     def __init__(self, dual_eq, dual_ineq):
         if isinstance(dual_eq, DualVectorEQ):
@@ -394,10 +393,7 @@ class CompositeDualVector(CompositeVector):
                             'Unidentified inequality constraint vector.')
 
         super(CompositeDualVector, self).__init__([dual_eq, dual_ineq])
-
-    def equals_init_dual(self):
-        self.eq.equals(self.init_eq)
-        self.ineq.equals(self.init_ineq)        
+      
 
     def convert_to_design(self, primal_vector):
         if isinstance(primal_vector, CompositePrimalVector):

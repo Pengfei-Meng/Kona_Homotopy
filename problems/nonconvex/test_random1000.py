@@ -32,13 +32,13 @@ if not os.path.isdir(outdir):
 
 print args.task
 
-post_dir = './random_1000'
+post_dir = outdir #'./random_1000'
 
 lb = -2
 ub = 2
 
 num_design = 100
-num_case = 10
+num_case = 100
 
 
 if args.task == 'opt': 
@@ -53,29 +53,22 @@ if args.task == 'opt':
 
         'homotopy' : {
             'init_homotopy_parameter' : 1.0, 
-            'inner_tol' : 0.1,                         # Hessian : num_design 
-            'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
-            'init_step' : 0.05,                       # 0.5         0.05
-            'nominal_dist' : 10,                     # 20           40
-            'nominal_angle' : 10.0*np.pi/180.,          # 50           50
+            'inner_tol' : 0.1,                          
+            'inner_maxiter' : 2,                        
+            'init_step' : 0.05,                       
+            'nominal_dist' : 10,                     
+            'nominal_angle' : 10.0*np.pi/180.,        
             'max_factor' : 50.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
             'dmu_min' : -0.9,      
             'mu_correction' : 1.0,  
-            'use_frac_to_bound' : False,
+            'use_frac_to_bound' : True,
             'mu_pc_on' : 1.0,      
         }, 
 
-        'svd' : {
-            'lanczos_size'    : 5, 
-            'bfgs_max_stored' : 10, 
-            'beta'         : 1.0, 
-            'cmin'         : -1e-3,   # negative value, cut-off ineffective; 
-        }, 
-
         'rsnk' : {
-            'precond'       : None, #'svd_pc',                  
+            'precond'       : None,             
             # rsnk algorithm settings
             'dynamic_tol'   : False,
             'nu'            : 0.95,
