@@ -487,7 +487,7 @@ ub = x.duplicate()
 # pdb.set_trace()
 # Set the file prefix
 if thickness_flag:
-    prefix = 'output_kona'
+    prefix = 'TEMP'
 elif 'multi' in sys.argv:
     prefix = 'kona_multi'
 
@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stiny_pc4'%(os.path.sep)
+prefix += '%smedium_pc4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -570,11 +570,11 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
-        'mu_exact'        : 1e-3,          # 4) Tiny: 1e-3;  Small: 1e-3,  negative: ineffective
-        'beta'            : 0.1,           # 5) Tiny: 0.1;   Small: 0.1
+        'lanczos_size'    : 320,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'mu_exact'        : 1e-3,          # 4) Tiny, Small, Medium: 1e-3;    negative: ineffective
+        'beta'            : 0.1,           # 5) Tiny, Small, Medium: 0.1;   
         'sig_exact'       : 1e-3, 
-        'cmin'            : -1e-4,          # negative value -> cut-off ineffective; 
+        # 'cmin'            : -1.,         # negative value -> ineffective;  Tiny -1; 
         'fstopo'          : True, 
         'bfgs_max_stored' : 10, 
     }, 

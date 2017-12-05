@@ -79,7 +79,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
                 'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
                 'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
-                'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+                # 'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
                 'fstopo'          : get_opt(self.optns, False, 'svd', 'fstopo'),
             }
             self.svd_pc_cmu = SVDPC_CMU(

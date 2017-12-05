@@ -39,7 +39,7 @@ class SVDPC_CMU(BaseHessian):
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
         self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.beta = get_opt(optns, 1.0, 'beta')
-        self.cmin = get_opt(optns, -1e-3, 'cmin')
+        # self.cmin = get_opt(optns, -1e-3, 'cmin')
         self.fstopo = get_opt(optns, False, 'fstopo')
 
         print 'fstopo Problem ? ', self.fstopo
@@ -133,7 +133,8 @@ class SVDPC_CMU(BaseHessian):
         self.S_mu = (1.0-self.mu)*self.at_slack_data
         self.C_mu_orig = self.mu * self.Lam_mu - (1 - self.mu) * self.S_mu 
 
-        self.C_mu = np.minimum(-self.cmin*np.ones(self.num_ineq), self.C_mu_orig)
+        # self.C_mu = np.minimum(-self.cmin*np.ones(self.num_ineq), self.C_mu_orig)
+        self.C_mu = self.C_mu_orig
         self.sig_aug = 1/self.C_mu * self.Lam_mu
 
         # ---------- Linearize ----------
