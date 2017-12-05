@@ -18,7 +18,7 @@ class InequalityTestCase(unittest.TestCase):
     def setUp(self):
 
         num_design = 500
-        self.outdir = './temp3'  
+        self.outdir = './temp'  
         # self.outdir = './temp/' + str(num_design) + '/eye2'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
@@ -37,7 +37,7 @@ class InequalityTestCase(unittest.TestCase):
         if num_design==400:
             self.init_s = 100  
         if num_design==500:
-            self.init_s = 10  
+            self.init_s = 120  
 
     def kona_optimize(self, pc):
 
