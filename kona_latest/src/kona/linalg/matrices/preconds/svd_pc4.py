@@ -39,7 +39,7 @@ class SVDPC_CMU(BaseHessian):
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
         self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.beta = get_opt(optns, 1.0, 'beta')
-        # self.cmin = get_opt(optns, -1e-3, 'cmin')
+        self.cmin = get_opt(optns, -1e-3, 'cmin')
         self.fstopo = get_opt(optns, False, 'fstopo')
 
         print 'fstopo Problem ? ', self.fstopo
