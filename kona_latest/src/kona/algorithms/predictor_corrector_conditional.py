@@ -135,16 +135,20 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             ' cost' + ' '*5 +
             ' objective' + ' ' * 5 +
             'lagrangian' + ' ' * 5 +
-            '  opt norm' + ' '*5 +
-            ' feas norm' + ' '*5 +
+            '  opt 2norm' + ' '*5 +
+            'S*Lam 2norm' + ' '*5 +
+            ' feas 2norm' + ' '*5 +
             '  homotopy' + ' ' * 5 +
             '   hom opt' + ' '*5 +
             '  hom feas' + ' '*5 +
             'mu        ' + ' '*5 +
+            '  opt infty' + ' '*5 +
+            'S*Lam infty' + ' '*5 +
+            ' feas infty' + ' '*5 +
             '\n'
         )
 
-    def _write_outer(self, outer, cost, obj, lag, opt_norm, feas_norm, mu):
+    def _write_outer(self, outer, cost, obj, lag, opt_norm, slam_norm, feas_norm, mu, opt_inf, slam_inf, feas_inf):
         dummy0 = 0.0
         dummy_fmt = '%.4e'%dummy0
 
@@ -163,17 +167,21 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             obj_fmt + ' ' * 5 +
             lag_fmt + ' ' * 5 +
             '%.4e' % opt_norm + ' ' * 5 +
+            '%.4e' % slam_norm + ' ' * 5 +
             '%.4e' % feas_norm + ' ' * 5 +
             dummy_fmt + ' ' * 5 +
             dummy_fmt + ' ' * 5 +
             dummy_fmt + ' ' * 5 +
-            '%1.4f' % mu + ' ' * 5 +
+            '%1.4f' % mu + ' ' * 10 +  
+            '%.4e' % opt_inf + ' ' * 5 +
+            '%.4e' % slam_inf + ' ' * 5 +
+            '%.4e' % feas_inf + ' ' * 5 +            
             '\n'
         )
 
     def _write_inner(self, outer, inner,
-                     obj, lag, opt_norm, feas_norm,
-                     hom, hom_opt, hom_feas):          
+                     obj, lag, opt_norm, slam_norm, feas_norm,
+                     hom, hom_opt, hom_feas, opt_inf, slam_inf, feas_inf):          
         if obj < 0.:
             obj_fmt = '%.3e'%obj
         else:
@@ -193,11 +201,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             obj_fmt + ' ' * 5 +
             lag_fmt + ' ' * 5 +
             '%.4e' % opt_norm + ' ' * 5 +
+            '%.4e' % slam_norm + ' ' * 5 +
             '%.4e' % feas_norm + ' ' * 5 +
             hom_fmt + ' ' * 5 +
             '%.4e' % hom_opt + ' ' * 5 +
             '%.4e' % hom_feas + ' ' * 5 +
-            '%.6e' % self.mu + ' ' * 10 +         
+            '%.6e' % self.mu + ' ' * 10 +    
+            '%.4e' % opt_inf + ' ' * 5 +
+            '%.4e' % slam_inf + ' ' * 5 +
+            '%.4e' % feas_inf + ' ' * 5 +                 
             '\n'
         )
 
@@ -385,8 +397,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.info_file.write('\n' + solver_info + '\n')
 
         # compute convergence metrics
-        opt_norm0 = dJdX.primal.norm2
+        opt_norm0 = dJdX.primal.design.norm2
+        slam_norm0 = dJdX.primal.slack.norm2
         feas_norm0 = dJdX.dual.norm2
+
+        opt_inf0 = dJdX.primal.design.infty
+        slam_inf0 = dJdX.primal.slack.infty
+        feas_inf0 = dJdX.dual.infty        
 
         opt_tol = self.primal_tol*opt_norm0
         feas_tol = max(self.cnstr_tol*feas_norm0, 1e-6)
@@ -397,7 +414,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         lag0 = obj_fac * obj0 + cnstr_fac * x0.dual.inner(dJdX.dual)
         cost0 = self.primal_factory._memory.cost
         mu0 = self.mu
-        self._write_outer(0, cost0, obj0, lag0, opt_norm0, feas_norm0, mu0)
+        self._write_outer(0, cost0, obj0, lag0, opt_norm0, slam_norm0, feas_norm0, mu0, opt_inf0, slam_inf0, feas_inf0)
         self.hist_file.write('\n')
         # ---------------------------------------------------------------- 
 
@@ -614,13 +631,17 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
 
                     hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
-                    opt_norm = dJdX.primal.norm2
+                    opt_norm = dJdX.primal.design.norm2
+                    slam_norm = dJdX.primal.slack.norm2
                     feas_norm = dJdX.dual.norm2 
+                    opt_inf = dJdX.primal.design.infty
+                    slam_inf = dJdX.primal.slack.infty
+                    feas_inf = dJdX.dual.infty                     
 
                     self._write_inner(
                         outer_iters, inner_iters,
-                        obj, lag, opt_norm, feas_norm,
-                        hom, hom_opt_norm, hom_feas_norm)
+                        obj, lag, opt_norm, slam_norm, feas_norm,
+                        hom, hom_opt_norm, hom_feas_norm, opt_inf, slam_inf, feas_inf)
 
                     # check convergence
                     if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
@@ -799,13 +820,18 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 obj = objective_value(x.primal, state)
                 lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
                 hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
-                opt_norm = dJdX.primal.norm2
-                feas_norm = dJdX.dual.norm2  
+
+                opt_norm = dJdX.primal.design.norm2
+                slam_norm = dJdX.primal.slack.norm2
+                feas_norm = dJdX.dual.norm2 
+                opt_inf = dJdX.primal.design.infty
+                slam_inf = dJdX.primal.slack.infty
+                feas_inf = dJdX.dual.infty   
 
                 self._write_inner(
                     outer_iters, 0,
-                    obj, lag, opt_norm, feas_norm,
-                    hom, hom_opt_norm, hom_feas_norm)
+                    obj, lag, opt_norm, slam_norm, feas_norm,
+                    hom, hom_opt_norm, hom_feas_norm, opt_inf, slam_inf, feas_inf)
                 # --------------------------------------------------
 
             # compute the new tangent vector and predictor step
