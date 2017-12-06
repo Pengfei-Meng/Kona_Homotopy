@@ -257,25 +257,30 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 max_slack_step = max_mu_step
 
-            # --------- if a certain element of slack_steps (0, 1e-6) 
-            # --------- meaning this slack is hitting 0, active constraints. 
             ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
+           
 
+            # # --------- if a certain element of slack_steps (0, 1e-6) 
+            # # --------- meaning this slack is hitting 0, active constraints. 
 
-            ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
+            # ineq_steps = -0.995*x.dual.base.data/t.dual.base.data
 
-            if any(ineq_steps > thresh_0):
-                max_ineq_step = min(ineq_steps[ineq_steps > thresh_0])
-            else:
-                max_ineq_step = max_mu_step
+            # if any(ineq_steps > thresh_0):
+            #     max_ineq_step = min(ineq_steps[ineq_steps > thresh_0])
+            # else:
+            #     max_ineq_step = max_mu_step
 
-            ind_inactive_1 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
-            ind_inactive_2 = np.where( (x.dual.base.data == 0.0) & (t.dual.base.data > 0) ) 
-            ind_inactive_lam0 = np.append(ind_inactive_1, ind_inactive_2)
+            # ind_inactive_1 = np.where( (ineq_steps>0) & (ineq_steps<=thresh_0) )
+            # ind_inactive_2 = np.where( (x.dual.base.data == 0.0) & (t.dual.base.data > 0) ) 
+            # ind_inactive_lam0 = np.append(ind_inactive_1, ind_inactive_2)
  
             # --------- if a certain element of ineq_steps (0, 1e-6) 
             # --------- meaning this lam is hitting 0, inactive constraints. 
+            # return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
+            max_ineq_step = 1000
+            ind_inactive_lam0 = np.empty(shape=(0,0))
             return min(max_mu_step, max_slack_step, max_ineq_step), ind_active_s0, ind_inactive_lam0
+
             
     def solve(self):
         self.info_file.write(
@@ -479,7 +484,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     # print '\n Predictor outer %d '%outer_iters
                     self.step, ind_active_s0, ind_inactive_lam0 = self.find_step(max_mu_step, x, t)
                     t.primal.slack.base.data[ind_active_s0] = 0.0
-                    t.dual.base.data[ind_inactive_lam0] = 0.0 
+                    # t.dual.base.data[ind_inactive_lam0] = 0.0 
 
                 else:
                     self.step = max_mu_step
@@ -497,7 +502,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 x.primal.enforce_bounds()
             # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-            # x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
 
 
             if not state.equals_primal_solution(x.primal):
