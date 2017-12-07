@@ -19,7 +19,7 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.outdir = './temp/nonconvex'
+        self.outdir = './temp'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 

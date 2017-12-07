@@ -38,7 +38,7 @@ lb = -2
 ub = 2
 
 num_design = 100
-num_case = 100
+num_case = 1000
 
 
 if args.task == 'opt': 

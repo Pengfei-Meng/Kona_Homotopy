@@ -5,7 +5,7 @@ import pdb
 
 num_design = 100
 
-dir_kona = './random/'
+dir_kona = './random_1000/'
 
 fname = dir_kona + 'kona_hist.dat'
 
@@ -29,7 +29,7 @@ kona_timings = np.loadtxt(tname, dtype=dtype_cols2, skiprows = 2, usecols = (0,2
 
 kona_time_eye = kona_timings['time'] #[:-1]
 
-pdb.set_trace()
+
 # -------------------- plotting ---------------------
 # plot the data
 # ms = markersize
