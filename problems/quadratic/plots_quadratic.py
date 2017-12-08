@@ -5,8 +5,8 @@ import pdb
 
 
 # just change these two options
-num_design = 500
-pic_color = True
+num_design = 200
+pic_color = False
 
 
 #-------------- Identity PCD ------------
@@ -104,32 +104,32 @@ ax = fig.add_subplot(111)
 
 if pic_color is True:
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf']/kona_data_svd['complem_inf'][1], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
-    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf']/kona_data_svd['feas_inf'][0], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
     line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
-    line8, = ax.semilogy(snopt_time, snopt_data['feasibility']/snopt_data['feasibility'][0], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
+    line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 else: 
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)     
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)     
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf']/kona_data_svd['complem_inf'][1], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf']/kona_data_svd['feas_inf'][0], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
     line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
-    line8, = ax.semilogy(snopt_time, snopt_data['feasibility']/snopt_data['feasibility'][0], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
+    line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 
 ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
 ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
-ax.set_ylabel('Relative Opt / Com / Feas', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Rel Opt / Abs Comp, Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)

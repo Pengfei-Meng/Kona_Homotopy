@@ -26,8 +26,12 @@ pcd = 'pc4'                             # results from  svd_pc_cmu, or svd_pc4.p
 dir_kona = folder + case + '_' + pcd + '/'
 
 fname = dir_kona + 'kona_hist.dat'
-dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('cost', 'i4'), ('objective', 'float64'), ('optimality', 'float'), ('feasibility', 'float64')])
-kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 3, usecols = (0,1,2,3,5,6))
+
+dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('objective', 'float64'), 
+        ('optim_2', 'float'), ('complem_2', 'float64'), ('feas_2', 'float64'), ('mu', 'float64'),
+        ('optim_inf', 'float'), ('complem_inf', 'float64'), ('feas_inf', 'float64')  ])
+kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 2, usecols = (0,1,3,5,6,7,11, 12,13,14))
+
 
 tname = dir_kona + 'kona_timings.dat'
 dtype_cols2 = np.dtype([('outer_iter', 'i4'), ('time', 'float64')])
@@ -39,15 +43,15 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-kona_time_svd = kona_timings['time'][:-1] / dt_onesolve
-kona_data_svd = kona_datas[new_indices]
+kona_time_svd = kona_timings['time'] / dt_onesolve
+kona_data_svd = kona_datas[new_indices.astype(int)]
 
 # --------------- Add the Identity PC for comparison ----------------
-pcd = 'eye_long'
+pcd = 'eye'
 dir_kona = folder + case + '_' + pcd + '/'
 
 fname2 = dir_kona + 'kona_hist.dat'
-kona_datas2 = np.loadtxt(fname2, dtype=dtype_cols, skiprows = 2, usecols = (0,1,2, 3,5,6))
+kona_datas2 = np.loadtxt(fname2, dtype=dtype_cols, skiprows = 2, usecols = (0,1,3,5,6,7,11, 12,13,14))
 
 tname2 = dir_kona + 'kona_timings.dat'
 kona_timings2 = np.loadtxt(tname2, dtype=dtype_cols2, skiprows = 2, usecols = (0,2))
@@ -60,8 +64,8 @@ new_indices2 = np.hstack([indices2, np.array(last_inners2)])
 
 kona_data_eye = kona_datas2[new_indices2.astype(int)]
 
-kona_time_eye = kona_timings2['time'] / dt_onesolve
-kona_data_eye = np.delete(kona_data_eye, -2, 0)
+kona_time_eye = kona_timings2['time'][:-1]  / dt_onesolve
+# kona_data_eye = np.delete(kona_data_eye, -2, 0)
 
 # ------------- SNOPT data -----------------
 # --------------------------------------------------------------------
@@ -99,31 +103,35 @@ fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
 
 if pic_color == 1:
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['feasibility'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line3, = ax.semilogy(kona_time_svd, kona_data_svd['optimality']/kona_data_svd['optimality'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line4, = ax.semilogy(kona_time_svd, kona_data_svd['feasibility'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line5, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
-    line6, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
+    line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
+    line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 else:
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['feasibility'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line3, = ax.semilogy(kona_time_svd, kona_data_svd['optimality']/kona_data_svd['optimality'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line4, = ax.semilogy(kona_time_svd, kona_data_svd['feasibility'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line5, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
-    line6, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
+    line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
+    line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 
 
 ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
 ax.set_xlabel('Cost (equivalent DE solutions)', fontsize=axis_fs, weight='bold')
 
-ax.set_ylabel('Relative optimality/Feasibility', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Rel Opt / Abs Comp, Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)
@@ -163,7 +171,8 @@ leg_size = 2
 
 
 
-leg = ax.legend([line1, line2, line3, line4, line5, line6], ['noPC_opt', 'noPC_feas', 'PC_opt', 'PC_feas',  'SNOPT_opt', 'SNOPT_feas'], \
+leg = ax.legend([line1, line2, line3, line4, line5, line6, line7, line8], \
+    ['noPC_opt','noPC_comp', 'noPC_feas', 'PC_opt', 'PC_comp', 'PC_feas',  'SNOPT_opt', 'SNOPT_feas'], \
                 loc=(0.01, 0.01), numpoints=1, prop={'size':leg_size},  borderpad=0.75, handlelength=4)
 rect = leg.get_frame()
 rect.set_linewidth(axis_lw)

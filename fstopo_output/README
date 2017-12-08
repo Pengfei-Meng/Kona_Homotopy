@@ -1,3 +1,9 @@
+
+Dec 7th, 2017
+
+    
+
+
 Results from the updated PC, svd_pc4_cmu in November, 2017. 
 
 what's new: 
@@ -11,3 +17,4 @@ what's new:
         a) A switch self.fstopo = True or False, controls whether W = beta*I or W = BFGS approximation
         b) FSTOPO problem use W = beta*I, not W = BFGS, mainly because it is not possible (I think)
             to separate the bound constraint Jacobin with Stress Jacobian using W = BFGS PC formulation
+

@@ -6,7 +6,7 @@ import pdb
 num_design = 100
 
 dir_kona = './random_1000/'
-xax_mu = True
+xax_mu = False
 
 
 fname = dir_kona + 'kona_hist.dat'
@@ -50,12 +50,12 @@ ax = fig.add_subplot(111)
 
 if xax_mu is True:
     line1, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line3, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 else: 
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
 
 ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
@@ -66,7 +66,7 @@ if xax_mu is True:
 else:
     ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
 
-ax.set_ylabel('Relative Opt / Com / Feas', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Rel Opt / Abs Comp, Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)
@@ -124,8 +124,11 @@ for t in leg.get_texts():
 
 plt.show()     
 
-# fig = plt.gcf()
-# # fig.set_size_inches(8.2, 9.2)
-# fig_name = './figures2/' + str(num_design) + '.eps'
-# fig.savefig(fig_name, format='eps', dpi=1200)
+
+if xax_mu is True:
+    fig_name = dir_kona  + 'nonconvex_mu.eps' 
+    fig.savefig(fig_name, format='eps', dpi=1200)
+else:
+    fig_name = dir_kona  + 'nonconvex_cpu.eps' 
+    fig.savefig(fig_name, format='eps', dpi=1200)    
 
