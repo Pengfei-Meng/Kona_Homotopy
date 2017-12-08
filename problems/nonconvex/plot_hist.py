@@ -6,11 +6,16 @@ import pdb
 num_design = 100
 
 dir_kona = './random_1000/'
+xax_mu = True
+
 
 fname = dir_kona + 'kona_hist.dat'
 
-dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('objective', 'float64'), ('optimality', 'float'), ('feasibility', 'float64'), ('mu', 'float64')])
-kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 2, usecols = (0,1,3,5,6,10))
+
+dtype_cols = np.dtype([('outer_iter', 'i4'),('inner_iter', 'i4'), ('objective', 'float64'), 
+        ('optim_2', 'float'), ('complem_2', 'float64'), ('feas_2', 'float64'), ('mu', 'float64'),
+        ('optim_inf', 'float'), ('complem_inf', 'float64'), ('feas_inf', 'float64')  ])
+kona_datas = np.loadtxt(fname, dtype=dtype_cols, skiprows = 2, usecols = (0,1,3,5,6,7,11, 12,13,14))
 
 # when inner_iter > 1 before mu = 0, display only one inner_iter, to make plots clean
 iter_unique, indices = np.unique(kona_datas['outer_iter'], return_index=True)
@@ -18,7 +23,7 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-kona_data_eye = kona_datas[new_indices]
+kona_data_eye = kona_datas[new_indices.astype(int)]
 
 
 # ---------------  kona_timing  -----------------
@@ -43,24 +48,25 @@ label_fs = 11 # axis labels' font size
 fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
 
-# line1, = ax.semilogy(kona_data_eye['outer_iter'], kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-# line2, = ax.semilogy(kona_data_eye['outer_iter'], kona_data_eye['feasibility']/kona_data_eye['feasibility'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
-
-# line1, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-# line2, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['feasibility']/kona_data_eye['feasibility'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
-
-
-line1, = ax.semilogy(kona_time_eye, kona_data_eye['optimality']/kona_data_eye['optimality'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-line2, = ax.semilogy(kona_time_eye, kona_data_eye['feasibility']/kona_data_eye['feasibility'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+if xax_mu is True:
+    line1, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+else: 
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf']/kona_data_eye['complem_inf'][1], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf']/kona_data_eye['feas_inf'][0], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
 
 ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
-# ax.set_xlabel('Homotopy Iteration  $\mu$', fontsize=axis_fs, weight='bold')
-# ax.invert_xaxis()
 
-ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
+if xax_mu is True:
+    ax.set_xlabel('Homotopy Iteration  $\mu$', fontsize=axis_fs, weight='bold')
+    ax.invert_xaxis()
+else:
+    ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
 
-ax.set_ylabel('Relative Optimality/Feasibility', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Relative Opt / Com / Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)
@@ -97,7 +103,7 @@ ax.yaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
 ax.xaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
 
 
-leg = ax.legend([line1, line2], ['Opt', 'Feas'], \
+leg = ax.legend([line1, line2, line3], ['Opt', 'Comp', 'Feas'], \
                 loc=(0.05, 0.05), numpoints=1, prop={'size':6},  borderpad=0.75, handlelength=4)
 rect = leg.get_frame()
 rect.set_linewidth(axis_lw)

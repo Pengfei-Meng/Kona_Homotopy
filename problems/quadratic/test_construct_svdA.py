@@ -17,9 +17,9 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        num_design = 500
-        self.outdir = './temp'  
-        # self.outdir = './temp/' + str(num_design) + '/eye2'
+        num_design = 200
+        # self.outdir = './temp'  
+        self.outdir = './output/' + str(num_design) + '/'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -31,13 +31,13 @@ class InequalityTestCase(unittest.TestCase):
         if num_design==100:
             self.init_s = 40
         if num_design==200:
-            self.init_s = 60
+            self.init_s = 100   # 60
         if num_design==300:
             self.init_s = 80  
         if num_design==400:
             self.init_s = 100  
         if num_design==500:
-            self.init_s = 120  
+            self.init_s = 200  
 
     def kona_optimize(self, pc):
 
@@ -74,8 +74,8 @@ class InequalityTestCase(unittest.TestCase):
                 'inner_tol' : 0.1,
                 'inner_maxiter' : 2,
                 'init_step' : self.init_s,
-                'nominal_dist' : 10.0,
-                'nominal_angle' : 20.0*np.pi/180.,
+                'nominal_dist' : 1.0,
+                'nominal_angle' : 10.0*np.pi/180.,
                 'max_factor' : 30.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,       
@@ -89,7 +89,6 @@ class InequalityTestCase(unittest.TestCase):
                 'lanczos_size'    : 5, 
                 'bfgs_max_stored' : 10, 
                 'beta'         : 1.0, 
-                # 'cmin'         : -1,     # negative value, cut-off ineffective; 
             }, 
 
             'rsnk' : {
@@ -222,7 +221,7 @@ class InequalityTestCase(unittest.TestCase):
 
         # ------ Kona Opt --------
         self.kona_optimize(None)
-
+        # pdb.set_trace()
 
         self.kona_optimize('svd_pc_cmu')
 

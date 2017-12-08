@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%stiny_pc4'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -546,7 +546,7 @@ solver = kona_opt.FSTopoSolver(
 
 # Optimizer
 optns = {
-    'max_iter' : 300,
+    'max_iter' : 100,
     'opt_tol' : 1e-4,
     'feas_tol' : 1e-4,        
     'info_file' : prefix+'/kona_info.dat',

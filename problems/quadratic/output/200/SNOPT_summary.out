@@ -24,40 +24,44 @@
  
 
         Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
-          100  1.3E+00                  6.5E-01  5.4128022E+01    31
-          200  6.5E-01                  4.0E-12  2.0464691E+01    93
+          100                           9.7E-01  4.8986693E+01    19
+          200  7.8E-01                  5.9E-12  1.9101544E+01    59
 
  Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
-     0    206               1  2.0E-02  1.5E-02  5.0541377E+01    99           r  T
-     1     93  9.5E-02      2  1.8E-02  1.6E-02  4.6787584E+01   187 5.7E+01 n rl
-     2     22  7.2E-02      3  1.8E-02  4.4E-02  3.7933877E+01   198 3.3E+01 s  l
-     3      5  1.8E-01      4  6.7E-03  3.2E-02 -7.2634804E+01   194 3.3E+01    l
-     4      5  3.1E-01      5  1.6E-03  2.4E-01 -1.9327015E+02   197 3.3E+01    l
-     5      4  2.9E-01      7  7.0E-04  1.9E-01 -2.5211960E+02   196 3.3E+01
-     6      5  2.4E-01      9  4.3E-04  5.0E-02 -2.7976417E+02   196 3.3E+01
-     7      1  1.0E+00     10 (6.1E-18) 3.1E-02 -2.8113716E+02   196 3.3E+01
-     8      1  1.0E+00     11 (6.1E-18) 1.6E-02 -2.8264924E+02   196 3.3E+01
-     9      1  1.0E+00     12 (6.2E-18) 8.7E-03 -2.8286183E+02   196 3.3E+01
+     0    277               1  1.7E-02  2.9E-02  5.1017224E+01    99           r  T
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100  1.2E-01                  5.0E-14 -1.4027049E+01   180
 
  Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
-    10      1  1.0E+00     13 (6.0E-18) 2.5E-03 -2.8301835E+02   196 3.3E+01
-    11      1  1.0E+00     14 (5.3E-18) 7.1E-04 -2.8302960E+02   196 3.3E+01
-    12      1  1.0E+00     15 (5.8E-18) 3.9E-05 -2.8303042E+02   196 3.3E+01   R
-    13      1  1.0E+00     16 (5.8E-18) 1.3E-05 -2.8303042E+02   196 3.3E+01 s
-    14      1  1.0E+00     17 (5.8E-18)(1.6E-06)-2.8303042E+02   196 3.3E+01
+     1    111  1.0E-01      2  1.5E-02  2.1E-02  4.1527627E+01   191         n rl
+     2     23  7.8E-02      3  1.4E-02  9.3E-02  3.2882704E+01   199         s  l
+     3      4  1.2E-01      4  4.4E-03  1.0E-01 -6.0423708E+01   197            l
+     4      7  2.4E-01      5  1.2E-03  6.9E-02 -2.0401798E+02   195            l
+     5      6  5.1E-01      7  3.0E-04  1.3E-01 -2.5824328E+02   196
+     6      5  1.0E+00      8 (4.9E-18) 1.2E-01 -2.6470498E+02   194
+     7      1  1.0E+00      9 (4.2E-18) 2.4E-02 -2.7937773E+02   194
+     8      1  4.7E-01     11 (4.9E-18) 3.2E-03 -2.7978089E+02   194
+     9      1  1.0E+00     12 (5.6E-18) 2.4E-03 -2.7979234E+02   194
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  1.0E+00     13 (6.7E-18) 3.4E-04 -2.7979828E+02   194
+    11      1  1.0E+00     14 (6.2E-18) 7.2E-05 -2.7979843E+02   194
+    12      1  1.0E+00     15 (4.4E-18) 1.4E-05 -2.7979844E+02   194           R
+    13      1  1.0E+00     16 (5.8E-18)(7.0E-07)-2.7979844E+02   194         s
  
  SNOPTC EXIT   0 -- finished successfully
  SNOPTC INFO   1 -- optimality conditions satisfied
 
  Problem name                 SVD_Cons
- No. of iterations                 348   Objective value     -2.8303042288E+02
- No. of major iterations            14   Linear objective     0.0000000000E+00
- Penalty parameter           3.259E+01   Nonlinear objective -2.8303042288E+02
- No. of calls to funobj             18   No. of calls to funcon             18
- No. of superbasics                196   No. of basic nonlinears             4
+ No. of iterations                 440   Objective value     -2.7979843587E+02
+ No. of major iterations            13   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective -2.7979843587E+02
+ No. of calls to funobj             17   No. of calls to funcon             17
+ No. of superbasics                194   No. of basic nonlinears             6
  No. of degenerate steps             0   Percentage                       0.00
- Max x                      48 9.6E+00   Max pi                     17 2.6E+01
- Max Primal infeas           0 0.0E+00   Max Dual infeas             5 4.4E-05
+ Max x                     122 1.0E+01   Max pi                     63 2.0E+01
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             2 1.5E-05
  Nonlinear constraint violn    3.6E-16
  
  
@@ -65,7 +69,7 @@
  Solution printed on file  18
  
  Time for MPS input                             0.00 seconds
- Time for solving problem                       2.42 seconds
+ Time for solving problem                       3.60 seconds
  Time for solution output                       0.01 seconds
- Time for constraint functions                  2.02 seconds
+ Time for constraint functions                  3.10 seconds
  Time for objective function                    0.00 seconds

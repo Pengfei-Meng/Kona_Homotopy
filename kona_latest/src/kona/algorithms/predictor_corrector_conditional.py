@@ -539,11 +539,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 #####################################
                 max_newton = self.inner_maxiter
                 if self.mu < EPS:
-                    if self.svd_pc_cmu is not None:     
-                        max_newton = self.inner_maxiter*5
-                    else:
-                        max_newton = self.inner_maxiter*10   # to make noPC run longer
-
+                    # if self.svd_pc_cmu is not None:     
+                    #     max_newton = self.inner_maxiter*5
+                    # else:
+                    #     max_newton = self.inner_maxiter*10   # to make noPC run longer
+                    max_newton = self.inner_maxiter*3
                 inner_iters = 0
                 corrector_succeed = False
                 dx_newt.equals(0.0)

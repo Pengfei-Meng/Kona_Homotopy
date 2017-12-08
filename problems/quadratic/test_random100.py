@@ -17,6 +17,10 @@ import argparse
     100 randomly generated quadratic problems
     Remember to comment out all the np.random.seed(0) in Constructed_SVDA problem
     For each num_design = 100, 200, 300, 400, 500
+ 1) run the following command, --num_design 100 - 500    
+    python test_random100.py --output './random_100' --task 'opt' --num_case 100 --num_design 100
+ 2) python test_random100.py --output './random_100' --task 'post' --num_case 100
+
 """
 
 
@@ -25,11 +29,13 @@ parser.add_argument("--output", help='Output directory', type=str, default='./ra
 parser.add_argument("--task", help='what to do', choices=['opt','post'], default='post')
 parser.add_argument("--num_design", type=int, default=100)
 parser.add_argument("--num_case", type=int, default=10)
+parser.add_argument("--color", type=bool, default=True)
 args = parser.parse_args()
 
 num_design = args.num_design
 num_ineq = num_design
 num_case = args.num_case
+pic_color = args.color
 
 outdir = args.output    
 if not os.path.isdir(outdir):
@@ -72,7 +78,7 @@ if args.task == 'opt':
             'init_step' : init_s,                       # 0.5         0.05
             'nominal_dist' : 10,                     # 20           40
             'nominal_angle' : 20.0*np.pi/180.,          # 50           50
-            'max_factor' : 30.0,                  
+            'max_factor' : 50.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
             'dmu_min' : -0.9,      
@@ -85,7 +91,6 @@ if args.task == 'opt':
             'lanczos_size'    : 2, 
             'bfgs_max_stored' : 10, 
             'beta'         : 1.0, 
-            'cmin'         : 1e-3,   # negative value, cut-off ineffective; 
         }, 
 
         'rsnk' : {
@@ -275,13 +280,20 @@ if args.task=='post':
     # mec = markeredgecolor
     # ms = markersize
     # mew = markeredgewidth
-    kona_plt = ax.errorbar(num_designs, kona_mean_all, kona_std_all, fmt='k-o', elinewidth=1.5, 
-        linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k')
 
-    snopt_plt = ax.errorbar(num_designs, snopt_mean_all, snopt_std_all, fmt='k-s', elinewidth=1.5,  
-        linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k')
-    # elinewidth    
+    if pic_color is True:
+        kona_plt = ax.errorbar(num_designs, kona_mean_all, kona_std_all, fmt='r-o', elinewidth=1.5, 
+            linewidth=1.5, mfc='r', ms=4.0, mew=1.5, mec='r', capsize=5)
 
+        snopt_plt = ax.errorbar(num_designs, snopt_mean_all, snopt_std_all, fmt='b-s', elinewidth=1.5,  
+            linewidth=1.5, mfc='b', ms=4.0, mew=1.5, mec='b', capsize=5)
+        # elinewidth  
+    else:
+        kona_plt = ax.errorbar(num_designs, kona_mean_all, kona_std_all, fmt='k-o', elinewidth=1.5, 
+            linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k', capsize=5)
+
+        snopt_plt = ax.errorbar(num_designs, snopt_mean_all, snopt_std_all, fmt='k-s', elinewidth=1.5,  
+            linewidth=1.5, mfc=(0.35,0.35,0.35), ms=4.0, mew=1.5, mec='k', capsize=5)
 
     # Tweak the appeareance of the axes
     ax.axis([min(num_designs)-30, max(num_designs)+30, 0, max(snopt_mean_all+snopt_std_all)+1])  # axes ranges
