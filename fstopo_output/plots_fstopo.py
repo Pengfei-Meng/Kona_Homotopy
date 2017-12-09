@@ -64,7 +64,7 @@ new_indices2 = np.hstack([indices2, np.array(last_inners2)])
 
 kona_data_eye = kona_datas2[new_indices2.astype(int)]
 
-kona_time_eye = kona_timings2['time'][:-1]  / dt_onesolve
+kona_time_eye = kona_timings2['time']  / dt_onesolve
 # kona_data_eye = np.delete(kona_data_eye, -2, 0)
 
 # ------------- SNOPT data -----------------
@@ -103,9 +103,9 @@ fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
 
 if pic_color == 1:
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    # /kona_data_eye['feas_inf'][1]
+    line1, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
+    line3, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    # /kona_data_eye['feas_inf'][1]
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   # /kona_data_svd['complem_inf'][1]
@@ -115,9 +115,9 @@ if pic_color == 1:
     line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 else:
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_eye['feas_inf'][1]
+    line1, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line2, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
+    line3, = ax.semilogy(kona_time_eye[::47], kona_data_eye[::47]['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_eye['feas_inf'][1]
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_svd['complem_inf'][1]
