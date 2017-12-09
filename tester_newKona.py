@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%smedium_eye'%(os.path.sep)
+prefix += '%smedium_eye2'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -558,8 +558,8 @@ optns = {
         'inner_tol' : 0.1,
         'inner_maxiter' : 2,
         'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.05  Medium: 0.8        
-        'nominal_dist' : 1,
-        'nominal_angle' : 5*np.pi/180.,       
+        'nominal_dist' : 0.1,
+        'nominal_angle' : 1*np.pi/180.,       
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,

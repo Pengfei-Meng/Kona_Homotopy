@@ -104,24 +104,24 @@ ax = fig.add_subplot(111)
 
 if pic_color == 1:
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    # /kona_data_eye['feas_inf'][1]
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   # /kona_data_svd['complem_inf'][1]
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   # /kona_data_svd['feas_inf'][1]
 
     line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
     line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 else:
     line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  #/kona_data_eye['complem_inf'][1]
+    line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_eye['feas_inf'][1]
 
     line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
-    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
+    line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_svd['complem_inf'][1]
+    line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)   #/kona_data_svd['feas_inf'][1]
 
     line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
     line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
@@ -173,7 +173,7 @@ leg_size = 2
 
 leg = ax.legend([line1, line2, line3, line4, line5, line6, line7, line8], \
     ['noPC_opt','noPC_comp', 'noPC_feas', 'PC_opt', 'PC_comp', 'PC_feas',  'SNOPT_opt', 'SNOPT_feas'], \
-                loc=(0.01, 0.01), numpoints=1, prop={'size':leg_size},  borderpad=0.75, handlelength=4)
+                loc=(0.8, 0.01), numpoints=1, prop={'size':leg_size},  borderpad=0.75, handlelength=4)
 rect = leg.get_frame()
 rect.set_linewidth(axis_lw)
 for t in leg.get_texts():
