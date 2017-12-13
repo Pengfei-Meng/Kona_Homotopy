@@ -258,17 +258,30 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # --------- fraction to boundary rule ----------
 
             # active constraints:    s = 0 ,   lam < 0
-
             # # -- 2) new slack >= 0.0 
-            thresh_0 = 1e-6
 
-            slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
-            if any(slack_steps > thresh_0):
-                max_slack_step = min(slack_steps[slack_steps > thresh_0])
+            # thresh_0 = 1e-6
+
+            # slack_steps = -0.995*x.primal.slack.base.data/t.primal.slack.base.data
+            # if any(slack_steps > thresh_0):
+            #     max_slack_step = min(slack_steps[slack_steps > thresh_0])
+            # else:
+            #     max_slack_step = max_mu_step
+
+            # ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
+           
+            # return min(max_mu_step, max_slack_step), ind_active_s0
+
+            tau_s = 1e-6
+
+            slack_steps = (tau_s - x.primal.slack.base.data)/t.primal.slack.base.data
+
+            if any(slack_steps > 0):   # step limit should be used, as some t_s < 0
+                max_slack_step = min(slack_steps[slack_steps > 0])
             else:
                 max_slack_step = max_mu_step
 
-            ind_active_s0 = np.where( (slack_steps>0) & (slack_steps<=thresh_0) )
+            ind_active_s0 = np.where( x.primal.slack.base.data <= tau_s)
            
             return min(max_mu_step, max_slack_step), ind_active_s0
 
@@ -341,6 +354,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             EPS = 1e-9    # np.finfo(np.float64).eps
         # initialize the problem at the starting point
         x0.equals_init_guess()
+        x0.primal.slack.base.data[x0.primal.slack.base.data < 1e-6] = 1e-6
         x.equals(x0)
         
         if not state.equals_primal_solution(x.primal):
@@ -914,7 +928,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     factor_linear_system(x.primal, state)
             else:
                 # # this step is accepted so send it to user
-                x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+                x.primal.slack.base.data[x.primal.slack.base.data < 1e-6] = 1e-6
                 x.dual.base.data[x.dual.base.data > 0.0] = 0.0
                 solver_info = current_solution(
                     num_iter=outer_iters, curr_primal=x.primal,
