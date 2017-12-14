@@ -894,7 +894,11 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
             # compute angle between steps
             uTv = t.inner(t_save) + (dmu * dmu_save)
+            # print 'uTv : ', uTv
             angl = np.arccos(uTv)
+            if np.isnan(angl):
+                angl = 1e-8
+
             self.info_file.write(
                 'angle         = %f\n' % (angl * 180. / np.pi))
 

@@ -29,7 +29,7 @@ parser.add_argument("--output", help='Output directory', type=str, default='./ra
 parser.add_argument("--task", help='what to do', choices=['opt','post'], default='post')
 parser.add_argument("--num_design", type=int, default=100)
 parser.add_argument("--num_case", type=int, default=10)
-parser.add_argument("--color", type=bool, default=True)
+parser.add_argument("--color", type=int, default=1)
 args = parser.parse_args()
 
 num_design = args.num_design
@@ -55,13 +55,13 @@ if args.task == 'opt':
     if num_design==100:
         init_s = 40
     if num_design==200:
-        init_s = 60
+        init_s = 80
     if num_design==300:
-        init_s = 80  
-    if num_design==400:
-        init_s = 100  
-    if num_design==500:
         init_s = 120  
+    if num_design==400:
+        init_s = 160  
+    if num_design==500:
+        init_s = 200  
 
     # Optimizer
     optns = {
@@ -281,7 +281,7 @@ if args.task=='post':
     # ms = markersize
     # mew = markeredgewidth
 
-    if pic_color is True:
+    if pic_color == 1:
         kona_plt = ax.errorbar(num_designs, kona_mean_all, kona_std_all, fmt='r-o', elinewidth=1.5, 
             linewidth=1.5, mfc='r', ms=4.0, mew=1.5, mec='r', capsize=5)
 

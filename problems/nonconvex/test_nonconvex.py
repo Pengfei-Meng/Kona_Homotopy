@@ -54,9 +54,9 @@ class InequalityTestCase(unittest.TestCase):
                 'init_homotopy_parameter' : 1.0, 
                 'inner_tol' : 0.1,                         # Hessian : num_design 
                 'inner_maxiter' : 2,                       # -1.0 : 5     -1.0 : 100
-                'init_step' : 0.05,                       # 0.5         0.05
-                'nominal_dist' : 10,                     # 20           40
-                'nominal_angle' : 10.0*np.pi/180.,          # 50           50
+                'init_step' : 1,                       # 0.5         0.05
+                'nominal_dist' : 1,                     # 20           40
+                'nominal_angle' : 5.0*np.pi/180.,          # 50           50
                 'max_factor' : 50.0,                  
                 'min_factor' : 0.001,                   
                 'dmu_max' : -0.0005,        # -0.0005
@@ -81,7 +81,7 @@ class InequalityTestCase(unittest.TestCase):
                 'krylov_file'   : self.outdir+'/kona_krylov.dat',
                 'subspace_size' : 20,                                    
                 'check_res'     : False,
-                'rel_tol'       : 1e-4,        
+                'rel_tol'       : 1e-2,        
             },
 
             'verify' : {

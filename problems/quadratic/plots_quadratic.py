@@ -5,12 +5,12 @@ import pdb
 
 
 # just change these two options
-num_design = 200
+num_design = 500
 pic_color = False
 
 
 #-------------- Identity PCD ------------
-dir_hist = './output/' + str(num_design) + '/'
+dir_hist = './output2/' + str(num_design) + '/'
 
 if num_design == 500:
     dir_eye_hist = dir_hist    
@@ -34,7 +34,7 @@ last_indices = indices[-1]
 last_inners = range(last_indices+1, len(kona_datas['outer_iter']))
 new_indices = np.hstack([indices, np.array(last_inners)])
 
-kona_time_eye = kona_timings['time']   # [:-1]
+kona_time_eye = kona_timings['time'] # [:-1]
 kona_data_eye = kona_datas[new_indices.astype(int)]
 
 
@@ -103,33 +103,33 @@ ax = fig.add_subplot(111)
 
 
 if pic_color is True:
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf'], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf'], '-ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
     line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ro', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
+    line7, = ax.semilogy(snopt_time, snopt_data['optimality'], '-bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
     line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':bs', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 else: 
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf'], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)     
     line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf']/kona_data_svd['optim_inf'][0], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line4, = ax.semilogy(kona_time_svd, kona_data_svd['optim_inf'], '-ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line5, = ax.semilogy(kona_time_svd, kona_data_svd['complem_inf'], '--ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line6, = ax.semilogy(kona_time_svd, kona_data_svd['feas_inf'], ':ko', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
-    line7, = ax.semilogy(snopt_time, snopt_data['optimality']/snopt_data['optimality'][0], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
+    line7, = ax.semilogy(snopt_time, snopt_data['optimality'], '-ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)    
     line8, = ax.semilogy(snopt_time, snopt_data['feasibility'], ':ks', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)
 
 
 ax.set_position([0.15, 0.13, 0.80, 0.83])                                # position relative to figure edges
 ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
-ax.set_ylabel('Rel Opt / Abs Comp, Feas', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Abs Opt, Comp, Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)
@@ -169,7 +169,7 @@ ax.yaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
 
 leg = ax.legend([line1, line2, line3, line4, line5, line6, line7, line8], \
     ['noPC_opt', 'noPC_com', 'noPC_feas', 'PC_opt', 'PC_com', 'PC_feas',  'SNOPT_opt', 'SNOPT_feas'], \
-                loc=(0.7, 0.1), numpoints=1, prop={'size':6},  borderpad=0.75, handlelength=4)
+                loc=(0.3, 0.01), numpoints=1, prop={'size':6},  borderpad=0.75, handlelength=4)
 rect = leg.get_frame()
 rect.set_linewidth(axis_lw)
 for t in leg.get_texts():
@@ -180,9 +180,9 @@ plt.show()
 # fig = plt.gcf()
 # # fig.set_size_inches(8.2, 9.2)
 if pic_color is True:
-    fig_name = dir_hist  + str(num_design) + '_3color.eps' 
+    fig_name = dir_hist  + 'quadratic_' + str(num_design) + '_color.eps' 
     fig.savefig(fig_name, format='eps', dpi=1200)
 else:
-    fig_name = dir_hist  + str(num_design) + '_3nocolor.eps' 
+    fig_name = dir_hist  + 'quadratic_' + str(num_design) + '_nocolor.eps' 
     fig.savefig(fig_name, format='eps', dpi=1200)    
 

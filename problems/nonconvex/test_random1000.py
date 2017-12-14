@@ -16,6 +16,7 @@ import argparse
 """ 1000 randomly generated initial points for 
     1000 randomly generated nonconvex quadratic problems
     remember to comment out the np.random.seed(0) in NONCONVEX problem.
+
 """
 
 # np.random.seed(1) 
@@ -32,7 +33,7 @@ if not os.path.isdir(outdir):
 
 print args.task
 
-post_dir = outdir #'./random_1000'
+post_dir = outdir      #'./random_1000'
 
 lb = -2
 ub = 2
@@ -55,9 +56,9 @@ if args.task == 'opt':
             'init_homotopy_parameter' : 1.0, 
             'inner_tol' : 0.1,                          
             'inner_maxiter' : 2,                        
-            'init_step' : 0.05,                       
-            'nominal_dist' : 10,                     
-            'nominal_angle' : 10.0*np.pi/180.,        
+            'init_step' : 1.0,                       
+            'nominal_dist' : 1,                     
+            'nominal_angle' : 5.0*np.pi/180.,        
             'max_factor' : 50.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
@@ -82,7 +83,7 @@ if args.task == 'opt':
             'krylov_file'   : outdir+'/kona_krylov.dat',
             'subspace_size' : 20,                                    
             'check_res'     : False,
-            'rel_tol'       : 1e-4,        
+            'rel_tol'       : 1e-2,        
         },
 
         'verify' : {
@@ -128,7 +129,7 @@ if args.task == 'opt':
 
         diff = sum(abs(x_kona - x_true))
         wrong_sols[i] = diff
-
+        print 'wrong points %d'%diff
         # ------------- output ------------ #
         sep_str = '----------- Case %d ------------'%i
         D_str = 'solver.D: ' + str(solver.D)

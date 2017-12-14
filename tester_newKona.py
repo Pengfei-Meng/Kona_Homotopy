@@ -533,7 +533,7 @@ if not os.path.isdir(prefix):
     os.mkdir(prefix)
 
 # prefix += '%s%dx%d'%(os.path.sep, nx, ny)
-prefix += '%stemp'%(os.path.sep)
+prefix += '%smedium_eye'%(os.path.sep)
 
 if not os.path.isdir(prefix):
     os.mkdir(prefix)
@@ -546,7 +546,7 @@ solver = kona_opt.FSTopoSolver(
 
 # Optimizer
 optns = {
-    'max_iter' : 100,
+    'max_iter' : 2000,
     'opt_tol' : 1e-4,
     'feas_tol' : 1e-4,        
     'info_file' : prefix+'/kona_info.dat',
@@ -558,8 +558,8 @@ optns = {
         'inner_tol' : 0.1,
         'inner_maxiter' : 2,
         'init_step' : 0.05,                     # Tiny: 0.05,   Small: 0.05  Medium: 0.8        
-        'nominal_dist' : 1.0,
-        'nominal_angle' : 10.0*np.pi/180.,       
+        'nominal_dist' : 0.1,
+        'nominal_angle' : 1.0*np.pi/180.,       
         'max_factor' : 50.0,                  
         'min_factor' : 0.5,                   
         'dmu_max' : -0.0005,
@@ -569,7 +569,7 @@ optns = {
     },
 
     'svd' : {
-        'lanczos_size'    : 20,            # 3) Tiny: 20;  Small: 80!  Medium: 320
+        'lanczos_size'    : 320,            # 3) Tiny: 20;  Small: 80!  Medium: 320
         'mu_exact'        : 1e-3,          # 4) Tiny, Small, Medium: 1e-3;    negative: ineffective
         'beta'            : 0.1,           # 5) Tiny, Small, Medium: 0.1;   
         'sig_exact'       : 1e-3,    
@@ -590,7 +590,7 @@ optns = {
         'feas_scale'    : 1.0,
         # FLECS solver settings
         'krylov_file'   : prefix+'/kona_krylov.dat',
-        'subspace_size' : 20,                                    
+        'subspace_size' : 200,                                    
         'check_res'     : False,
         'rel_tol'       : 1e-4,        
     },
