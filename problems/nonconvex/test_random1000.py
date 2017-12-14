@@ -16,16 +16,19 @@ import argparse
 """ 1000 randomly generated initial points for 
     1000 randomly generated nonconvex quadratic problems
     remember to comment out the np.random.seed(0) in NONCONVEX problem.
-
+    python test_random1000.py --output 'temp' --task 'opt' --num_case 100
+    python test_random1000.py --output 'temp' --task 'post'
 """
 
 # np.random.seed(1) 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--output", help='Output directory', type=str, default='./random')
+parser.add_argument("--output", help='Output directory', type=str, default='./temp')
 parser.add_argument("--task", help='what to do', choices=['opt','post'], default='opt')
+parser.add_argument("--num_case", type=int, default=10)
 args = parser.parse_args()
 
+num_case = args.num_case
 
 outdir = args.output    
 if not os.path.isdir(outdir):
@@ -39,7 +42,6 @@ lb = -2
 ub = 2
 
 num_design = 100
-num_case = 1000
 
 
 if args.task == 'opt': 
@@ -56,9 +58,9 @@ if args.task == 'opt':
             'init_homotopy_parameter' : 1.0, 
             'inner_tol' : 0.1,                          
             'inner_maxiter' : 2,                        
-            'init_step' : 1.0,                       
-            'nominal_dist' : 1,                     
-            'nominal_angle' : 5.0*np.pi/180.,        
+            'init_step' : 0.01,                       
+            'nominal_dist' : 1.0,                     
+            'nominal_angle' : 5*np.pi/180.,        
             'max_factor' : 50.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
@@ -261,3 +263,6 @@ if args.task=='post':
         bbox=bbox_props)  
 
     plt.show()
+
+    fig_name = post_dir  + '/nonconvex_1000.eps' 
+    fig.savefig(fig_name, format='eps', dpi=1200)

@@ -49,11 +49,11 @@ fig = plt.figure(figsize=(7,4), facecolor=None)
 ax = fig.add_subplot(111)
 
 if xax_mu is True:
-    line1, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line1, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['optim_inf'], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line2, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line3, = ax.semilogy(kona_data_eye['mu'], kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 else: 
-    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf']/kona_data_eye['optim_inf'][0], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
+    line1, = ax.semilogy(kona_time_eye, kona_data_eye['optim_inf'], '-k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line2, = ax.semilogy(kona_time_eye, kona_data_eye['complem_inf'], '--k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0) 
     line3, = ax.semilogy(kona_time_eye, kona_data_eye['feas_inf'], ':k^', linewidth=1.0, ms=6.0, mfc='w', mew=1.0)  
 
@@ -66,7 +66,7 @@ if xax_mu is True:
 else:
     ax.set_xlabel('CPU time', fontsize=axis_fs, weight='bold')
 
-ax.set_ylabel('Rel Opt / Abs Comp, Feas', fontsize=axis_fs, weight='bold')
+ax.set_ylabel('Abs Opt, Comp, Feas', fontsize=axis_fs, weight='bold')
 ax.grid(which='major', axis='y', linestyle='--')
 ax.set_axisbelow(True) # grid lines are plotted below
 plt.tick_params(labelsize=axis_fs)
@@ -94,7 +94,7 @@ for label in ax.yaxis.get_ticklabels():
 # ----------- Set_Ticks -------------- # 
 
 
-ax.yaxis.set_ticks(np.logspace(-14, 2, num=9))
+ax.yaxis.set_ticks(np.logspace(-10, 2, num=7))
 ax.yaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
 
 # xtick_range = np.arange(max(kona_data_eye['mu']), min(kona_data_eye['mu'])-0.05, -0.2)
