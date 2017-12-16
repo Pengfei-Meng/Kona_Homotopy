@@ -18,6 +18,16 @@ import argparse
     remember to comment out the np.random.seed(0) in NONCONVEX problem.
     python test_random1000.py --output 'temp' --task 'opt' --num_case 100
     python test_random1000.py --output 'temp' --task 'post'
+ 
+                 bad    83%    82%    77%    bad     87%     81%     62%
+init_step:       0.01   0.01   0.01   0.01   0.01    0.01   0.01    0.01
+nominal dist:    0.1    0.1    0.1    0.1    0.01    0.5    1       1
+nominal angle:    1      5      10     20     5      5      5       10
+
+                  83%    76%    83%
+init_step:        0.05   0.1    0.1
+nominal dist:     0.5    1      0.5 
+nominal angle:    5      10     5
 """
 
 # np.random.seed(1) 
@@ -57,10 +67,10 @@ if args.task == 'opt':
         'homotopy' : {
             'init_homotopy_parameter' : 1.0, 
             'inner_tol' : 0.1,                          
-            'inner_maxiter' : 2,                        
-            'init_step' : 0.01,                       
-            'nominal_dist' : 1.0,                     
-            'nominal_angle' : 5*np.pi/180.,        
+            'inner_maxiter' : 2,                    
+            'init_step' : 0.01,                     
+            'nominal_dist' : 0.5,                    
+            'nominal_angle' : 5*np.pi/180.,          
             'max_factor' : 50.0,                  
             'min_factor' : 0.001,                   
             'dmu_max' : -0.0005,        # -0.0005
@@ -132,22 +142,39 @@ if args.task == 'opt':
         diff = sum(abs(x_kona - x_true))
         wrong_sols[i] = diff
         print 'wrong points %d'%diff
-        # ------------- output ------------ #
+
+        # ------------ Studying Wrong Solutions ------------
         sep_str = '----------- Case %d ------------'%i
-        D_str = 'solver.D: ' + str(solver.D)
-        init_xs = 'init x: ' + str(init_x)
-        # kona_sol = 'kona_solution: ' + str(kona_x)
-        x_kona = 'kona_solution: ' + str(x_kona)
-        true_sol = 'true solution: ' + str(x_true)
-        err_diff = 'number of wrong solutions: ' + str(diff)
+        diff_sol = abs(x_kona - x_true)
+        wrong_D = 'solver.D: ' +  str(solver.D[diff_sol > 0])
+        wrong_initx = 'init x: ' + str(init_x[diff_sol > 0])
+        wrong_kona = 'wrong kona: ' + str(x_kona[diff_sol > 0])
+        wrong_true = 'wrong true: ' +  str(x_true[diff_sol > 0])
 
         with open(outdir+'/kona_optns.txt', 'a') as file:
-            pprint.pprint(sep_str, file)
-            pprint.pprint(D_str, file)
-            pprint.pprint(init_xs, file)
-            pprint.pprint(x_kona, file)
-            pprint.pprint(true_sol, file)
-            pprint.pprint(err_diff, file)
+            if diff > 0: 
+                pprint.pprint(sep_str, file)
+                pprint.pprint(wrong_D, file)
+                pprint.pprint(wrong_initx, file)
+                pprint.pprint(wrong_kona, file)
+                pprint.pprint(wrong_true, file)
+
+        # # ------------- output ------------ #
+        # sep_str = '----------- Case %d ------------'%i
+        # D_str = 'solver.D: ' + str(solver.D)
+        # init_xs = 'init x: ' + str(init_x)
+        # # kona_sol = 'kona_solution: ' + str(kona_x)
+        # x_kona = 'kona_solution: ' + str(x_kona)
+        # true_sol = 'true solution: ' + str(x_true)
+        # err_diff = 'number of wrong solutions: ' + str(diff)
+
+        # with open(outdir+'/kona_optns.txt', 'a') as file:
+        #     pprint.pprint(sep_str, file)
+        #     pprint.pprint(D_str, file)
+        #     pprint.pprint(init_xs, file)
+        #     pprint.pprint(x_kona, file)
+        #     pprint.pprint(true_sol, file)
+        #     pprint.pprint(err_diff, file)
 
     #---- write init_norms, wrong_sols ---- # 
     file_ =  outdir + '/design'     
