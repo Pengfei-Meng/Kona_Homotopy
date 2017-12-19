@@ -1,0 +1,853 @@
+
+**************************************************
+***        Using Parameter Continuation        ***
+**************************************************
+
+# of design vars = 100
+# of slack vars  = 200
+# of ineq cnstr    = 200
+
+==================================================
+Outer Homotopy iteration 1
+
+opt_norm : opt_tol = 1.090758e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.863404e+01 : 5.863404e-06
+
+mu after pred  = 0.99950000000000
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.605180e+00 : 3.605180e-01
+   hom_feas_norm : hom_feas_tol = 2.547133e-03 : 2.547133e-04
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.605180e+00 : 3.605180e-01
+   hom_feas_norm : hom_feas_tol = 2.550482e-03 : 2.547133e-04
+
+dist to curve = 7.493252e-05
+angle         = 6.845442
+dfac before cut out  = 1.369088
+step          = 0.029824
+factor        = 1.369088
+step len      = 0.021784
+
+==================================================
+Outer Homotopy iteration 2
+
+opt_norm : opt_tol = 7.930360e+00 : 1.090758e-06
+feas_norm : feas_tol = 5.766928e+01 : 5.863404e-06
+
+mu after pred  = 0.99900000000000
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.605828e+00 : 3.605828e-01
+   hom_feas_norm : hom_feas_tol = 2.550580e-03 : 2.550580e-04
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.603431e+00 : 3.605828e-01
+   hom_feas_norm : hom_feas_tol = 5.100973e-03 : 2.550580e-04
+
+dist to curve = 4.304892e-03
+angle         = 0.286194
+dfac before cut out  = 0.092789
+step          = 0.029192
+factor        = 0.092789
+step len      = 0.314602
+
+==================================================
+Outer Homotopy iteration 3
+
+opt_norm : opt_tol = 7.933890e+00 : 1.090758e-06
+feas_norm : feas_tol = 5.766906e+01 : 5.863404e-06
+
+mu after pred  = 0.99361696008647
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.610096e+00 : 3.610096e-01
+   hom_feas_norm : hom_feas_tol = 5.329628e-03 : 5.329628e-04
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.584180e+00 : 3.610096e-01
+   hom_feas_norm : hom_feas_tol = 3.256161e-02 : 5.329628e-04
+
+dist to curve = 4.743662e-02
+angle         = 3.094065
+dfac before cut out  = 0.618813
+step          = 0.314602
+factor        = 0.618813
+step len      = 0.508396
+
+==================================================
+Outer Homotopy iteration 4
+
+opt_norm : opt_tol = 8.143281e+00 : 1.090758e-06
+feas_norm : feas_tol = 5.765723e+01 : 5.863404e-06
+
+mu after pred  = 0.98502351482464
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.593965e+00 : 3.593965e-01
+   hom_feas_norm : hom_feas_tol = 3.282875e-02 : 3.282875e-03
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.551844e+00 : 3.593965e-01
+   hom_feas_norm : hom_feas_tol = 7.641713e-02 : 3.282875e-03
+
+dist to curve = 7.925050e-02
+angle         = 4.950734
+dfac before cut out  = 0.990147
+step          = 0.508396
+factor        = 0.990147
+step len      = 0.513455
+
+==================================================
+Outer Homotopy iteration 5
+
+opt_norm : opt_tol = 9.077900e+00 : 1.090758e-06
+feas_norm : feas_tol = 5.760176e+01 : 5.863404e-06
+
+mu after pred  = 0.97654893781879
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.560496e+00 : 3.560496e-01
+   hom_feas_norm : hom_feas_tol = 7.669802e-02 : 7.669802e-03
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.517983e+00 : 3.560496e-01
+   hom_feas_norm : hom_feas_tol = 1.197087e-01 : 7.669802e-03
+
+dist to curve = 7.962154e-02
+angle         = 4.826107
+dfac before cut out  = 0.965221
+step          = 0.513455
+factor        = 0.965221
+step len      = 0.531956
+
+==================================================
+Outer Homotopy iteration 6
+
+opt_norm : opt_tol = 1.055953e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.750116e+01 : 5.863404e-06
+
+mu after pred  = 0.96801604518179
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.525611e+00 : 3.525611e-01
+   hom_feas_norm : hom_feas_tol = 1.201085e-01 : 1.201085e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.481863e+00 : 3.525611e-01
+   hom_feas_norm : hom_feas_tol = 1.633660e-01 : 1.201085e-02
+
+dist to curve = 8.223465e-02
+angle         = 4.728077
+dfac before cut out  = 0.945615
+step          = 0.531956
+factor        = 0.945615
+step len      = 0.562550
+
+==================================================
+Outer Homotopy iteration 7
+
+opt_norm : opt_tol = 1.241930e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.735249e+01 : 5.863404e-06
+
+mu after pred  = 0.95928766505915
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.488525e+00 : 3.488525e-01
+   hom_feas_norm : hom_feas_tol = 1.638991e-01 : 1.638991e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.442801e+00 : 3.488525e-01
+   hom_feas_norm : hom_feas_tol = 2.081220e-01 : 1.638991e-02
+
+dist to curve = 8.641103e-02
+angle         = 4.633994
+dfac before cut out  = 0.926799
+step          = 0.562550
+factor        = 0.926799
+step len      = 0.606982
+
+==================================================
+Outer Homotopy iteration 8
+
+opt_norm : opt_tol = 1.455412e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.715015e+01 : 5.863404e-06
+
+mu after pred  = 0.95022012330890
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.448488e+00 : 3.448488e-01
+   hom_feas_norm : hom_feas_tol = 2.087951e-01 : 2.087951e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.399964e+00 : 3.448488e-01
+   hom_feas_norm : hom_feas_tol = 2.547560e-01 : 2.087951e-02
+
+dist to curve = 9.233988e-02
+angle         = 4.543046
+dfac before cut out  = 0.908609
+step          = 0.606982
+factor        = 0.908609
+step len      = 0.668034
+
+==================================================
+Outer Homotopy iteration 9
+
+opt_norm : opt_tol = 1.691404e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.688505e+01 : 5.863404e-06
+
+mu after pred  = 0.94065465194786
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.404901e+00 : 3.404901e-01
+   hom_feas_norm : hom_feas_tol = 2.556076e-01 : 2.556076e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.352319e+00 : 3.404901e-01
+   hom_feas_norm : hom_feas_tol = 3.041468e-01 : 2.556076e-02
+
+dist to curve = 1.003642e-01
+angle         = 4.453703
+dfac before cut out  = 0.890741
+step          = 0.668034
+factor        = 0.890741
+step len      = 0.749976
+
+==================================================
+Outer Homotopy iteration 10
+
+opt_norm : opt_tol = 1.948254e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.654467e+01 : 5.863404e-06
+
+mu after pred  = 0.93040548370815
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.356537e+00 : 3.356537e-01
+   hom_feas_norm : hom_feas_tol = 3.052235e-01 : 3.052235e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.298520e+00 : 3.356537e-01
+   hom_feas_norm : hom_feas_tol = 3.573441e-01 : 3.052235e-02
+
+dist to curve = 1.104542e-01
+angle         = 4.365420
+dfac before cut out  = 0.873084
+step          = 0.749976
+factor        = 0.873084
+step len      = 0.858996
+
+==================================================
+Outer Homotopy iteration 11
+
+opt_norm : opt_tol = 2.226120e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.611100e+01 : 5.863404e-06
+
+mu after pred  = 0.91924604306411
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.301957e+00 : 3.301957e-01
+   hom_feas_norm : hom_feas_tol = 3.587137e-01 : 3.587137e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.236772e+00 : 3.301957e-01
+   hom_feas_norm : hom_feas_tol = 4.156599e-01 : 3.587137e-02
+
+dist to curve = 1.241231e-01
+angle         = 4.277775
+dfac before cut out  = 0.855555
+step          = 0.858996
+factor        = 0.855555
+step len      = 1.004022
+
+==================================================
+Outer Homotopy iteration 12
+
+opt_norm : opt_tol = 2.526132e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.555884e+01 : 5.863404e-06
+
+mu after pred  = 0.90688951594004
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.239327e+00 : 3.239327e-01
+   hom_feas_norm : hom_feas_tol = 4.174330e-01 : 4.174330e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.164706e+00 : 3.239327e-01
+   hom_feas_norm : hom_feas_tol = 4.808097e-01 : 4.174330e-02
+
+dist to curve = 1.425114e-01
+angle         = 4.189717
+dfac before cut out  = 0.837943
+step          = 1.004022
+factor        = 0.837943
+step len      = 1.198198
+
+==================================================
+Outer Homotopy iteration 13
+
+opt_norm : opt_tol = 2.849836e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.485432e+01 : 5.863404e-06
+
+mu after pred  = 0.89295783962686
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.166429e+00 : 3.166429e-01
+   hom_feas_norm : hom_feas_tol = 4.832107e-01 : 4.832107e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.079007e+00 : 3.166429e-01
+   hom_feas_norm : hom_feas_tol = 5.551276e-01 : 4.832107e-02
+
+dist to curve = 1.656725e-01
+angle         = 4.103109
+dfac before cut out  = 0.820622
+step          = 1.198198
+factor        = 0.820622
+step len      = 1.460110
+
+==================================================
+Outer Homotopy iteration 14
+
+opt_norm : opt_tol = 3.198193e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.394862e+01 : 5.863404e-06
+
+mu after pred  = 0.87694302670108
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.079778e+00 : 3.079778e-01
+   hom_feas_norm : hom_feas_tol = 5.585127e-01 : 5.585127e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.975050e+00 : 3.079778e-01
+   hom_feas_norm : hom_feas_tol = 6.418840e-01 : 5.585127e-02
+
+dist to curve = 1.982905e-01
+angle         = 4.018277
+dfac before cut out  = 0.803655
+step          = 1.460110
+factor        = 0.803655
+step len      = 1.816836
+
+==================================================
+Outer Homotopy iteration 15
+
+opt_norm : opt_tol = 3.570586e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.277514e+01 : 5.863404e-06
+
+mu after pred  = 0.85813840586635
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.974374e+00 : 2.974374e-01
+   hom_feas_norm : hom_feas_tol = 6.467897e-01 : 6.467897e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.846295e+00 : 2.974374e-01
+   hom_feas_norm : hom_feas_tol = 7.458566e-01 : 6.467897e-02
+
+dist to curve = 2.412303e-01
+angle         = 3.941034
+dfac before cut out  = 0.788207
+step          = 1.816836
+factor        = 0.788207
+step len      = 2.305024
+
+==================================================
+Outer Homotopy iteration 16
+
+opt_norm : opt_tol = 3.962483e+01 : 1.090758e-06
+feas_norm : feas_tol = 5.123917e+01 : 5.863404e-06
+
+mu after pred  = 0.83555156209847
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.843557e+00 : 2.843557e-01
+   hom_feas_norm : hom_feas_tol = 7.532952e-01 : 7.532952e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.683107e+00 : 2.843557e-01
+   hom_feas_norm : hom_feas_tol = 8.740811e-01 : 7.532952e-02
+
+dist to curve = 3.017281e-01
+angle         = 3.880835
+dfac before cut out  = 0.776824
+step          = 2.305024
+factor        = 0.776824
+step len      = 2.967240
+
+==================================================
+Outer Homotopy iteration 17
+
+opt_norm : opt_tol = 4.361603e+01 : 1.090758e-06
+feas_norm : feas_tol = 4.921080e+01 : 5.863404e-06
+
+mu after pred  = 0.80780889683834
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.677467e+00 : 2.677467e-01
+   hom_feas_norm : hom_feas_tol = 8.860894e-01 : 8.860894e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.472298e+00 : 2.677467e-01
+   hom_feas_norm : hom_feas_tol = 1.036851e+00 : 8.860894e-02
+
+dist to curve = 3.878069e-01
+angle         = 3.855419
+dfac before cut out  = 0.880689
+step          = 2.967240
+factor        = 0.880689
+step len      = 3.369224
+
+==================================================
+Outer Homotopy iteration 18
+
+opt_norm : opt_tol = 4.741306e+01 : 1.090758e-06
+feas_norm : feas_tol = 4.652421e+01 : 5.863404e-06
+
+mu after pred  = 0.77730994113534
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.462699e+00 : 2.462699e-01
+   hom_feas_norm : hom_feas_tol = 1.052121e+00 : 1.052121e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.231217e+00 : 2.462699e-01
+   hom_feas_norm : hom_feas_tol = 1.221906e+00 : 1.052121e-01
+
+dist to curve = 4.446196e-01
+angle         = 3.480405
+dfac before cut out  = 0.942995
+step          = 3.369224
+factor        = 0.942995
+step len      = 3.572897
+
+==================================================
+Outer Homotopy iteration 19
+
+opt_norm : opt_tol = 5.023365e+01 : 1.090758e-06
+feas_norm : feas_tol = 4.342706e+01 : 5.863404e-06
+
+mu after pred  = 0.74525125106242
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.217433e+00 : 2.217433e-01
+   hom_feas_norm : hom_feas_tol = 1.239267e+00 : 1.239267e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.970939e+00 : 2.217433e-01
+   hom_feas_norm : hom_feas_tol = 1.420193e+00 : 1.239267e-01
+
+dist to curve = 4.971233e-01
+angle         = 3.171723
+dfac before cut out  = 0.997119
+step          = 3.572897
+factor        = 0.997119
+step len      = 3.583220
+
+==================================================
+Outer Homotopy iteration 20
+
+opt_norm : opt_tol = 5.183097e+01 : 1.090758e-06
+feas_norm : feas_tol = 4.011808e+01 : 5.863404e-06
+
+mu after pred  = 0.71264945756064
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.953404e+00 : 1.953404e-01
+   hom_feas_norm : hom_feas_tol = 1.438302e+00 : 1.438302e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.705250e+00 : 1.953404e-01
+   hom_feas_norm : hom_feas_tol = 1.619358e+00 : 1.438302e-01
+
+dist to curve = 5.339332e-01
+angle         = 3.021882
+dfac before cut out  = 1.033376
+step          = 3.583220
+factor        = 1.033376
+step len      = 3.467489
+
+==================================================
+Outer Homotopy iteration 21
+
+opt_norm : opt_tol = 5.224634e+01 : 1.090758e-06
+feas_norm : feas_tol = 3.678538e+01 : 5.863404e-06
+
+mu after pred  = 0.68008413427779
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.684814e+00 : 1.684814e-01
+   hom_feas_norm : hom_feas_tol = 1.637762e+00 : 1.637762e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.436792e+00 : 1.684814e-01
+   hom_feas_norm : hom_feas_tol = 1.803595e+00 : 1.637762e-01
+
+dist to curve = 5.444750e-01
+angle         = 3.072125
+dfac before cut out  = 1.043528
+step          = 3.467489
+factor        = 1.043528
+step len      = 3.322852
+
+==================================================
+Outer Homotopy iteration 22
+
+opt_norm : opt_tol = 5.167763e+01 : 1.090758e-06
+feas_norm : feas_tol = 3.353967e+01 : 5.863404e-06
+
+mu after pred  = 0.64748756969367
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.413546e+00 : 1.413546e-01
+   hom_feas_norm : hom_feas_tol = 1.823130e+00 : 1.823130e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.157501e+00 : 1.413546e-01
+   hom_feas_norm : hom_feas_tol = 1.956229e+00 : 1.823130e-01
+
+dist to curve = 5.777371e-01
+angle         = 3.301460
+dfac before cut out  = 1.074930
+step          = 3.322852
+factor        = 1.074930
+step len      = 3.091227
+
+==================================================
+Outer Homotopy iteration 23
+
+opt_norm : opt_tol = 5.035461e+01 : 1.090758e-06
+feas_norm : feas_tol = 3.042156e+01 : 5.863404e-06
+
+mu after pred  = 0.61558637507983
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.132682e+00 : 1.132682e-01
+   hom_feas_norm : hom_feas_tol = 1.976508e+00 : 1.976508e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 8.747134e-01 : 1.132682e-01
+   hom_feas_norm : hom_feas_tol = 2.056989e+00 : 1.976508e-01
+
+dist to curve = 6.126189e-01
+angle         = 3.557575
+dfac before cut out  = 1.106905
+step          = 3.091227
+factor        = 1.106905
+step len      = 2.792677
+
+==================================================
+Outer Homotopy iteration 24
+
+opt_norm : opt_tol = 4.851927e+01 : 1.090758e-06
+feas_norm : feas_tol = 2.752294e+01 : 5.863404e-06
+
+mu after pred  = 0.58520609816067
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 8.500445e-01 : 8.500445e-02
+   hom_feas_norm : hom_feas_tol = 2.077057e+00 : 2.077057e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 6.078833e-01 : 8.500445e-02
+   hom_feas_norm : hom_feas_tol = 2.092414e+00 : 2.077057e-01
+
+dist to curve = 6.266844e-01
+angle         = 3.718786
+dfac before cut out  = 1.119540
+step          = 2.792677
+factor        = 1.119540
+step len      = 2.494487
+
+==================================================
+Outer Homotopy iteration 25
+
+opt_norm : opt_tol = 4.641166e+01 : 1.090758e-06
+feas_norm : feas_tol = 2.491242e+01 : 5.863404e-06
+
+mu after pred  = 0.55666641631608
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 5.845691e-01 : 5.845691e-02
+   hom_feas_norm : hom_feas_tol = 2.111636e+00 : 2.111636e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.722763e-01 : 5.845691e-02
+   hom_feas_norm : hom_feas_tol = 2.059299e+00 : 2.111636e-01
+
+dist to curve = 6.224821e-01
+angle         = 3.758258
+dfac before cut out  = 1.115780
+step          = 2.494487
+factor        = 1.115780
+step len      = 2.235645
+
+==================================================
+Outer Homotopy iteration 26
+
+opt_norm : opt_tol = 4.420355e+01 : 1.090758e-06
+feas_norm : feas_tol = 2.259184e+01 : 5.863404e-06
+
+mu after pred  = 0.52988281531100
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 3.509524e-01 : 3.509524e-02
+   hom_feas_norm : hom_feas_tol = 2.077454e+00 : 2.077454e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.763768e-01 : 3.509524e-02
+   hom_feas_norm : hom_feas_tol = 1.961609e+00 : 2.077454e-01
+
+dist to curve = 6.085051e-01
+angle         = 3.690117
+dfac before cut out  = 1.103182
+step          = 2.235645
+factor        = 1.103182
+step len      = 2.026543
+
+==================================================
+Outer Homotopy iteration 27
+
+opt_norm : opt_tol = 4.199030e+01 : 1.090758e-06
+feas_norm : feas_tol = 2.052779e+01 : 5.863404e-06
+
+mu after pred  = 0.50457382075758
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.576341e-01 : 1.576341e-02
+   hom_feas_norm : hom_feas_tol = 1.978718e+00 : 1.978718e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.375522e-02 : 1.576341e-02
+   hom_feas_norm : hom_feas_tol = 1.806767e+00 : 1.978718e-01
+
+dist to curve = 5.874508e-01
+angle         = 3.575270
+dfac before cut out  = 1.083929
+step          = 2.026543
+factor        = 1.083929
+step len      = 1.869627
+
+==================================================
+Outer Homotopy iteration 28
+
+opt_norm : opt_tol = 3.981286e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.867371e+01 : 5.863404e-06
+
+mu after pred  = 0.48031978034616
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.079308e-02 : 2.079308e-03
+   hom_feas_norm : hom_feas_tol = 1.823083e+00 : 1.823083e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 8.585551e-02 : 2.079308e-03
+   hom_feas_norm : hom_feas_tol = 1.602655e+00 : 1.823083e-01
+
+dist to curve = 5.691889e-01
+angle         = 3.444906
+dfac before cut out  = 1.066948
+step          = 1.869627
+factor        = 1.066948
+step len      = 1.752313
+
+==================================================
+Outer Homotopy iteration 29
+
+opt_norm : opt_tol = 3.767462e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.698614e+01 : 5.863404e-06
+
+mu after pred  = 0.45675421230286
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.045910e-01 : 1.045910e-02
+   hom_feas_norm : hom_feas_tol = 1.618350e+00 : 1.618350e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.530224e-01 : 1.045910e-02
+   hom_feas_norm : hom_feas_tol = 1.359173e+00 : 1.618350e-01
+
+dist to curve = 5.477672e-01
+angle         = 3.355607
+dfac before cut out  = 1.046678
+step          = 1.752313
+factor        = 1.046678
+step len      = 1.674167
+
+==================================================
+Outer Homotopy iteration 30
+
+opt_norm : opt_tol = 3.556793e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.542973e+01 : 5.863404e-06
+
+mu after pred  = 0.43342997257663
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.696910e-01 : 1.696910e-02
+   hom_feas_norm : hom_feas_tol = 1.374501e+00 : 1.374501e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.802821e-01 : 1.696910e-02
+   hom_feas_norm : hom_feas_tol = 1.084943e+00 : 1.374501e-01
+
+dist to curve = 5.235033e-01
+angle         = 3.401760
+dfac before cut out  = 1.023233
+step          = 1.674167
+factor        = 1.023233
+step len      = 1.636154
+
+==================================================
+Outer Homotopy iteration 31
+
+opt_norm : opt_tol = 3.346953e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.396426e+01 : 5.863404e-06
+
+mu after pred  = 0.40981013069220
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.957623e-01 : 1.957623e-02
+   hom_feas_norm : hom_feas_tol = 1.100317e+00 : 1.100317e-01
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.706461e-01 : 1.957623e-02
+   hom_feas_norm : hom_feas_tol = 7.896103e-01 : 1.100317e-01
+
+dist to curve = 4.959249e-01
+angle         = 3.591514
+dfac before cut out  = 0.995917
+step          = 1.636154
+factor        = 0.995917
+step len      = 1.642862
+
+==================================================
+Outer Homotopy iteration 32
+
+opt_norm : opt_tol = 3.134367e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.255535e+01 : 5.863404e-06
+
+mu after pred  = 0.38520924447956
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.853586e-01 : 1.853586e-02
+   hom_feas_norm : hom_feas_tol = 8.055744e-01 : 8.055744e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.267751e-01 : 1.853586e-02
+   hom_feas_norm : hom_feas_tol = 4.801065e-01 : 8.055744e-02
+
+dist to curve = 4.617271e-01
+angle         = 4.015715
+dfac before cut out  = 0.960965
+step          = 1.642862
+factor        = 0.960965
+step len      = 1.709596
+
+==================================================
+Outer Homotopy iteration 33
+
+opt_norm : opt_tol = 2.914079e+01 : 1.090758e-06
+feas_norm : feas_tol = 1.115946e+01 : 5.863404e-06
+
+mu after pred  = 0.35862400360127
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 1.414781e-01 : 1.414781e-02
+   hom_feas_norm : hom_feas_tol = 4.982566e-01 : 4.982566e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 5.725861e-02 : 1.414781e-02
+   hom_feas_norm : hom_feas_tol = 1.836790e-01 : 4.982566e-02
+
+dist to curve = 4.075957e-01
+angle         = 4.707755
+dfac before cut out  = 0.941551
+step          = 1.709596
+factor        = 0.941551
+step len      = 1.815723
+
+==================================================
+Outer Homotopy iteration 34
+
+opt_norm : opt_tol = 2.678484e+01 : 1.090758e-06
+feas_norm : feas_tol = 9.733701e+00 : 5.863404e-06
+
+mu after pred  = 0.32926272482652
+
+   Inner Newton iteration 1
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 7.189943e-02 : 7.189943e-03
+   hom_feas_norm : hom_feas_tol = 2.082840e-01 : 2.082840e-02
+
+   Inner Newton iteration 2
+   -------------------------------
+   hom_opt_norm : hom_opt_tol = 2.041788e-04 : 7.189943e-03
+   hom_feas_norm : hom_feas_tol = 6.062292e-08 : 2.082840e-02
+
+  Corrector step converged!

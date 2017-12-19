@@ -36,9 +36,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--output", help='Output directory', type=str, default='./temp')
 parser.add_argument("--task", help='what to do', choices=['opt','post'], default='opt')
 parser.add_argument("--num_case", type=int, default=10)
+parser.add_argument("--krylov_tol", type=float, default=1e-2)
 args = parser.parse_args()
 
 num_case = args.num_case
+krylov_tol = args.krylov_tol
 
 outdir = args.output    
 if not os.path.isdir(outdir):
@@ -55,6 +57,13 @@ num_design = 100
 
 
 if args.task == 'opt': 
+
+    optOptions = {'Print file': outdir + '/SNOPT_print.out',
+                  'Summary file': outdir + '/SNOPT_summary.out',
+                  'Problem Type':'Minimize',
+                  }
+    storeHistory=False
+
 
     # Optimizer
     optns = {
@@ -93,9 +102,9 @@ if args.task == 'opt':
             'feas_scale'    : 1.0,
             # FLECS solver settings
             'krylov_file'   : outdir+'/kona_krylov.dat',
-            'subspace_size' : 20,                                    
+            'subspace_size' : 40,                                    
             'check_res'     : False,
-            'rel_tol'       : 1e-2,        
+            'rel_tol'       : krylov_tol,        
         },
 
         'verify' : {
@@ -118,7 +127,8 @@ if args.task == 'opt':
 
 
     init_norms = np.zeros(num_case)
-    wrong_sols = np.zeros(num_case)
+    wrong_sols_kona = np.zeros(num_case)
+    wrong_sols_snopt = np.zeros(num_case)
 
     for i in xrange(num_case):
         print 'Starting case %d'%i
@@ -139,9 +149,73 @@ if args.task == 'opt':
 
         x_kona = np.rint(abs(kona_x))
 
-        diff = sum(abs(x_kona - x_true))
-        wrong_sols[i] = diff
-        print 'wrong points %d'%diff
+        diff_kona = sum(abs(x_kona - x_true))
+        wrong_sols_kona[i] = diff_kona
+        print 'Kona wrong points %d'%diff_kona
+
+
+        #------------- SNOPT Optimization ---------------#
+
+        # def objfunc(xdict):
+
+        #     x = xdict['xvars']
+        #     funcs = {}
+        #     funcs['obj'] = 0.5*np.dot(x.T,  solver.D*x)
+
+        #     conval = x 
+        #     funcs['con'] = conval
+        #     fail = False
+            
+        #     return funcs, fail
+
+        # def sens(xdict, funcs):
+        #     x = xdict['xvars']
+        #     funcsSens = {}            
+        #     funcsSens['obj'] = {'xvars': solver.D*x }
+        #     funcsSens['con'] = {'xvars': np.eye(num_design) }
+        #     fail = False
+
+        #     return funcsSens, fail
+
+
+        # optProb = Optimization('nonconvex', objfunc)
+
+        # # Design Variables
+        # optProb.addVarGroup('xvars', num_design, value=init_x)
+
+        # # Constraints
+        # lower = -np.ones(num_design)
+        # upper = np.ones(num_design)
+        # optProb.addConGroup('con', num_design, lower = lower, upper = upper)
+
+        # # Objective
+        # optProb.addObj('obj')
+
+        # # Optimizer
+        # opt = OPT('snopt', options=optOptions)
+
+        # # Solution
+        # if storeHistory:
+        #     histFileName = '%s.hst' % (optName.lower())
+        # else:
+        #     histFileName = None
+
+        # sol = opt(optProb, sens=sens, storeHistory=histFileName)  
+        
+        # # Check Solution
+        # pyopt_obj = sol.objectives['obj'].value
+        # pyopt_x = np.array(map(lambda x:  sol.variables['xvars'][x].value, xrange(num_design)))
+
+        # x_snopt = np.rint(abs(pyopt_x))
+
+        # diff_snopt = sum(abs(x_snopt - x_true))
+        # wrong_sols_snopt[i] = diff_snopt
+        # print 'SNOPT wrong points %d'%diff_snopt
+
+        # ------------ Studying Wrong Solutions ------------
+        # diff_sol_snopt = abs(x_snopt - x_true)
+        # wrong_snopt = 'wrong snopt: ' + str(x_snopt[diff_sol_snopt > 0])
+
 
         # ------------ Studying Wrong Solutions ------------
         sep_str = '----------- Case %d ------------'%i
@@ -150,14 +224,19 @@ if args.task == 'opt':
         wrong_initx = 'init x: ' + str(init_x[diff_sol > 0])
         wrong_kona = 'wrong kona: ' + str(x_kona[diff_sol > 0])
         wrong_true = 'wrong true: ' +  str(x_true[diff_sol > 0])
-
+        # wrong_snopt = 'wrong snopt: ' + str(x_snopt[diff_sol > 0])
+        
         with open(outdir+'/kona_optns.txt', 'a') as file:
-            if diff > 0: 
+            if diff_kona > 0: 
                 pprint.pprint(sep_str, file)
                 pprint.pprint(wrong_D, file)
                 pprint.pprint(wrong_initx, file)
-                pprint.pprint(wrong_kona, file)
                 pprint.pprint(wrong_true, file)
+                pprint.pprint(wrong_kona, file)
+
+            # if diff_snopt > 0:
+                # pprint.pprint(wrong_snopt, file)
+
 
         # # ------------- output ------------ #
         # sep_str = '----------- Case %d ------------'%i
@@ -165,36 +244,46 @@ if args.task == 'opt':
         # init_xs = 'init x: ' + str(init_x)
         # # kona_sol = 'kona_solution: ' + str(kona_x)
         # x_kona = 'kona_solution: ' + str(x_kona)
+        # x_snopt = 'snopt_solution: ' + str(x_snopt)
         # true_sol = 'true solution: ' + str(x_true)
-        # err_diff = 'number of wrong solutions: ' + str(diff)
+        # err_diff = 'Kona number of wrong solutions: ' + str(diff_kona)
+        # err_diff_sn = 'SNOPT number of wrong solutions: ' + str(diff_snopt)
 
         # with open(outdir+'/kona_optns.txt', 'a') as file:
         #     pprint.pprint(sep_str, file)
         #     pprint.pprint(D_str, file)
         #     pprint.pprint(init_xs, file)
-        #     pprint.pprint(x_kona, file)
         #     pprint.pprint(true_sol, file)
+        #     pprint.pprint(x_kona, file)
         #     pprint.pprint(err_diff, file)
+        #     pprint.pprint(x_snopt, file)            
+        #     pprint.pprint(err_diff_sn, file)
 
-    #---- write init_norms, wrong_sols ---- # 
-    file_ =  outdir + '/design'     
+
+    #---- write init_norms, wrong_sols_kona ---- # 
+    file_ =  outdir + '/design' + str(krylov_tol)    
     A_file = open(file_, 'w')
-    pickle.dump([init_norms, wrong_sols], A_file)
+    pickle.dump([init_norms, wrong_sols_kona, wrong_sols_snopt], A_file)
     A_file.close()
 
 
 if args.task=='post':
     # ------------------ Make Plots ------------------
-    file_ =  post_dir + '/design' 
+    file_ =  post_dir + '/design' + str(krylov_tol)    
     A_file = open(file_, 'r')
     a = pickle.load(A_file)
     A_file.close()
 
     init_norms = a[0]
-    wrong_sols = a[1]
+    wrong_sols_kona = a[1]
+    wrong_sols_snopt = a[2]
 
-    sols_mean = np.mean(wrong_sols)
-    sols_std = np.std(wrong_sols)
+    sols_mean_kona = np.mean(wrong_sols_kona)
+    sols_std_kona = np.std(wrong_sols_kona)
+
+    sols_mean_snopt = np.mean(wrong_sols_snopt)
+    sols_std_snopt = np.std(wrong_sols_snopt)
+
 
     # plot the data
     # ms = markersize
@@ -213,13 +302,13 @@ if args.task=='post':
     # ms = markersize
     # mfc = markerfacecolor
     # mew = markeredgewidth
-    dynamic = ax.plot(init_norms, wrong_sols, 'ko', linewidth=1.5, ms=8.0, \
+    dynamic = ax.plot(init_norms, wrong_sols_kona, 'ko', linewidth=1.5, ms=8.0, \
                   mfc=(0.35,0.35,0.35), mew=1.5, mec='k')
     #qn = ax.plot(ndv, qn/flow_cost, '-k^', linewidth=2.0, ms=8.0, mfc='w', mew=1.5, \
     #         color=(0.35, 0.35, 0.35), mec=(0.35, 0.35, 0.35))
 
     # Tweak the appeareance of the axes
-    ax.axis([0, max(init_norms)+3, -1, max(wrong_sols)+1])  # axes ranges
+    ax.axis([0, max(init_norms)+3, -1, max(wrong_sols_kona)+1])  # axes ranges
     ax.set_position([0.12, 0.13, 0.86, 0.83]) # position relative to figure edges
     ax.set_xlabel('Norm of Initial Starting Point', fontsize=axis_fs, weight='bold')
     ax.set_ylabel('Number of Stationery Points', fontsize=axis_fs, weight='bold', \
@@ -227,7 +316,7 @@ if args.task=='post':
     ax.grid(which='major', axis='y', linestyle='--')
     ax.set_axisbelow(True) # grid lines are plotted below
     rect = ax.patch # a Rectangle instance
-    ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols)+1.5, 1))
+    ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols_kona)+1.5, 1))
     #rect.set_facecolor('white')
     #rect.set_ls('dashed')
     rect.set_linewidth(axis_lw)
@@ -251,8 +340,8 @@ if args.task=='post':
     # define and format the minor ticks
     ax.xaxis.set_ticks(np.arange(0,max(init_norms)+3,1),minor=True)
     ax.xaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
-    # ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols)+2,1),minor=True)
-    # ax.set_yticklabels([i for i in wrong_sols])
+    # ax.yaxis.set_ticks(np.arange(-1, max(wrong_sols_kona)+2,1),minor=True)
+    # ax.set_yticklabels([i for i in wrong_sols_kona])
     ax.yaxis.set_tick_params(which='minor', length=3, width=2.0*axis_lw/3.0)
         #print ax.xaxis.get_ticklines(minor=True)
 
@@ -277,15 +366,15 @@ if args.task=='post':
 
 
 
-    for k in np.arange(0, max(wrong_sols)+1, 1):
+    for k in np.arange(0, max(wrong_sols_kona)+1, 1):
 
-        cout = sum(wrong_sols == k)
+        cout = sum(wrong_sols_kona == k)
         text = "{0:.1f}%".format(cout*1.0/num_case * 100) + ", or " + str(cout) 
         ax.text(6.5, k, text, ha="center", va="center", size=12,
                 bbox=bbox_props)        
 
     # text = "Mean: .1f}".format(sols_mean) + '\n' + " STD: {%.1f}".format(sols_std)
-    text = "Mean: %.2f"%(sols_mean) + '\n' + " STD: %.2f"%(sols_std)
+    text = "Mean: %.2f"%(sols_mean_kona) + '\n' + " STD: %.2f"%(sols_std_kona)
     ax.text(3, 2.5, text, ha="center", va="center", size=12,
         bbox=bbox_props)  
 
