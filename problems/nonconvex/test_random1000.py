@@ -28,13 +28,28 @@ nominal angle:    1      5      10     20     5      5      5       10
 init_step:        0.05   0.1    0.1
 nominal dist:     0.5    1      0.5 
 nominal angle:    5      10     5
+
+inner_tol,  krylov_tol,  success rate  
+0.1  1e-1  48%
+0.1  1e-2  88%
+0.1  1e-3  95% 
+0.1  1e-4  93%
+0.1  1e-5  97%
+0.1  1e-6  95% 
+0.01  1e-1  57%
+0.01  1e-2  93%
+0.01  1e-3  96% 
+0.01  1e-4  95%
+0.01  1e-5  97%
+0.01  1e-6  98% 
+
 """
 
 # np.random.seed(1) 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", help='Output directory', type=str, default='./temp')
-parser.add_argument("--task", help='what to do', choices=['opt','post'], default='opt')
+parser.add_argument("--task", help='what to do', choices=['opt','post'], default='post')
 parser.add_argument("--num_case", type=int, default=10)
 parser.add_argument("--krylov_tol", type=float, default=1e-2)
 args = parser.parse_args()
@@ -75,7 +90,7 @@ if args.task == 'opt':
 
         'homotopy' : {
             'init_homotopy_parameter' : 1.0, 
-            'inner_tol' : 0.1,                          
+            'inner_tol' : 0.01,                          
             'inner_maxiter' : 2,                    
             'init_step' : 0.01,                     
             'nominal_dist' : 0.5,                    
