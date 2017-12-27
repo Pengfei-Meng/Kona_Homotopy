@@ -23,15 +23,16 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             primal_factory, state_factory, eq_factory, ineq_factory, optns
         )
 
-        # number of vectors required in solve() method
-        self.primal_factory.request_num_vectors(115)
+        # number of vectors required in solve() method  + fgmres
+        krylov_size = get_opt(self.optns, 10, 'rsnk', 'subspace_size')
+        self.primal_factory.request_num_vectors(25 + 2*krylov_size)
         self.state_factory.request_num_vectors(10)
 
         if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(115)
+            self.eq_factory.request_num_vectors(25 + 2*krylov_size)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(250)
+            self.ineq_factory.request_num_vectors(50 + 4*krylov_size)
 
         # general options
         ############################################################
