@@ -27,12 +27,12 @@ class SVDPC_CMU(BaseHessian):
 
         super(SVDPC_CMU, self).__init__(vector_factories, None)
 
-        self.primal_factory.request_num_vectors(10)
-        self.state_factory.request_num_vectors(2)
-        if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(3)
-        if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(5)
+        # self.primal_factory.request_num_vectors(10)
+        # self.state_factory.request_num_vectors(2)
+        # if self.eq_factory is not None:
+        #     self.eq_factory.request_num_vectors(3)
+        # if self.ineq_factory is not None:
+        #     self.ineq_factory.request_num_vectors(5)
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
