@@ -1,5 +1,19 @@
 from kona.algorithms.base_algorithm import OptimizationAlgorithm
 import pdb, pickle
+
+"""
+if self.ineq_factory is not None:
+    if self.eq_factory is not None: 
+        # Both Inequality and Equality 
+    else:
+        # Inequality Only
+else:
+    # Equality Only
+
+Unconstrained Case is NOT considered
+"""
+
+
 class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
     def __init__(self, primal_factory, state_factory,
@@ -122,7 +136,6 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.dmu_max = get_opt(self.optns, -0.1, 'homotopy', 'dmu_max')
         self.dmu_min = get_opt(self.optns, -0.9, 'homotopy', 'dmu_min')
         self.mu_correction = get_opt(self.optns, 1.0, 'homotopy', 'mu_correction')
-        self.use_frac_to_bound = get_opt(self.optns, True, 'homotopy', 'use_frac_to_bound')
         self.precond_on_mu = get_opt(self.optns, 1.0, 'homotopy', 'mu_pc_on')
         
 
@@ -340,13 +353,37 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
 
         if self.ineq_factory is not None:
+            if self.eq_factory is not None: 
+                self.info_file.write(
+                    '# of design vars = %i\n' % len(x.primal.design.base.data) +
+                    '# of slack vars  = %i\n' % len(x.dual.ineq.base.data) +
+                    '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
+                    '# of eq cnstr    = %i\n' % len(x.dual.eq.base.data) +
+                    '\n'
+                ) 
+            else:
+                self.info_file.write(
+                    '# of design vars = %i\n' % len(x.primal.design.base.data) +
+                    '# of slack vars  = %i\n' % len(x.dual.base.data) +
+                    '# of ineq cnstr    = %i\n' % len(x.dual.base.data) +
+                    '\n'
+                )
+        else:
             self.info_file.write(
-                '# of design vars = %i\n' % len(x.primal.design.base.data) +
-                '# of slack vars  = %i\n' % len(x.dual.base.data) +
-                '# of ineq cnstr    = %i\n' % len(x.dual.base.data) +
-                # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
+                '# of design vars = %i\n' % len(x.primal.base.data) +
+                '# of eq cnstr    = %i\n' % len(x.dual.base.data) +
                 '\n'
             )
+
+
+        # if self.ineq_factory is not None:
+        #     self.info_file.write(
+        #         '# of design vars = %i\n' % len(x.primal.design.base.data) +
+        #         '# of slack vars  = %i\n' % len(x.dual.base.data) +
+        #         '# of ineq cnstr    = %i\n' % len(x.dual.base.data) +
+        #         # '# of ineq cnstr    = %i\n' % len(x.dual.ineq.base.data) +
+        #         '\n'
+        #     )
 
         if self.fstopo is True:
             EPS = 1e-6
@@ -354,7 +391,8 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             EPS = 1e-9    # np.finfo(np.float64).eps
         # initialize the problem at the starting point
         x0.equals_init_guess()
-        x0.primal.slack.base.data[x0.primal.slack.base.data < 1e-6] = 1e-6
+        if self.ineq_factory is not None:
+            x0.primal.slack.base.data[x0.primal.slack.base.data < 1e-6] = 1e-6
         x.equals(x0)
         
         if not state.equals_primal_solution(x.primal):
@@ -390,13 +428,21 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.info_file.write('\n' + solver_info + '\n')
 
         # compute convergence metrics
-        opt_norm0 = dJdX.primal.design.norm2
-        slam_norm0 = dJdX.primal.slack.norm2
-        feas_norm0 = dJdX.dual.norm2
+        if self.ineq_factory is not None:
+            opt_norm0 = dJdX.primal.design.norm2
+            slam_norm0 = dJdX.primal.slack.norm2
+            feas_norm0 = dJdX.dual.norm2
+            opt_inf0 = dJdX.primal.design.infty
+            slam_inf0 = dJdX.primal.slack.infty
+            feas_inf0 = dJdX.dual.infty  
 
-        opt_inf0 = dJdX.primal.design.infty
-        slam_inf0 = dJdX.primal.slack.infty
-        feas_inf0 = dJdX.dual.infty        
+        else: 
+            opt_norm0 = dJdX.primal.norm2
+            slam_norm0 = 0
+            feas_norm0 = dJdX.dual.norm2
+            opt_inf0 = dJdX.primal.infty
+            slam_inf0 = 0
+            feas_inf0 = dJdX.dual.infty  
 
         opt_tol = self.primal_tol*opt_norm0
         feas_tol = max(self.cnstr_tol*feas_norm0, 1e-6)
@@ -432,7 +478,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.krylov.step = 'Predictor'
         self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
 
-        if self.symmetric is True: 
+        if self.symmetric is True and self.ineq_factory is not None:
             # unpeal the S^-1 layer for the slack term
             t.primal.slack.times(self.current_x.primal.slack)
         
@@ -490,12 +536,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             max_mu_step = (tent_mu - self.mu)/dmu
 
             if self.mu < 1.0: 
-                if self.use_frac_to_bound is True:
-                    # print '\n Predictor outer %d '%outer_iters
+                if self.ineq_factory is not None:
                     self.step, ind_active_s0 = self.find_step(max_mu_step, x, t)
                     t.primal.slack.base.data[ind_active_s0] = 0.0
                     # t.dual.base.data[ind_inactive_lam0] = 0.0 
-
                 else:
                     self.step = max_mu_step
             else:
@@ -509,12 +553,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             # solve states
             if self.ineq_factory is not None:
                 x.primal.design.enforce_bounds()
+                if self.eq_factory is not None:
+                    x.dual.ineq.base.data[x.dual.ineq.base.data > 0.0] = 0.0
+                else:
+                    x.dual.base.data[x.dual.base.data > 0.0] = 0.0
             else:
                 x.primal.enforce_bounds()
-            # x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
-
-
+        
             if not state.equals_primal_solution(x.primal):
                 raise RuntimeError(
                     'Invalid predictor point! State-solve failed.')
@@ -558,7 +603,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         dx_bfgs.minus(self.current_x)
                         
                         X_oldx.equals(x)
-                        X_oldx.primal.design.equals(self.current_x.primal.design)
+                        if self.ineq_factory is not None:
+                            X_oldx.primal.design.equals(self.current_x.primal.design)
+                        else:
+                            X_oldx.primal.equals(self.current_x.primal)
 
                         # if not state_work_svd.equals_primal_solution(X_oldx.primal):
                         #     raise RuntimeError(
@@ -624,12 +672,21 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
 
                     hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
-                    opt_norm = dJdX.primal.design.norm2
-                    slam_norm = dJdX.primal.slack.norm2
-                    feas_norm = dJdX.dual.norm2 
-                    opt_inf = dJdX.primal.design.infty
-                    slam_inf = dJdX.primal.slack.infty
-                    feas_inf = dJdX.dual.infty                     
+
+                    if self.ineq_factory is not None:
+                        opt_norm = dJdX.primal.design.norm2
+                        slam_norm = dJdX.primal.slack.norm2
+                        feas_norm = dJdX.dual.norm2 
+                        opt_inf = dJdX.primal.design.infty
+                        slam_inf = dJdX.primal.slack.infty
+                        feas_inf = dJdX.dual.infty      
+                    else:
+                        opt_norm = dJdX.primal.norm2
+                        slam_norm = 0
+                        feas_norm = dJdX.dual.norm2 
+                        opt_inf = dJdX.primal.infty
+                        slam_inf = 0
+                        feas_inf = dJdX.dual.infty                              
 
                     self._write_inner(
                         outer_iters, inner_iters,
@@ -654,7 +711,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             self.svd_pc.linearize(x, state, adj, self.mu, dJdX_hom, dJdX_hom, inner_iters)
                         else:
                             X_olddualS.equals(x)
-                            X_olddualS.primal.design.equals(old_x.primal.design)
+                            if self.ineq_factory is not None:
+                                X_olddualS.primal.design.equals(old_x.primal.design)
+                            else:
+                                X_olddualS.primal.equals(old_x.primal)
 
                             if not state_work_svd.equals_primal_solution(X_olddualS.primal):
                                 raise RuntimeError(
@@ -680,7 +740,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         self.svd_pc_stress.linearize(x, state, adj, self.mu)
                     
                     if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-                        self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                        if self.ineq_factory is not None:
+                            self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                        else:
+                            self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)
 
                     self.krylov.outer_iters = outer_iters
                     self.krylov.inner_iters = inner_iters
@@ -698,7 +761,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     else:
                         self.krylov.solve(self._mat_vec, dJdX_hom, dx, self.eye_precond)
 
-                    if self.symmetric is True: 
+                    if self.symmetric is True and self.ineq_factory is not None: 
                         # unpeal the S^-1 layer for the slack term
                         dx.primal.slack.times(self.current_x.primal.slack)
 
@@ -738,8 +801,13 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 # if we finished the corrector step at mu=0, we're done!
                 if self.mu < EPS:    
                     self.info_file.write('\n>> Optimization DONE! <<\n')
-                    x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
-                    x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+
+                    if self.ineq_factory is not None:
+                        x.primal.slack.base.data[x.primal.slack.base.data < 0.0] = 0.0
+                        if self.eq_factory is not None:
+                            x.dual.ineq.base.data[x.dual.ineq.base.data > 0.0] = 0.0
+                        else:
+                            x.dual.base.data[x.dual.base.data > 0.0] = 0.0
                     
                     # send solution to solver
                     solver_info = current_solution(
@@ -763,7 +831,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                     dx_bfgs.minus(self.current_x)
 
                     X_oldx.equals(x)
-                    X_oldx.primal.design.equals(self.current_x.primal.design)
+                    if self.ineq_factory is not None:
+                        X_oldx.primal.design.equals(self.current_x.primal.design)
+                    else:
+                        X_oldx.primal.equals(self.current_x.primal)
 
                     # if not state_work_svd.equals_primal_solution(X_oldx.primal):
                     #     raise RuntimeError(
@@ -814,12 +885,20 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 lag = obj_fac * obj + cnstr_fac * x.dual.inner(dJdX.dual)
                 hom = (1. - self.mu) * lag + 0.5 * self.mu * (xTx - mTm)
 
-                opt_norm = dJdX.primal.design.norm2
-                slam_norm = dJdX.primal.slack.norm2
-                feas_norm = dJdX.dual.norm2 
-                opt_inf = dJdX.primal.design.infty
-                slam_inf = dJdX.primal.slack.infty
-                feas_inf = dJdX.dual.infty   
+                if self.ineq_factory is not None:
+                    opt_norm = dJdX.primal.design.norm2
+                    slam_norm = dJdX.primal.slack.norm2
+                    feas_norm = dJdX.dual.norm2 
+                    opt_inf = dJdX.primal.design.infty
+                    slam_inf = dJdX.primal.slack.infty
+                    feas_inf = dJdX.dual.infty   
+                else:
+                    opt_norm = dJdX.primal.norm2
+                    slam_norm = 0
+                    feas_norm = dJdX.dual.norm2 
+                    opt_inf = dJdX.primal.infty
+                    slam_inf = 0
+                    feas_inf = dJdX.dual.infty                       
 
                 self._write_inner(
                     outer_iters, 0,
@@ -837,7 +916,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             if self.svd_pc is not None and self.mu <= self.precond_on_mu:
                 # BFGS Hessian approx
                 X_olddualS.equals(x)
-                X_olddualS.primal.design.equals(old_x.primal.design)
+                if self.ineq_factory is not None:
+                    X_olddualS.primal.design.equals(old_x.primal.design)
+                else:
+                    X_olddualS.primal.equals(old_x.primal)
 
                 if not state_work_svd.equals_primal_solution(X_olddualS.primal):
                     raise RuntimeError(
@@ -865,7 +947,10 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 self.svd_pc_stress.linearize(x, state, adj, self.mu)
 
             if self.svd_pc_cmu is not None and self.mu <= self.precond_on_mu:
-                self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                if self.ineq_factory is not None:
+                    self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                else:
+                    self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)
 
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters
@@ -877,7 +962,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             else:
                 self.krylov.solve(self._mat_vec, rhs_vec, t, self.eye_precond)
 
-            if self.symmetric is True: 
+            if self.symmetric is True and self.ineq_factory is not None: 
                 # unpeal the S^-1 layer for the slack term                
                 t.primal.slack.times(self.current_x.primal.slack)
 
@@ -931,9 +1016,15 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 if self.factor_matrices:
                     factor_linear_system(x.primal, state)
             else:
+
                 # # this step is accepted so send it to user
-                x.primal.slack.base.data[x.primal.slack.base.data < 1e-6] = 1e-6
-                x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+                if self.ineq_factory is not None:
+                    x.primal.slack.base.data[x.primal.slack.base.data < 1e-6] = 1e-6
+                    if self.eq_factory is not None:
+                        x.dual.ineq.base.data[x.dual.ineq.base.data > 0.0] = 0.0
+                    else:
+                        x.dual.base.data[x.dual.base.data > 0.0] = 0.0
+
                 solver_info = current_solution(
                     num_iter=outer_iters, curr_primal=x.primal,
                     curr_state=state, curr_adj=adj, curr_dual=x.dual)

@@ -17,9 +17,9 @@ class InequalityTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        num_design = 200
-        # self.outdir = './temp'  
-        self.outdir = './output2/' + str(num_design) + '/'
+        num_design = 500
+        self.outdir = './temp'  
+        # self.outdir = './output2/' + str(num_design) + '/'
         if not os.path.isdir(self.outdir):
             os.mkdir(self.outdir)
 
@@ -219,11 +219,10 @@ class InequalityTestCase(unittest.TestCase):
     def test_snopt(self):
 
         # ------ Kona Opt --------
+        self.kona_optimize(None)
 
         self.kona_optimize('svd_pc_cmu')
         
-        self.kona_optimize(None)
-
         # ------ SNOPT Opt -------
 
         self.iteration = 0
