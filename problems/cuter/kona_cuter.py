@@ -6,12 +6,16 @@ import cutermgr
 
 class KONA_CUTER(UserSolver):
 
-    def __init__(self, prob_name='BT11'):
+    def __init__(self, prob_name='BT11', V=0):
+        # print 'V: ', V
+
+        # cutermgr.clearCache(prob_name)
 
         if cutermgr.isCached(prob_name): 
             self.prob=cutermgr.importProblem(prob_name)
         else:
-            cutermgr.prepareProblem(prob_name, efirst=True, nvfirst=True)            
+            cutermgr.prepareProblem(prob_name, efirst=True, nvfirst=True, 
+                sifParams={'NN': V}, sifOptions=['-param', 'NN='+str(V)])            
             self.prob=cutermgr.importProblem(prob_name)
 
         info=self.prob.getinfo()
@@ -20,6 +24,8 @@ class KONA_CUTER(UserSolver):
         num_design = info['n']
         num_state = 0
         num_eq = sum(info['equatn'])
+
+        self.eq_idx = info['equatn']
 
         # no. of inequality constraints excluding bounds/2
         self.bl = info['bl']
@@ -30,35 +36,25 @@ class KONA_CUTER(UserSolver):
         # special treatment for bound constraints
         # if self.bl ~ -1e20 or self.bu ~ 1e20 
         # then this bound constraint doesn't exists
-        num_inef_bl = 0
-        num_inef_bu = 0
-
-        # effective lower bound
-        if sum(abs(self.bl) > 1e6) > 0: 
-            num_inef_bl = sum(abs(self.bl) > 1e10)
-            print '%d ineffective lower bound on design ' %num_inef_bl
-
-        if sum(abs(self.bu) > 1e6) > 0: 
-            num_inef_bu = sum(abs(self.bu) > 1e10)
-            print '%d ineffective upper bound on design ' %num_inef_bu
-
-        # effective upper bound
-        num_bnd = 2*num_design - num_inef_bl - num_inef_bu      
-        num_ineq= 2*(info['m'] - num_eq) + num_bnd
-
-        self.num_bnd = num_bnd
-        self.m_ineq = info['m'] - num_eq  
-
         self.bl_eff = abs(self.bl) < 1e6
         self.bu_eff = abs(self.bu) < 1e6
-        # self.bnd_eff = np.concatenate(self.bl_eff, self.bu_eff)
+        self.num_bnd = sum(self.bl_eff) + sum(self.bu_eff) 
 
-        assert sum(abs(self.cl) > 1e6) == 0, 'self.cl -infinity, check'
-        assert sum(abs(self.cu) > 1e6) == 0, 'self.cu infinity, check'
+
+        # special treatment for inequality constraints
+        # if self.cl ~ -1e20 or self.cu ~ 1e20 
+        # then this inequality constraint doesn't exists        
+        self.cl_eff = abs(self.cl) < 1e6
+        self.cu_eff = abs(self.cu) < 1e6   
+        self.num_con = sum(self.cl_eff) + sum(self.cu_eff)   
+
+        num_ineq = self.num_bnd + self.num_con
+        self.num_ineq = num_ineq
 
         super(KONA_CUTER, self).__init__(
             num_design, num_state, num_eq, num_ineq)
         print 'num_design, num_state, num_eq, num_ineq', num_design, num_state, num_eq, num_ineq
+
     def eval_obj(self, at_design, at_state):
         result = self.prob.obj(at_design)
         return np.asscalar(result)
@@ -85,20 +81,20 @@ class KONA_CUTER(UserSolver):
             c_bnd_bu = -at_design[self.bu_eff] + self.bu[self.bu_eff]
             c_bnd = np.concatenate([c_bnd_bl, c_bnd_bu])
 
-        if self.m_ineq > 0:    # non bound inequality constraints exist
+        if self.num_con > 0:    # non bound inequality constraints exist
             c = self.prob.cons(at_design)
-            c_ineq_orig = c[self.num_eq:]
-            c_ineq_2orig = np.concatenate([c_ineq_orig - self.cl,
-                                          -c_ineq_orig + self.cu])
+            c_lower = c[self.cl_eff] - self.cl[self.cl_eff]
+            c_upper = -c[self.cu_eff] + self.cu[self.cu_eff]
+            c_con = np.concatenate([c_lower, c_upper])
 
-        if self.num_bnd > 0:  # bound constr exists
-            if self.m_ineq > 0:
-                c_ineq = np.concatenate([c_ineq_2orig, c_bnd])
-            else:   # no inequ constrs
-                c_ineq = c_bnd
-        else:
-            if self.m_ineq > 0:
-                c_ineq = c_ineq_2orig
+        if self.num_bnd > 0 and self.num_con > 0:    # both bound and inequality 
+            c_ineq = np.concatenate([c_bnd, c_con])
+        elif self.num_bnd > 0:                       # bound only
+            c_ineq = c_bnd
+        elif self.num_con > 0:                       # inequality only
+            c_ineq = c_con
+        else:                                        # unconstrained
+            c_ineq = []
 
         return c_ineq
         
@@ -128,58 +124,76 @@ class KONA_CUTER(UserSolver):
             out_bnd_bu = -in_vec[self.bu_eff]  
             out_bnd = np.concatenate([out_bnd_bl, out_bnd_bu])
 
-        if self.m_ineq > 0:    # non bound inequality constraints exist
+        if self.num_con > 0:    # non bound inequality constraints exist
             f, g = self.prob.cons(at_design, True)
-            g_ineq_orig = g[self.num_eq:, :]
-            out_g_ineq = g_ineq_orig.dot(in_vec)
-            out_2ineq = np.concatenate([out_g_ineq, -out_g_ineq])
+            cx_lower = g[self.cl_eff, :].dot(in_vec)
+            cx_upper = -g[self.cu_eff, :].dot(in_vec)
+            out_con = np.concatenate([cx_lower, cx_upper])
 
-        if self.num_bnd > 0:  # bound constr exists
-            if self.m_ineq > 0:
-                c_ineq = np.concatenate([out_2ineq, out_bnd])
-            else:   # no inequ constrs
-                c_ineq = out_bnd
-        else:
-            if self.m_ineq > 0:
-                c_ineq = out_2ineq
+        if self.num_bnd > 0 and self.num_con > 0:    # both bound and inequality 
+            cx_ineq = np.concatenate([out_bnd, out_con])
+        elif self.num_bnd > 0:                       # bound only
+            cx_ineq = out_bnd
+        elif self.num_con > 0:                       # inequality only
+            cx_ineq = out_con
+        else:                                        # unconstrained
+            cx_ineq = []
 
-        return c_ineq
+        return cx_ineq
 
 
     def multiply_dCINdX_T(self, at_design, at_state, in_vec):
 
         assert len(in_vec) == self.num_ineq, "Incorrect in_vec size!"
 
+        if self.num_bnd > 0:    # effective bound constraints exist
+            in_bnd = in_vec[:self.num_bnd]
+            in_bl = in_bnd[:sum(self.bl_eff)]
+            in_bu = in_bnd[sum(self.bl_eff):] 
 
-        if self.m_ineq > 0:    # non bound inequality constraints exist
-            f, g = self.prob.cons(at_design, True)
-            g_ineq_orig = g[self.num_eq:, :]
-            g_ineq = g_ineq_orig.transpose()   
-            out_1ineq = g_ineq.dot(in_vec[:self.m_ineq])
-            out_2ineq = (-g_ineq).dot(in_vec[self.m_ineq:(2*self.m_ineq)])
+            out_bl = np.zeros(self.num_design)
+            out_bu = np.zeros(self.num_design)
 
-        if self.num_bnd > 0:   # effective bound constraints exist
-            in_vec_bnd = in_vec[2*self.m_ineq:]
-            in_bnd_bl = in_vec_bnd[:sum(self.bl_eff)]
-            in_bnd_bu = in_vec_bnd[sum(self.bl_eff):] 
+            out_bl[self.bl_eff] = in_bl 
+            out_bu[self.bu_eff] = -in_bu
 
-            out_bnd_bl = in_bnd_bl[self.bl_eff]
-            out_bnd_bu = -in_bnd_bu[self.bu_eff]  
-            
-        if self.num_bnd > 0:  # bound constr exists
-            if self.m_ineq > 0:
-                out_ineq =  out_1ineq + out_2ineq + out_bnd_bl +  out_bnd_bu
-            else:   # no inequ constrs
-                out_ineq = out_bnd_bl +  out_bnd_bu
-        else:
-            if self.m_ineq > 0:
-                out_ineq = out_1ineq + out_2ineq
+            out_bnd = out_bl + out_bu 
+
+        if self.num_con > 0:    # non bound inequality constraints exist
+            in_con = in_vec[self.num_bnd:]
+            in_cl = in_con[:sum(self.cl_eff)]
+            in_cu = in_con[sum(self.cl_eff):]
+
+            f, g = self.prob.cons(at_design, True)  
+            out_cl = g[self.cl_eff, :].transpose().dot(in_cl )
+            out_cu = -g[self.cu_eff, :].transpose().dot(in_cu )
+
+            out_con = out_cl + out_cu
+
+        if self.num_bnd > 0 and self.num_con > 0:    # both bound and inequality 
+            out_ineq = out_bnd + out_con
+        elif self.num_bnd > 0:                       # bound only
+            out_ineq = out_bnd
+        elif self.num_con > 0:                       # inequality only
+            out_ineq = out_con
+        else:                                        # unconstrained
+            out_ineq = []
 
         return out_ineq
 
 
     def init_design(self):
         return self.init_x
+
+    def init_slack(self):
+        at_slack = 10*np.ones(self.num_ineq)
+        # at_slack = self.eval_ineq_cnstr(self.init_x, [])
+        # at_slack[ at_slack<1e-3 ] = 10.0
+        return (at_slack, 0)
+
+    def enforce_bounds(self, design_vec):
+        pass
+
 
     def current_solution(self, num_iter, curr_design, curr_state, curr_adj,
                          curr_eq, curr_ineq, curr_slack):

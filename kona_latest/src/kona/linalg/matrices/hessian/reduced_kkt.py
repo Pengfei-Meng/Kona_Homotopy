@@ -174,12 +174,13 @@ class ReducedKKTMatrix(BaseHessian):
                 self.slack_block = self.ineq_factory.generate()
 
             if self.eq_factory is not None:
-                self.reduced_work_eq = self.eq_factory.generate()    
-            self.reduced_work_ineq = self.ineq_factory.generate()
-            self.reduced_work_ineq2 = self.ineq_factory.generate()
-            self.in_dual_ineq = self.ineq_factory.generate()
-            self.reduced_work_design = self.primal_factory.generate()
+                self.reduced_work_eq = self.eq_factory.generate()  
 
+            if self.ineq_factory is not None:  
+                self.reduced_work_ineq = self.ineq_factory.generate()
+                self.reduced_work_ineq2 = self.ineq_factory.generate()
+                self.in_dual_ineq = self.ineq_factory.generate()
+            self.reduced_work_design = self.primal_factory.generate()
 
             self._allocated = True
 
