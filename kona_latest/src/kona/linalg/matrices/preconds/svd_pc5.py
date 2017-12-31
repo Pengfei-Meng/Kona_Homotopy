@@ -7,6 +7,7 @@ from kona.linalg.matrices.hessian.basic import BaseHessian
 from kona.linalg.solvers.krylov import FGMRES
 from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
+from kona.linalg.vectors.composite import CompositeDualVector
 from kona.linalg.vectors.composite import CompositePrimalVector
 from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
@@ -15,7 +16,7 @@ from kona.linalg.matrices.hessian import LimitedMemoryBFGS
 import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
-class SVDPC(BaseHessian):
+class SVDPC5(BaseHessian):
     """
     On top of svd_pc4.py 
     Adding Equality Constraints into the PC
@@ -25,7 +26,7 @@ class SVDPC(BaseHessian):
 
     def __init__(self, vector_factories, optns={}):    
 
-        super(SVDPC_CMU, self).__init__(vector_factories, None)
+        super(SVDPC5, self).__init__(vector_factories, None)
         
         svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
@@ -34,8 +35,6 @@ class SVDPC(BaseHessian):
         self.beta = get_opt(optns, 1.0, 'beta')
         self.cmin = get_opt(optns, -1e-3, 'cmin')
         self.fstopo = get_opt(optns, False, 'fstopo')
-
-        print 'fstopo Problem ? ', self.fstopo
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AT_Sig_A_mu = LowRankSVD(
@@ -55,14 +54,10 @@ class SVDPC(BaseHessian):
         # self.dual_work1.times(1.0-self.mu)  # (1-mu) considered in linearization
         
         self.dual_work2.equals(0.0)
-        if self.fstopo is True:     
-            if self.mu < self.sig_exact:                 
-                self.dual_work2.base.data[-self.num_design:] = self.sig_aug[2*self.num_design:] * self.dual_work1.base.data[-self.num_design:]
-            else:
-                self.dual_work2.equals(self.dual_work1)
-        else: 
-            self.dual_work2.base.data = self.sig_aug * self.dual_work1.base.data 
 
+        self.dual_work2.ineq.base.data = self.sig_aug * self.dual_work1.ineq.base.data 
+        self.dual_work2.eq.base.data = self.sig_aug_eq * self.dual_work1.eq.base.data 
+        
         if self.mu < self.mu_exact:
             self.Ag.T.product(self.dual_work2, out_vec)
         else:
@@ -75,8 +70,8 @@ class SVDPC(BaseHessian):
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
-        assert isinstance(X.dual, DualVectorINEQ),  \
-            "SVDPC() linearize >> X.dual must be of DualVectorINEQ type!"
+        # assert isinstance(X.dual, DualVectorINEQ),  \
+        #     "SVDPC() linearize >> X.dual must be of DualVectorINEQ type!"
 
         if not self._allocated:
             self.design_work0 = self.primal_factory.generate()
@@ -132,13 +127,19 @@ class SVDPC(BaseHessian):
         self.C_mu = self.C_mu_orig
         self.sig_aug = 1/self.C_mu * self.Lam_mu
 
+        # -------- Add the equality part ----------
+        self.at_slack_eq_data = 1e-6*np.ones(self.num_eq)
+        self.Lam_mu_eq = (1.0-self.mu)*self.at_dual_eq_data - self.mu*np.ones(self.num_eq)
+        self.S_mu_eq = (1.0-self.mu)*self.at_slack_eq_data
+        self.C_mu_eq = self.mu * self.Lam_mu_eq - (1 - self.mu) * self.S_mu_eq         
+        self.sig_aug_eq = 1/self.C_mu_eq * self.Lam_mu_eq
+
         # ---------- Linearize ----------
         self.Ag.linearize(X.primal.design, state)
 
-        if self.fstopo is False:
-            # ---------- Hessian LBFGS approximation --------  
-            dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
-            self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
+        # ---------- Hessian LBFGS approximation --------  
+        dldx_bfgs.equals_ax_p_by(1.0-self.mu, dldx_bfgs, self.mu, dx_bfgs)
+        self.W_hat.add_correction(dx_bfgs, dldx_bfgs)
 
 
         # ----------- svd_AsT_SigS_As_mu -------------
@@ -153,10 +154,9 @@ class SVDPC(BaseHessian):
             self.asa_U[:, j] = self.svd_AT_Sig_A_mu.U[j].base.data
             self.asa_V[:, j] = self.svd_AT_Sig_A_mu.V[j].base.data
 
-            if self.fstopo is False:
-                self.design_work.equals(0.0)
-                self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
-                self.Winv_U[:, j] = self.design_work.base.data
+            self.design_work.equals(0.0)
+            self.W_hat.solve(self.svd_AT_Sig_A_mu.U[j], self.design_work)
+            self.Winv_U[:, j] = self.design_work.base.data
 
         self.asa_U = (1-self.mu) * self.asa_U
         self.asa_V = (1-self.mu) * self.asa_V
@@ -220,7 +220,8 @@ class SVDPC(BaseHessian):
         # using scaled slack version,  Lambda_aug, I'' contains Slack component
         u_x = rhs_vec.primal.design.base.data
         u_s = rhs_vec.primal.slack.base.data
-        u_g = rhs_vec.dual.base.data        
+        u_h = rhs_vec.dual.eq.base.data 
+        u_g = rhs_vec.dual.ineq.base.data        
 
         # use the block matrix expression as in the paper:
         # solve for v_x
@@ -229,7 +230,9 @@ class SVDPC(BaseHessian):
         # self.dual_work1.base.data = (self.S_mu * u_s - self.Lam_mu * u_g) / self.C_mu
 
         # # Unsymmetric
-        self.dual_work1.base.data = ( (1-self.mu) * u_s - self.Lam_mu * u_g) / self.C_mu
+        if isinstance(rhs_vec.dual, CompositeDualVector):
+            self.dual_work1.ineq.base.data = ( (1-self.mu) * u_s - self.Lam_mu * u_g) / self.C_mu
+            self.dual_work1.eq.base.data = ( (1-self.mu) * self.at_slack_eq_data - self.Lam_mu_eq * u_h) / self.C_mu_eq
 
         if self.mu < self.mu_exact:
             self.Ag.T.product(self.dual_work1, self.design_work)
@@ -240,15 +243,11 @@ class SVDPC(BaseHessian):
 
         rhs_vx = u_x - self.design_work.base.data
 
-        # v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx)         
-        if self.fstopo is True: 
-            v_x = self.sherman_morrison_betaI(rhs_vx)
-            # v_x = sp.linalg.lu_solve(sp.linalg.lu_factor(self.LHS), rhs_vx)  
-        else: 
-            v_x = self.sherman_morrison(rhs_vx)
+        v_x = self.sherman_morrison(rhs_vx)
+        v_x = self.sherman_morrison_betaI(rhs_vx)
 
-        # solve v_g, v_s
-        self.design_work2.base.data = v_x
+        # solve v_g, v_s   # Correct here
+        self.design_work2.ineq.base.data = v_x
 
         if self.mu < self.mu_exact:
             self.Ag.product(self.design_work2, self.dual_work2)
@@ -256,7 +255,7 @@ class SVDPC(BaseHessian):
             self.Ag.approx.product(self.design_work2, self.dual_work2)
 
         self.dual_work2.times(1.0 - self.mu)
-        rhs_ug = u_g - self.dual_work2.base.data      
+        rhs_ug = u_g - self.dual_work2.ineq.base.data      
                 
 
         v_s = (-self.mu * u_s + self.S_mu * rhs_ug) / self.C_mu
@@ -268,8 +267,8 @@ class SVDPC(BaseHessian):
 
         pcd_vec.primal.design.base.data = v_x
         pcd_vec.primal.slack.base.data = v_s
-        pcd_vec.dual.base.data = v_g
-
+        pcd_vec.dual.eq.base.data = u_h
+        pcd_vec.dual.ineq.base.data = v_g
         
 
     def _generate_primal(self):

@@ -25,14 +25,14 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # number of vectors required in solve() method  + fgmres
         krylov_size = get_opt(self.optns, 10, 'rsnk', 'subspace_size')
-        self.primal_factory.request_num_vectors(25 + 2*krylov_size)
+        self.primal_factory.request_num_vectors(30 + 2*krylov_size)
         self.state_factory.request_num_vectors(10)
 
         if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(25 + 2*krylov_size)
+            self.eq_factory.request_num_vectors(30 + 2*krylov_size)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(50 + 4*krylov_size)
+            self.ineq_factory.request_num_vectors(60 + 4*krylov_size)
 
         # general options
         ############################################################
@@ -61,6 +61,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         self.svd_pc = None
         self.svd_pc_stress = None
         self.svd_pc_cmu = None
+        self.svd_pc5 = None
         self.fstopo = get_opt(self.optns, False, 'svd', 'fstopo') 
 
         if self.precond is 'svd_pc':
@@ -101,6 +102,20 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
             self.precond = self.svd_pc_cmu.solve    
             self.fstopo = get_opt(self.optns, False, 'svd', 'fstopo')        
+
+        elif self.precond is 'svd_pc5': 
+            print 'svd_pc5 for both equality and inequality is used! '
+            svd_optns = {
+                'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
+                'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
+                'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
+                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
+                'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
+                'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+            }
+            self.svd_pc5 = SVDPC5(
+                [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)
+            self.precond = self.svd_pc5.solve                
 
         else:
             self.eye = IdentityMatrix()
@@ -745,6 +760,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                             self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
                         else:
                             self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)
+                    
+                    if self.svd_pc5 is not None and self.mu <= self.precond_on_mu:
+                        if self.ineq_factory is not None:
+                            self.svd_pc5.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                        else:
+                            self.svd_pc5.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)                        
 
                     self.krylov.outer_iters = outer_iters
                     self.krylov.inner_iters = inner_iters
@@ -953,6 +974,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 else:
                     self.svd_pc_cmu.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)
 
+            if self.svd_pc5 is not None and self.mu <= self.precond_on_mu:
+                if self.ineq_factory is not None:
+                    self.svd_pc5.linearize(x, state, adj, self.mu, dx_bfgs.primal.design, dldx_bfgs.primal.design)
+                else:
+                    self.svd_pc5.linearize(x, state, adj, self.mu, dx_bfgs.primal, dldx_bfgs.primal)    
+
             self.krylov.outer_iters = outer_iters 
             self.krylov.inner_iters = inner_iters
             self.krylov.mu = self.mu
@@ -1045,9 +1072,9 @@ from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.common import IdentityMatrix
 from kona.linalg.matrices.hessian import ReducedKKTMatrix
 from kona.linalg.matrices.preconds import APPROXADJOINT
-from kona.linalg.matrices.preconds import SVDPC
 from kona.linalg.matrices.preconds import SVDPC_STRESS
 from kona.linalg.matrices.preconds import SVDPC_CMU
+from kona.linalg.matrices.preconds import SVDPC5
 from kona.linalg.matrices.preconds import UZAWA
 from kona.linalg.matrices.preconds import IterSolver
 from kona.linalg.solvers.krylov import FGMRES

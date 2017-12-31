@@ -49,6 +49,7 @@ class TotalConstraintJacobian(BaseHessian):
         if not self._allocated:
             self.design_work = self.primal_factory.generate()
             self.state_work = self.state_factory.generate()
+            self.state_work2 = self.state_factory.generate()
             self.adjoint_work = self.state_factory.generate()
             self.dual_work = None
             if self.eq_factory is not None and self.ineq_factory is not None:
@@ -88,8 +89,13 @@ class TotalConstraintJacobian(BaseHessian):
             out_vec.plus(self.dual_work)
         else:
             # assemble the RHS for the adjoint system
-            dCdU(self.at_design, self.at_state).T.product(
-                in_vec, self.state_work)
+            #print 'constraint_jacobian self.Ag.T.product(self.dual_work2, out_vec)'
+            if isinstance(in_vec, CompositeDualVector):
+                dCdU(self.at_design, self.at_state).T.product(
+                    in_vec, self.state_work, self.state_work2)
+            else:                
+                dCdU(self.at_design, self.at_state).T.product(
+                    in_vec, self.state_work)
             self.state_work.times(self.scale)
             self.state_work.times(-1.)
             # approximately solve the linear system
