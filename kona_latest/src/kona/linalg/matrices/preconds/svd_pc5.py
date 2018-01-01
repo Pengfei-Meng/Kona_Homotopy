@@ -28,7 +28,7 @@ class SVDPC5(BaseHessian):
 
         super(SVDPC5, self).__init__(vector_factories, None)
         
-        svd_optns = {'lanczos_size': get_opt(optns, 40, 'lanczos_size')}  
+        svd_optns = {'lanczos_size': get_opt(optns, 2, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
         self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
         self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
@@ -57,13 +57,17 @@ class SVDPC5(BaseHessian):
 
         self.dual_work2.ineq.base.data = self.sig_aug * self.dual_work1.ineq.base.data 
         self.dual_work2.eq.base.data = self.sig_aug_eq * self.dual_work1.eq.base.data 
-        
+
         if self.mu < self.mu_exact:
             self.Ag.T.product(self.dual_work2, out_vec)
         else:
            self.Ag.T.approx.product(self.dual_work2, out_vec)
 
         # out_vec.times(1.0-self.mu)
+        print 'in_vec: ', in_vec.norm2
+        print 'out_vec: ', out_vec.norm2
+        print 'self.dual_work2.eq.norm2: ', self.dual_work2.eq.norm2
+        print 'self.dual_work2.ineq.norm2: ', self.dual_work2.ineq.norm2
 
 
     def linearize(self, X, state, adjoint, mu, dx_bfgs, dldx_bfgs):   # dLdX_homo, dLdX_homo_oldual, inner_iters  
@@ -244,10 +248,10 @@ class SVDPC5(BaseHessian):
         rhs_vx = u_x - self.design_work.base.data
 
         v_x = self.sherman_morrison(rhs_vx)
-        v_x = self.sherman_morrison_betaI(rhs_vx)
+        # v_x = self.sherman_morrison_betaI(rhs_vx)
 
         # solve v_g, v_s   # Correct here
-        self.design_work2.ineq.base.data = v_x
+        self.design_work2.base.data = v_x
 
         if self.mu < self.mu_exact:
             self.Ag.product(self.design_work2, self.dual_work2)
