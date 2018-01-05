@@ -12,7 +12,6 @@ from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
 from kona.linalg.matrices.hessian import LagrangianHessian
 from kona.linalg.matrices.hessian import LimitedMemoryBFGS
-import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
 class SVDPC(BaseHessian):

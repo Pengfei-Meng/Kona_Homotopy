@@ -25,14 +25,14 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
 
         # number of vectors required in solve() method  + fgmres
         krylov_size = get_opt(self.optns, 10, 'rsnk', 'subspace_size')
-        self.primal_factory.request_num_vectors(30 + 2*krylov_size)
+        self.primal_factory.request_num_vectors(40 + 2*krylov_size)
         self.state_factory.request_num_vectors(10)
 
         if self.eq_factory is not None:
-            self.eq_factory.request_num_vectors(30 + 2*krylov_size)
+            self.eq_factory.request_num_vectors(40 + 2*krylov_size)
 
         if self.ineq_factory is not None:
-            self.ineq_factory.request_num_vectors(60 + 4*krylov_size)
+            self.ineq_factory.request_num_vectors(80 + 4*krylov_size)
 
         # general options
         ############################################################
@@ -109,9 +109,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
                 'mu_exact'        : get_opt(self.optns, -1.0, 'svd', 'mu_exact'),
-                'sig_exact'        : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
+                'sig_exact'       : get_opt(self.optns, 1.0, 'svd', 'sig_exact'),
                 'beta'            : get_opt(self.optns, 1.0, 'svd', 'beta'), 
-                'cmin'            : get_opt(self.optns, 1e-3, 'svd', 'cmin'), 
+                'mu_min'          : get_opt(self.optns, 1e-3, 'svd', 'mu_min'), 
             }
             self.svd_pc5 = SVDPC5(
                 [primal_factory, state_factory, eq_factory, ineq_factory], svd_optns)

@@ -13,7 +13,6 @@ from kona.linalg.vectors.composite import ReducedKKTVector
 from kona.linalg.matrices.hessian import TotalConstraintJacobian
 from kona.linalg.matrices.hessian import LagrangianHessian
 from kona.linalg.matrices.hessian import LimitedMemoryBFGS
-import matplotlib.pylab as pylt
 import scipy.sparse as sps
 
 class SVDPC5(BaseHessian):
@@ -30,11 +29,10 @@ class SVDPC5(BaseHessian):
         
         svd_optns = {'lanczos_size': get_opt(optns, 2, 'lanczos_size')}  
         bfgs_optns = {'max_stored': get_opt(optns, 10, 'bfgs_max_stored')}
-        self.mu_exact = get_opt(optns, -1.0, 'mu_exact')
+        self.mu_exact = get_opt(optns, 1.0, 'mu_exact')
         self.sig_exact = get_opt(optns, 1.0, 'sig_exact')
         self.beta = get_opt(optns, 1.0, 'beta')
-        self.cmin = get_opt(optns, -1e-3, 'cmin')
-        self.fstopo = get_opt(optns, False, 'fstopo')
+        self.mu_min = get_opt(optns, 1e-3, 'mu_min')
 
         self.Ag = TotalConstraintJacobian( vector_factories )
         self.svd_AT_Sig_A_mu = LowRankSVD(
@@ -50,32 +48,23 @@ class SVDPC5(BaseHessian):
             self.Ag.product(in_vec, self.dual_work1)
         else:
             self.Ag.approx.product(in_vec, self.dual_work1)
-
-        # self.dual_work1.times(1.0-self.mu)  # (1-mu) considered in linearization
         
         self.dual_work2.equals(0.0)
-
         self.dual_work2.ineq.base.data = self.sig_aug * self.dual_work1.ineq.base.data 
         self.dual_work2.eq.base.data = self.sig_aug_eq * self.dual_work1.eq.base.data 
 
         if self.mu < self.mu_exact:
             self.Ag.T.product(self.dual_work2, out_vec)
         else:
-           self.Ag.T.approx.product(self.dual_work2, out_vec)
-
-        # out_vec.times(1.0-self.mu)
-        print 'in_vec: ', in_vec.norm2
-        print 'out_vec: ', out_vec.norm2
-        print 'self.dual_work2.eq.norm2: ', self.dual_work2.eq.norm2
-        print 'self.dual_work2.ineq.norm2: ', self.dual_work2.ineq.norm2
+            self.Ag.T.approx.product(self.dual_work2, out_vec)
 
 
     def linearize(self, X, state, adjoint, mu, dx_bfgs, dldx_bfgs):   # dLdX_homo, dLdX_homo_oldual, inner_iters  
 
         assert isinstance(X.primal, CompositePrimalVector), \
             "SVDPC() linearize >> X.primal must be of CompositePrimalVector type!"
-        # assert isinstance(X.dual, DualVectorINEQ),  \
-        #     "SVDPC() linearize >> X.dual must be of DualVectorINEQ type!"
+        assert isinstance(X.dual, CompositeDualVector),  \
+            "svd_pc5() linearize >> X.dual must be of CompositeDualVector type!"
 
         if not self._allocated:
             self.design_work0 = self.primal_factory.generate()
@@ -83,17 +72,10 @@ class SVDPC5(BaseHessian):
             self.design_work2 = self.primal_factory.generate()
             self.design_work3 = self.primal_factory.generate()
 
-            self.slack_work = self.ineq_factory.generate()
-            self.kkt_work = self._generate_kkt()
+            self.inequ_work = self.ineq_factory.generate()
 
             self.dual_work1 = self._generate_dual()
             self.dual_work2 = self._generate_dual()
-            self.dual_work3 = self._generate_dual()
-
-            # approximate BFGS Hessian
-            self.dldx_old = self.primal_factory.generate()
-            self.dldx = self.primal_factory.generate()
-            self.design_old = self.primal_factory.generate()
 
             self._allocated = True
 
@@ -103,6 +85,8 @@ class SVDPC5(BaseHessian):
         self.at_dual_eq = X.dual.eq
         self.at_dual_ineq = X.dual.ineq
         self.mu = mu
+
+        self.state = state
 
         self.num_design = len(X.primal.design.base.data)
         self.num_eq = len(X.dual.eq.base.data)
@@ -117,26 +101,16 @@ class SVDPC5(BaseHessian):
             self.at_dual_ineq_data = X.dual.base.data
 
         # -------- Theories are in the paper, see the manuscript, note the minus sign ---------- 
-        # # Symmetric KKT matrix
-        # self.Lam_mu = (1.0-self.mu)*self.at_dual_ineq_data*self.at_slack_data - self.mu*self.at_slack_data
-        # self.S_mu = (1.0-self.mu)*self.at_slack_data
-        # self.C_mu_orig = self.mu * self.Lam_mu - self.S_mu ** 2
-
         # # Unsymmetric KKT matrix
         self.Lam_mu = (1.0-self.mu)*self.at_dual_ineq_data - self.mu*np.ones(self.num_ineq)
         self.S_mu = (1.0-self.mu)*self.at_slack_data
-        self.C_mu_orig = self.mu * self.Lam_mu - (1 - self.mu) * self.S_mu 
+        self.C_mu = self.mu * self.Lam_mu - (1 - self.mu) * self.S_mu 
 
-        # self.C_mu = np.minimum(-self.cmin*np.ones(self.num_ineq), self.C_mu_orig)
-        self.C_mu = self.C_mu_orig
         self.sig_aug = 1/self.C_mu * self.Lam_mu
 
         # -------- Add the equality part ----------
-        self.at_slack_eq_data = 1e-6*np.ones(self.num_eq)
-        self.Lam_mu_eq = (1.0-self.mu)*self.at_dual_eq_data - self.mu*np.ones(self.num_eq)
-        self.S_mu_eq = (1.0-self.mu)*self.at_slack_eq_data
-        self.C_mu_eq = self.mu * self.Lam_mu_eq - (1 - self.mu) * self.S_mu_eq         
-        self.sig_aug_eq = 1/self.C_mu_eq * self.Lam_mu_eq
+        self.mu_limit = max(self.mu, self.mu_min)
+        self.sig_aug_eq = 1/self.mu_limit * np.ones(self.num_eq)
 
         # ---------- Linearize ----------
         self.Ag.linearize(X.primal.design, state)
@@ -171,11 +145,7 @@ class SVDPC5(BaseHessian):
         beta_I = self.beta*np.ones(self.num_design) 
         self.W_mu = (1-self.mu)*beta_I + self.mu*np.ones(self.num_design)
 
-        # if self.fstopo is True:                           
-        #     self.LHS = np.diag(self.W_mu + (1.0-self.mu)**2 * (self.sig_aug[: self.num_design] + \
-        #         self.sig_aug[self.num_design : 2*self.num_design ]) ) +  self.svd_ASA    
-        # else:
-        #     self.LHS = np.diag(self.W_mu) + self.svd_ASA   
+        self.LHS = np.diag(self.W_mu) + self.svd_ASA   
 
 
     def sherman_morrison(self, rhs_vx):
@@ -227,51 +197,60 @@ class SVDPC5(BaseHessian):
         u_h = rhs_vec.dual.eq.base.data 
         u_g = rhs_vec.dual.ineq.base.data        
 
-        # use the block matrix expression as in the paper:
-        # solve for v_x
+        # solve for v_x     # Unsymmetric
+        self.inequ_work.base.data = ( (1-self.mu) * u_s - self.Lam_mu * u_g) / self.C_mu
 
-        # # Symmetric
-        # self.dual_work1.base.data = (self.S_mu * u_s - self.Lam_mu * u_g) / self.C_mu
+        # Write the Total Constraint Jacobian for Inequalty, Equality separately. 
+        # if self.mu < self.mu_exact:
+        #     self.Ag.T.product(self.dual_work1, self.design_work)
+        # else:
+        #     self.Ag.T.approx.product(self.dual_work1, self.design_work)
 
-        # # Unsymmetric
-        if isinstance(rhs_vec.dual, CompositeDualVector):
-            self.dual_work1.ineq.base.data = ( (1-self.mu) * u_s - self.Lam_mu * u_g) / self.C_mu
-            self.dual_work1.eq.base.data = ( (1-self.mu) * self.at_slack_eq_data - self.Lam_mu_eq * u_h) / self.C_mu_eq
-
-        if self.mu < self.mu_exact:
-            self.Ag.T.product(self.dual_work1, self.design_work)
-        else:
-            self.Ag.T.approx.product(self.dual_work1, self.design_work)
+        self.design_work.base.data = self.inequ_work._memory.solver.multiply_dCINdX_T( \
+            self.at_design.base.data, self.state, self.inequ_work.base.data)
 
         self.design_work.times(1.0-self.mu) 
 
         rhs_vx = u_x - self.design_work.base.data
 
-        v_x = self.sherman_morrison(rhs_vx)
-        # v_x = self.sherman_morrison_betaI(rhs_vx)
+
+        # 3rd block matrix * vectors
+        rhs_3 = rhs_vx + 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX_T( \
+            self.at_design.base.data, self.state, u_h)
+        uh_3 = u_h
+
+
+        rhs_2 = self.sherman_morrison(rhs_3)
+        uh_2 = -1/self.mu_limit*uh_3 
+
+        v_x = rhs_2
+        v_h = 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX(\
+            self.at_design.base.data, self.state, rhs_2 )  + uh_2
 
         # solve v_g, v_s   # Correct here
         self.design_work2.base.data = v_x
 
-        if self.mu < self.mu_exact:
-            self.Ag.product(self.design_work2, self.dual_work2)
-        else:
-            self.Ag.approx.product(self.design_work2, self.dual_work2)
+        # if self.mu < self.mu_exact:
+        # self.Ag.product(self.design_work2, self.dual_work2)
+        # else:
+        # self.Ag.approx.product(self.design_work2, self.dual_work2)
+        
+        self.inequ_work.equals(0.0)
 
-        self.dual_work2.times(1.0 - self.mu)
-        rhs_ug = u_g - self.dual_work2.ineq.base.data      
+        self.inequ_work.base.data = self.inequ_work._memory.solver.multiply_dCINdX( \
+            self.at_design.base.data, self.state, self.design_work2.base.data)
+
+
+        self.inequ_work.times(1.0 - self.mu)
+        rhs_ug = u_g - self.inequ_work.base.data      
                 
 
         v_s = (-self.mu * u_s + self.S_mu * rhs_ug) / self.C_mu
-        # # Symmetric Case : 
-        # v_g = ( self.S_mu * u_s - self.Lam_mu * rhs_ug ) / self.C_mu
-
-        # # Unsymmetric Case : 
         v_g = ( (1-self.mu) * u_s - self.Lam_mu * rhs_ug ) / self.C_mu
 
         pcd_vec.primal.design.base.data = v_x
         pcd_vec.primal.slack.base.data = v_s
-        pcd_vec.dual.eq.base.data = u_h
+        pcd_vec.dual.eq.base.data = v_h
         pcd_vec.dual.ineq.base.data = v_g
         
 
