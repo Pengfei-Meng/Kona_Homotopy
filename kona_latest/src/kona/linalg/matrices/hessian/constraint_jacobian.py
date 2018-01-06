@@ -53,6 +53,8 @@ class TotalConstraintJacobian(BaseHessian):
             self.adjoint_work = self.state_factory.generate()
             self.dual_work = None
             if self.eq_factory is not None and self.ineq_factory is not None:
+                self.ineq_work = self.ineq_factory.generate()
+                self.eq_work = self.eq_factory.generate()
                 self.dual_work = CompositeDualVector(
                     self.eq_factory.generate(), self.ineq_factory.generate())
             elif self.eq_factory is not None:
@@ -116,6 +118,103 @@ class TotalConstraintJacobian(BaseHessian):
         # reset the approx and transpose flags at the end
         self._approx = False
         self._transposed = False
+
+    def product_INEQ(self, in_vec, out_vec):
+        if not self._transposed:
+            # assemble the RHS for the linear system
+            dRdX(self.at_design, self.at_state).product(
+                in_vec, self.state_work)
+            self.state_work.times(-1.)
+            # approximately solve the linear system
+            if self._approx:
+                dRdU(self.at_design, self.at_state).precond(
+                    self.state_work, self.adjoint_work)
+            else:
+                dRdU(self.at_design, self.at_state).solve(
+                    self.state_work, self.adjoint_work, rel_tol=1e-8)
+            # assemble the product
+            dCINdX(self.at_design, self.at_state).product(
+                in_vec, out_vec)
+            out_vec.times(self.scale)
+            dCINdU(self.at_design, self.at_state).product(
+                self.adjoint_work, self.ineq_work)
+            self.ineq_work.times(self.scale)
+            out_vec.plus(self.ineq_work)
+        else:
+            # assemble the RHS for the adjoint system            
+            dCINdU(self.at_design, self.at_state).T.product(
+                in_vec, self.state_work)
+            self.state_work.times(self.scale)
+            self.state_work.times(-1.)
+            # approximately solve the linear system
+            if self._approx:
+                dRdU(self.at_design, self.at_state).T.precond(
+                    self.state_work, self.adjoint_work)
+            else:
+                dRdU(self.at_design, self.at_state).T.solve(
+                    self.state_work, self.adjoint_work, rel_tol=1e-8)
+            # assemble the final product
+            dCINdX(self.at_design, self.at_state).T.product(
+                in_vec, out_vec)
+            out_vec.times(self.scale)
+            dRdX(self.at_design, self.at_state).T.product(
+                self.adjoint_work, self.design_work)
+            out_vec.plus(self.design_work)
+
+        # reset the approx and transpose flags at the end
+        self._approx = False
+        self._transposed = False
+
+
+    def product_EQ(self, in_vec, out_vec):
+        if not self._transposed:
+            # assemble the RHS for the linear system
+            dRdX(self.at_design, self.at_state).product(
+                in_vec, self.state_work)
+            self.state_work.times(-1.)
+            # approximately solve the linear system
+            if self._approx:
+                dRdU(self.at_design, self.at_state).precond(
+                    self.state_work, self.adjoint_work)
+            else:
+                dRdU(self.at_design, self.at_state).solve(
+                    self.state_work, self.adjoint_work, rel_tol=1e-8)
+            # assemble the product
+            dCEQdX(self.at_design, self.at_state).product(
+                in_vec, out_vec)
+            out_vec.times(self.scale)
+            dCEQdU(self.at_design, self.at_state).product(
+                self.adjoint_work, self.eq_work)
+            self.eq_work.times(self.scale)
+            out_vec.plus(self.eq_work)
+        else:
+            # assemble the RHS for the adjoint system            
+            dCEQdU(self.at_design, self.at_state).T.product(
+                in_vec, self.state_work)
+            self.state_work.times(self.scale)
+            self.state_work.times(-1.)
+            # approximately solve the linear system
+            if self._approx:
+                dRdU(self.at_design, self.at_state).T.precond(
+                    self.state_work, self.adjoint_work)
+            else:
+                dRdU(self.at_design, self.at_state).T.solve(
+                    self.state_work, self.adjoint_work, rel_tol=1e-8)
+            # assemble the final product
+            dCEQdX(self.at_design, self.at_state).T.product(
+                in_vec, out_vec)
+            out_vec.times(self.scale)
+            dRdX(self.at_design, self.at_state).T.product(
+                self.adjoint_work, self.design_work)
+            out_vec.plus(self.design_work)
+
+        # reset the approx and transpose flags at the end
+        self._approx = False
+        self._transposed = False
+
+        
+
+
 
     def product_nonlinear(self, in_vec, out_vec, work):
         if not self._transposed:
