@@ -269,4 +269,5 @@ from kona.linalg.vectors.common import DesignVector, StateVector
 from kona.linalg.vectors.common import DualVectorEQ, DualVectorINEQ
 from kona.linalg.vectors.composite import CompositeDualVector
 from kona.linalg.matrices.common import dRdX, dRdU, dCdX, dCdU
+from kona.linalg.matrices.common import dCEQdX, dCEQdU, dCINdX, dCINdU 
 from kona.linalg.matrices.common import dCINdX_nonlinear,  dCINdU_nonlinear

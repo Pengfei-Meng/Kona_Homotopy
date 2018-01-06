@@ -16,21 +16,21 @@ BT6  0.277044924
 CAMEL6  -1.031628
 
 OK0  : not OK, caused by other issue but not Kona
-OK1  : solved by Kona, but accuracy not checked,
+OK1  : solved by Kona (opt/feas low value), but accuracy not checked,
        as the correct solution for this CUTEr problem is not listed 
        http://www.cuter.rl.ac.uk/Problems/mastsif.shtml
 OK2  : solved by Kona, the objective function agrees with 
        the solution objective on the problem page
 
-                                          nominal_dist
-ACOPR14   Equ and Ineq            OK1                      38 0 28 144
-AUG2D     Equ and Ineq            OK1                     220 0 100 200
-AVGASA            Ineq            OK1
-BDRY2                             OK0
+                                        d0 t d         noPC   PC
+ACOPR14   Equ and Ineq   38 0 28 144                              
+AUG2D     Equ and Ineq   220 0 100 200                 Yes   No
+AVGASA            Ineq            
+BDRY2                              
 
-BT1       Equ and Ineq            OK2       1 
-BT2       Equ and Ineq            OK2       5              3 0 1 2
-BT3       Equ and Ineq            OK2       10             5 0 3 6
+BT1       Equ and Ineq                    1 
+BT2       Equ and Ineq   3 0 1 2       |          5              
+BT3       Equ and Ineq   5 0 3 6       |  0.05 10 10             
 """
 
 parser = argparse.ArgumentParser()

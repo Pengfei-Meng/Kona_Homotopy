@@ -73,6 +73,7 @@ class SVDPC5(BaseHessian):
             self.design_work3 = self.primal_factory.generate()
 
             self.inequ_work = self.ineq_factory.generate()
+            self.eq_work = self.eq_factory.generate()
 
             self.dual_work1 = self._generate_dual()
             self.dual_work2 = self._generate_dual()
@@ -201,13 +202,10 @@ class SVDPC5(BaseHessian):
         self.inequ_work.base.data = ( (1-self.mu) * u_s - self.Lam_mu * u_g) / self.C_mu
 
         # Write the Total Constraint Jacobian for Inequalty, Equality separately. 
-        # if self.mu < self.mu_exact:
-        #     self.Ag.T.product(self.dual_work1, self.design_work)
-        # else:
-        #     self.Ag.T.approx.product(self.dual_work1, self.design_work)
-
-        self.design_work.base.data = self.inequ_work._memory.solver.multiply_dCINdX_T( \
-            self.at_design.base.data, self.state, self.inequ_work.base.data)
+        if self.mu < self.mu_exact:
+            self.Ag.T.product_INEQ(self.inequ_work, self.design_work)
+        else:
+            self.Ag.T.approx.product_INEQ(self.inequ_work, self.design_work)
 
         self.design_work.times(1.0-self.mu) 
 
@@ -215,30 +213,41 @@ class SVDPC5(BaseHessian):
 
 
         # 3rd block matrix * vectors
-        rhs_3 = rhs_vx + 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX_T( \
-            self.at_design.base.data, self.state, u_h)
-        uh_3 = u_h
+        self.eq_work.base.data = u_h
 
+        self.design_work.equals(0.0)
+        self.Ag.T.product_EQ(self.eq_work, self.design_work)
+
+        rhs_3 = rhs_vx + 1/self.mu_limit * self.design_work.base.data
+        uh_3 = u_h
 
         rhs_2 = self.sherman_morrison(rhs_3)
         uh_2 = -1/self.mu_limit*uh_3 
 
+        # ---------------------------------
+        self.design_work.equals(0.0)
+        self.design_work.base.data = rhs_2
+        self.Ag.product_EQ(self.design_work, self.eq_work)
         v_x = rhs_2
-        v_h = 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX(\
-            self.at_design.base.data, self.state, rhs_2 )  + uh_2
+        v_h = 1/self.mu_limit * self.eq_work.base.data  + uh_2
+        # ---------------------------------
+
+        # v_x = rhs_2
+        # v_h = 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX(\
+        #     self.at_design.base.data, self.state, rhs_2 )  + uh_2
+
+        print v_x
+        print v_h
 
         # solve v_g, v_s   # Correct here
         self.design_work2.base.data = v_x
 
-        # if self.mu < self.mu_exact:
-        # self.Ag.product(self.design_work2, self.dual_work2)
-        # else:
-        # self.Ag.approx.product(self.design_work2, self.dual_work2)
-        
         self.inequ_work.equals(0.0)
 
-        self.inequ_work.base.data = self.inequ_work._memory.solver.multiply_dCINdX( \
-            self.at_design.base.data, self.state, self.design_work2.base.data)
+        if self.mu < self.mu_exact:
+            self.Ag.product_INEQ(self.design_work2, self.inequ_work)
+        else:
+            self.Ag.approx.product_INEQ(self.design_work2, self.inequ_work)
 
 
         self.inequ_work.times(1.0 - self.mu)
