@@ -124,6 +124,7 @@ solution = solver.eval_obj(solver.curr_design, solver.curr_state)
 
 f_optns = outdir + '/kona_optns.dat'
 print 'solution : ', solution
+print 'Time Elapse: ', duration
 
 kona_obj = 'Kona objective value at its solution, ' + str(solution)
 kona_time = 'Kona runtime, ' + str(duration)

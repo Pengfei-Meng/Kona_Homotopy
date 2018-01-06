@@ -71,9 +71,11 @@ class SVDPC5(BaseHessian):
             self.design_work = self.primal_factory.generate()
             self.design_work2 = self.primal_factory.generate()
             self.design_work3 = self.primal_factory.generate()
+            self.design_work4 = self.primal_factory.generate()
 
             self.inequ_work = self.ineq_factory.generate()
-            self.eq_work = self.eq_factory.generate()
+            self.eq_work2 = self.eq_factory.generate()
+            self.eq_work3 = self.eq_factory.generate()
 
             self.dual_work1 = self._generate_dual()
             self.dual_work2 = self._generate_dual()
@@ -213,10 +215,9 @@ class SVDPC5(BaseHessian):
 
 
         # 3rd block matrix * vectors
-        self.eq_work.base.data = u_h
+        self.eq_work2.base.data = u_h
 
-        self.design_work.equals(0.0)
-        self.Ag.T.product_EQ(self.eq_work, self.design_work)
+        self.Ag.T.product_EQ(self.eq_work2, self.design_work)
 
         rhs_3 = rhs_vx + 1/self.mu_limit * self.design_work.base.data
         uh_3 = u_h
@@ -224,31 +225,22 @@ class SVDPC5(BaseHessian):
         rhs_2 = self.sherman_morrison(rhs_3)
         uh_2 = -1/self.mu_limit*uh_3 
 
-        # ---------------------------------
-        self.design_work.equals(0.0)
-        self.design_work.base.data = rhs_2
-        self.Ag.product_EQ(self.design_work, self.eq_work)
+        
+        self.design_work4.base.data = rhs_2
+
+        self.Ag.product_EQ(self.design_work4, self.eq_work3)
+
+        v_h = 1/self.mu_limit * self.eq_work3.base.data  + uh_2
         v_x = rhs_2
-        v_h = 1/self.mu_limit * self.eq_work.base.data  + uh_2
-        # ---------------------------------
-
-        # v_x = rhs_2
-        # v_h = 1/self.mu_limit * self.inequ_work._memory.solver.multiply_dCEQdX(\
-        #     self.at_design.base.data, self.state, rhs_2 )  + uh_2
-
-        print v_x
-        print v_h
 
         # solve v_g, v_s   # Correct here
         self.design_work2.base.data = v_x
-
         self.inequ_work.equals(0.0)
 
         if self.mu < self.mu_exact:
             self.Ag.product_INEQ(self.design_work2, self.inequ_work)
         else:
             self.Ag.approx.product_INEQ(self.design_work2, self.inequ_work)
-
 
         self.inequ_work.times(1.0 - self.mu)
         rhs_ug = u_g - self.inequ_work.base.data      
