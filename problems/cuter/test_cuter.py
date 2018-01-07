@@ -85,9 +85,9 @@ optns = {
     'homotopy' : {
         'inner_tol' : 0.1,
         'inner_maxiter' : 2,
-        'init_step' : 0.05,
+        'init_step' : 1.0,
         'nominal_dist' : 10.0,
-        'nominal_angle' : 10.0*np.pi/180.,
+        'nominal_angle' : 20.0*np.pi/180.,
         'max_factor' : 30.0,                  
         'min_factor' : 0.001,                   
         'dmu_max' : -0.0005,       
@@ -95,7 +95,7 @@ optns = {
     }, 
 
     'svd' : {
-        'lanczos_size'    : 2, 
+        'lanczos_size'    : 5, 
         'bfgs_max_stored' : 10, 
         'beta'         : 1.0, 
         'mu_min'       : 1e-2,
@@ -128,8 +128,15 @@ print 'Time Elapse: ', duration
 
 kona_obj = 'Kona objective value at its solution, ' + str(solution)
 kona_time = 'Kona runtime, ' + str(duration)
+cuter_dimension = 'num_design, num_state, num_eq, num_ineq : ' + \
+        str(solver.num_design) + '  '  + \
+        str(solver.num_state) + '  '  + \
+        str(solver.num_eq)  + '  '  + \
+        str(solver.num_ineq) \
+       
 
 with open(f_optns, 'a') as file:
     pprint.pprint(optns, file)
     pprint.pprint(kona_obj, file)
     pprint.pprint(kona_time, file)
+    pprint.pprint(cuter_dimension, file)
