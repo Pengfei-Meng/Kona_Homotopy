@@ -1,0 +1,108 @@
+{'feas_tol': 1e-07,
+ 'hist_file': './temp/AUG2D_PC/kona_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.5,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.3490658503988659,
+              'nominal_dist': 10.0},
+ 'info_file': './temp/AUG2D_PC/kona_info.dat',
+ 'max_iter': 300,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './temp/AUG2D_PC/kona_krylov.dat',
+          'precond': 'svd_pc5',
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 2,
+         'mu_min': 1e-05}}
+'==========================='
+'AUG2D'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+'Kona objective value at its solution, 103.182674122'
+'Kona runtime, 4.85799002647'
+'num_design, num_state, num_eq, num_ineq : 220  0  100  200'
+{'feas_tol': 1e-07,
+ 'hist_file': './temp/AUG2D_PC/kona_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.5,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.3490658503988659,
+              'nominal_dist': 10.0},
+ 'info_file': './temp/AUG2D_PC/kona_info.dat',
+ 'max_iter': 300,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './temp/AUG2D_PC/kona_krylov.dat',
+          'precond': 'svd_pc5',
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 40,
+         'mu_min': 0.0001}}
+'==========================='
+'AUG2D'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+'Kona objective value at its solution, 104.184114016'
+'Kona runtime, 32.727905035'
+'num_design, num_state, num_eq, num_ineq : 220  0  100  200'
+{'feas_tol': 1e-07,
+ 'hist_file': './temp/AUG2D_PC/kona_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.5,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.3490658503988659,
+              'nominal_dist': 10.0},
+ 'info_file': './temp/AUG2D_PC/kona_info.dat',
+ 'max_iter': 300,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './temp/AUG2D_PC/kona_krylov.dat',
+          'precond': 'svd_pc5',
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 100,
+         'mu_min': 0.0001}}
+'==========================='
+'AUG2D'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+'Kona objective value at its solution, 110.799112141'
+'Kona runtime, 26.0759618282'
+'num_design, num_state, num_eq, num_ineq : 220  0  100  200'

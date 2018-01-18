@@ -5,53 +5,76 @@ import argparse, os, pdb
 from kona import Optimizer 
 from kona.algorithms import PredictorCorrectorCnstrCond, Verifier
 from kona_cuter import KONA_CUTER
+import cutermgr
 
-"""
-Problem Solution
-BT1  -1.0
-BT2  0.032568200
-BT3  4.09301056 
-BT4  3.28903771 
-BT6  0.277044924
-CAMEL6  -1.031628
+# SEPARATE BOUND LINEAR CONSTRAINTS FROM NONLINEAR CONSTRAINTS SHOULD WORK BETTER
+# THE SVD APPROXIMATION APPLY ONLY TO NONLINEAR, STATE RELATED CONSTRAINTS BETTER
 
-OK0  : not OK, caused by other issue but not Kona
-OK1  : solved by Kona (opt/feas low value), but accuracy not checked,
-       as the correct solution for this CUTEr problem is not listed 
-       http://www.cuter.rl.ac.uk/Problems/mastsif.shtml
-OK2  : solved by Kona, the objective function agrees with 
-       the solution objective on the problem page
-
-                                        d0 t d         noPC   PC
-ACOPR14   Equ and Ineq   38 0 28 144                              
-AUG2D     Equ and Ineq   220 0 100 200                 Yes   No
-AVGASA            Ineq            
-BDRY2                              
-
-BT1       Equ and Ineq                    1 
-BT2       Equ and Ineq   3 0 1 2       |          5              
-BT3       Equ and Ineq   5 0 3 6       |  0.05 10 10             
-"""
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--name", help='Cuter problem name', type=str, default='BT1')
-parser.add_argument("--v", help='Number of variables', type=int, default=0)
-parser.add_argument("--output", help='Ouput Directory', type=str, default='./temp')
+parser.add_argument("--k", help='k-th problem in name_list', type=int, default=0)
 parser.add_argument("--precond", help='Preconditioner', type=str, default='Eye')
+parser.add_argument("--iniST", help='init step', type=float, default=0.05)
+parser.add_argument("--nomDist", help='nominal dist', type=float, default=1.0)
+parser.add_argument("--nomAngle", help='nominal angle', type=float, default=5.0)
+parser.add_argument("--V1", help='1st Parameter', type=int, default=0)
+parser.add_argument("--V2", help='2nd Parameter', type=int, default=0)
+parser.add_argument("--V3", help='3rd Parameter', type=float, default=0)
+parser.add_argument("--output", help='Ouput Directory', type=str, default='./temp')
+parser.add_argument("--name", help='Problem Name', type=str, default='BT11')
 args = parser.parse_args()
 
-prob_name = args.name
-pc_name = args.precond    
-V = args.v
+k = args.k
+V1 = args.V1
+V2 = args.V2
+V3 = args.V3
+pc_name = args.precond 
 
-solver = KONA_CUTER(prob_name, V)
+name_list = ['GOULDQP1', 'GENHS28', 'GMNCASE4', 'GMNCASE1',  'NASH', 'HS268', 'HS76I', 'HS51', 'HS53',  'HS52', # 0 - 9
+'HS44NEW', 'HS44','HS76', 'HS35I', 'HS21', 'HS35', 'HS118', 'HS35MOD',      # 17
+'AUG2D',    'AUG2DQP', 'AUG2DC',   'AUG3D',  'AUG3DC',                      # 22
+'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4', 'BLOCKQP5',                            # 26
+'CVXQP1', 'CVXQP2', 'NCVXQP9', 'NCVXQP8', 'NCVXQP1', 'NCVXQP7', 'NCVXQP5', 'NCVXQP6',   # 34   # difficult
+'STNQP1', 'STNQP2', 'STCQP1',                                                           # 37   # difficult
+'RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U',                                         # 41
+'MOSARQP2', 'MOSARQP1', 
+'AVGASA', 'TAME', 'PORTSQP', 'POWELL20', 'DTOC3', 'DEGTRIDL', 
+'BIGGSC4', 'ALLINQP',  'LOTSCHD', 'RDW2D52F', 'DEGENQP', 
+'ZECEVIC2', 'TWOD',  'BDRY2', 'QPBAND', 'S268', 'AVGASB',
+'DEGENQPC', 'SOSQP1', 'SOSQP2', 'HATFLDH', 'FERRISDC', ]
 
+#  
+# 
+# 'NCVXQP4',    'STCQP2',   'YAO', 
+
+""" 
+'LISWET1': -1.,  3., -3.,  1.,   numpy.linalg.linalg.LinAlgError
+'LISWET1', 'LISWET5', 'LISWET12', 'LISWET11', 'LISWET10', 'LISWET9', 
+'LISWET6', 'LISWET8', 'LISWET7', 'LISWET4', 'LISWET2', 'LISWET3', 
+"""
+
+
+prob_name = name_list[k]      # args.name #
+ 
+
+print prob_name
+
+solver = KONA_CUTER(prob_name, V1, V2, V3)
+
+print 'num_design, num_state, num_eq, num_ineq', \
+    solver.num_design, solver.num_state, solver.num_eq, solver.num_ineq
+
+# pdb.set_trace()
+
+if any(x>1000 for x in [solver.num_design, solver.num_eq, solver.num_ineq]):
+    print 'Size Too Large, Lenovo Laptop cannot handle it! Exiting...'
+    exit()
 
 if pc_name == 'Eye': 
-    outdir = args.output + '/' + args.name 
+    outdir = args.output + '/' + prob_name 
     pc = None 
 else: 
-    outdir = args.output + '/' + args.name  + '_PC'
+    outdir = args.output + '/' + prob_name  + '_PC'
 
     if solver.num_eq == 0 and solver.num_ineq == 0:
         print 'Unconstrained Case, Not Considered In the Algorithm, Try another problem..'
@@ -85,20 +108,20 @@ optns = {
     'homotopy' : {
         'inner_tol' : 0.1,
         'inner_maxiter' : 2,
-        'init_step' : 1.0,
-        'nominal_dist' : 10.0,
-        'nominal_angle' : 20.0*np.pi/180.,
+        'init_step' : args.iniST,
+        'nominal_dist' : args.nomDist,
+        'nominal_angle' : args.nomAngle*np.pi/180.,
         'max_factor' : 30.0,                  
         'min_factor' : 0.001,                   
-        'dmu_max' : -0.0005,       
+        'dmu_max' : -0.0005,              
         'dmu_min' : -0.9,                     
     }, 
 
     'svd' : {
-        'lanczos_size'    : 5, 
+        'lanczos_size'    : 30,  # max(int(solver.num_design*0.2), solver.num_design-1), 
         'bfgs_max_stored' : 10, 
         'beta'         : 1.0, 
-        'mu_min'       : 1e-2,
+        'mu_min'       : 1e-4,
     }, 
 
     'rsnk' : {
@@ -133,10 +156,17 @@ cuter_dimension = 'num_design, num_state, num_eq, num_ineq : ' + \
         str(solver.num_state) + '  '  + \
         str(solver.num_eq)  + '  '  + \
         str(solver.num_ineq) \
-       
+
+
+cutermgr.updateClassifications() 
+
+feature = cutermgr.problemProperties(prob_name)
 
 with open(f_optns, 'a') as file:
     pprint.pprint(optns, file)
+    pprint.pprint('===========================', file)
+    pprint.pprint(prob_name, file)  
+    pprint.pprint(feature, file)        
     pprint.pprint(kona_obj, file)
     pprint.pprint(kona_time, file)
     pprint.pprint(cuter_dimension, file)

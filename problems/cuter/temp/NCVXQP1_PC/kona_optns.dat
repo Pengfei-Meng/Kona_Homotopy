@@ -1,0 +1,72 @@
+{'feas_tol': 1e-07,
+ 'hist_file': './temp/NCVXQP1_PC/kona_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.5,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.3490658503988659,
+              'nominal_dist': 1000.0},
+ 'info_file': './temp/NCVXQP1_PC/kona_info.dat',
+ 'max_iter': 300,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './temp/NCVXQP1_PC/kona_krylov.dat',
+          'precond': 'svd_pc5',
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 5,
+         'mu_min': 0.0001}}
+'==========================='
+'NCVXQP1'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+'Kona objective value at its solution, -302.756346413'
+'Kona runtime, 37.5185539722'
+'num_design, num_state, num_eq, num_ineq : 10  0  5  30'
+{'feas_tol': 1e-07,
+ 'hist_file': './temp/NCVXQP1_PC/kona_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.5,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.3490658503988659,
+              'nominal_dist': 10.0},
+ 'info_file': './temp/NCVXQP1_PC/kona_info.dat',
+ 'max_iter': 300,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './temp/NCVXQP1_PC/kona_krylov.dat',
+          'precond': 'svd_pc5',
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 5,
+         'mu_min': 0.0001}}
+'==========================='
+'NCVXQP1'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+'Kona objective value at its solution, -159262.696322'
+'Kona runtime, 47.2086069584'
+'num_design, num_state, num_eq, num_ineq : 10  0  5  30'

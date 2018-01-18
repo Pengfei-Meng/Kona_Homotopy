@@ -509,6 +509,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
         inner_iters = 0
         total_iters = 0
         corrector = False
+        opt_succeed = False
 
         while self.mu > 0.0 and outer_iters <= self.max_iter:
 
@@ -709,6 +710,12 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
                         obj, lag, opt_norm, slam_norm, feas_norm,
                         hom, hom_opt_norm, hom_feas_norm, opt_inf, slam_inf, feas_inf)
 
+
+                    if opt_norm <= opt_tol and feas_norm <= feas_tol:
+                        self.info_file.write('\n  Optimization Completed!\n')
+                        opt_succeed = True
+                        break
+
                     # check convergence
                     if hom_opt_norm <= hom_opt_tol and hom_feas_norm <= hom_feas_tol:
                         self.info_file.write('\n  Corrector step converged!\n')
@@ -845,6 +852,9 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             dJdX.equals_KKT_conditions(
                 x, state, adj,
                 obj_scale=obj_fac, cnstr_scale=cnstr_fac)
+
+            if opt_succeed is True:
+                break
 
             if corrector_succeed is False:
                 if self.fstopo is False:

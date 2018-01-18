@@ -6,26 +6,31 @@ import cutermgr
 
 class KONA_CUTER(UserSolver):
 
-    def __init__(self, prob_name='BT11', V=0):
-        # print 'V: ', V
+    def __init__(self, prob_name='BT11', V1=0, V2=0, V3=0):
 
-        # cutermgr.clearCache(prob_name)
+        # cutermgr.updateClassifications()
+        cutermgr.clearCache(prob_name)
 
         if cutermgr.isCached(prob_name): 
             self.prob=cutermgr.importProblem(prob_name)
         else:
-            cutermgr.prepareProblem(prob_name, efirst=True, nvfirst=True, 
-                sifParams={'NN': V}, sifOptions=['-param', 'NN='+str(V)])            
+            cutermgr.prepareProblem(prob_name, sifParams={'N': V1, 'M': V2, 'COND' : V3},     #, 'B': V2, 'NZ' : V3
+                efirst=True, nvfirst=True)            
             self.prob=cutermgr.importProblem(prob_name)
+
 
         info=self.prob.getinfo()
         self.init_x = info['x']
 
+        print info['sifparams']
+
+        
         num_design = info['n']
         num_state = 0
         num_eq = sum(info['equatn'])
 
         self.eq_idx = info['equatn']
+
 
         # no. of inequality constraints excluding bounds/2
         self.bl = info['bl']
@@ -53,7 +58,7 @@ class KONA_CUTER(UserSolver):
 
         super(KONA_CUTER, self).__init__(
             num_design, num_state, num_eq, num_ineq)
-        print 'num_design, num_state, num_eq, num_ineq', num_design, num_state, num_eq, num_ineq
+        
 
     def eval_obj(self, at_design, at_state):
         result = self.prob.obj(at_design)
@@ -138,6 +143,10 @@ class KONA_CUTER(UserSolver):
             cx_ineq = out_con
         else:                                        # unconstrained
             cx_ineq = []
+
+        # print '1. in_vec : ', np.linalg.norm(in_vec)
+        # print '2. out_vec : ', np.linalg.norm(cx_ineq)
+        # pdb.set_trace()
 
         return cx_ineq
 
