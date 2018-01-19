@@ -8,35 +8,35 @@ class KONA_CUTER(UserSolver):
 
     def __init__(self, prob_name='BT11', V1=0, V2=0, V3=0):
 
-        # cutermgr.updateClassifications()
+        cutermgr.updateClassifications()
         cutermgr.clearCache(prob_name)
 
         if cutermgr.isCached(prob_name): 
             self.prob=cutermgr.importProblem(prob_name)
         else:
-            cutermgr.prepareProblem(prob_name, sifParams={'N': V1, 'M': V2, 'COND' : V3},     #, 'B': V2, 'NZ' : V3
+            cutermgr.prepareProblem(prob_name, sifParams={'NX': V1, 'NY': V2},     #, 'B': V2, 'NZ' : V3
                 efirst=True, nvfirst=True)            
             self.prob=cutermgr.importProblem(prob_name)
 
 
-        info=self.prob.getinfo()
-        self.init_x = info['x']
+        self.info=self.prob.getinfo()
+        self.init_x = self.info['x']
 
-        print info['sifparams']
+        print self.info['sifparams']
 
         
-        num_design = info['n']
+        num_design = self.info['n']
         num_state = 0
-        num_eq = sum(info['equatn'])
+        num_eq = sum(self.info['equatn'])
 
-        self.eq_idx = info['equatn']
-
+        self.eq_idx = self.info['equatn']
+        self.prob_name = prob_name
 
         # no. of inequality constraints excluding bounds/2
-        self.bl = info['bl']
-        self.bu = info['bu']
-        self.cl = info['cl']
-        self.cu = info['cu']
+        self.bl = self.info['bl']
+        self.bu = self.info['bu']
+        self.cl = self.info['cl']
+        self.cu = self.info['cu']
 
         # special treatment for bound constraints
         # if self.bl ~ -1e20 or self.bu ~ 1e20 

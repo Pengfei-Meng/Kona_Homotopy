@@ -35,17 +35,29 @@ name_list = ['GOULDQP1', 'GENHS28', 'GMNCASE4', 'GMNCASE1',  'NASH', 'HS268', 'H
 'AUG2D',    'AUG2DQP', 'AUG2DC',   'AUG3D',  'AUG3DC',                      # 22
 'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4', 'BLOCKQP5',                            # 26
 'CVXQP1', 'CVXQP2', 'NCVXQP9', 'NCVXQP8', 'NCVXQP1', 'NCVXQP7', 'NCVXQP5', 'NCVXQP6',   # 34   # difficult
-'STNQP1', 'STNQP2', 'STCQP1',                                                           # 37   # difficult
-'RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U',                                         # 41
+'STNQP1', 'STNQP2', 'STCQP1',  'STCQP2',                                                           # 37   # difficult
+'RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U',                     # done                        # 41
 'MOSARQP2', 'MOSARQP1', 
-'AVGASA', 'TAME', 'PORTSQP', 'POWELL20', 'DTOC3', 'DEGTRIDL', 
-'BIGGSC4', 'ALLINQP',  'LOTSCHD', 'RDW2D52F', 'DEGENQP', 
-'ZECEVIC2', 'TWOD',  'BDRY2', 'QPBAND', 'S268', 'AVGASB',
-'DEGENQPC', 'SOSQP1', 'SOSQP2', 'HATFLDH', 'FERRISDC', ]
+'AVGASA', 'TAME', 'PORTSQP', 'POWELL20', 'DTOC3', 'DEGTRIDL',        # done
+'BIGGSC4', 'ALLINQP',  'LOTSCHD', 'RDW2D52F', 'DEGENQP',             # done
+'ZECEVIC2', 'TWOD',  'BDRY2', 'QPBAND', 'S268', 'AVGASB',            # done
+'DEGENQPC', 'SOSQP1', 'SOSQP2', 'HATFLDH', 'FERRISDC',  'YAO', ]     # done
 
-#  
-# 
-# 'NCVXQP4',    'STCQP2',   'YAO', 
+
+name_list = ['AUG2D',    'AUG2DQP', 'AUG2DC',   'AUG3D',  'AUG3DC',   'AVGASB', 'ALLINQP', 'AVGASA', 
+'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4', 'BLOCKQP5', 'BDRY2', 'BIGGSC4',
+'CVXQP1', 'CVXQP2', 'NCVXQP9', 'NCVXQP8', 'NCVXQP1', 'NCVXQP7', 'NCVXQP5', 'NCVXQP6', 
+'DEGENQPC', 'DEGTRIDL', 'DTOC3', 'DEGENQP', 'FERRISDC', 
+'GOULDQP1', 'GENHS28', 'GMNCASE4', 'GMNCASE1',
+'HS268','HS76I','HS51','HS53','HS52','HS44','HS76','HS35I','HS21','HS35','HS118','HS35MOD','HATFLDH','HS44NEW', 
+'LOTSCHD', 'MOSARQP2', 'MOSARQP1', 'NASH',
+'PORTSQP', 'POWELL20', 'QPBAND',
+'RDW2D52F','RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U', 
+'STNQP1', 'STNQP2', 'STCQP1',  'STCQP2', 'SOSQP1', 'SOSQP2', 'S268',
+'TWOD',  'TAME', 'YAO', 'ZECEVIC2',
+]
+
+
 
 """ 
 'LISWET1': -1.,  3., -3.,  1.,   numpy.linalg.linalg.LinAlgError
@@ -170,6 +182,9 @@ with open(f_optns, 'a') as file:
     pprint.pprint(kona_obj, file)
     pprint.pprint(kona_time, file)
     pprint.pprint(cuter_dimension, file)
+
+
+
 
 
 
