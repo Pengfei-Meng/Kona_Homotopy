@@ -1,0 +1,67 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints     100     Linear constraints       0
+ Nonlinear variables       220     Linear variables         0
+ Jacobian  variables       220     Objective variables    220
+ Total constraints         100     Total variables        220
+ 
+
+ 
+ The user has defined   22000   out of   22000   constraint gradients.
+ The user has defined     220   out of     220   objective  gradients.
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     99               1  1.0E+00  4.1E-01  9.0000000E+01    99           r  T
+     1     22  4.7E-02      2  4.8E-01  4.0E-01  3.7565981E+02   120 6.0E+01 n rl
+     2      1  4.8E-02      3  3.0E-01  4.6E-01  3.5988302E+02   120 6.0E+01 s  l
+     3      1  3.0E-01      4  7.1E-02  3.3E-01  2.3390710E+02   120 6.0E+01    l
+     4      1  1.0E+00      5 (2.7E-16) 6.7E-03  1.1082511E+02   120 6.0E+01
+     5      1  1.0E+00      6 (2.6E-16) 3.8E-03  1.1080555E+02   120 6.0E+01
+     6      1  1.0E+00      7 (2.7E-16) 9.7E-04  1.1079971E+02   120 6.0E+01
+     7      1  1.0E+00      8 (2.7E-16) 4.9E-04  1.1079926E+02   120 6.0E+01
+     8      1  1.0E+00      9 (2.7E-16) 2.0E-04  1.1079913E+02   120 6.0E+01
+     9      1  1.0E+00     10 (2.7E-16) 7.6E-05  1.1079912E+02   120 6.0E+01
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  1.0E+00     11 (2.8E-16) 4.9E-05  1.1079911E+02   120 6.0E+01
+    11      1  1.0E+00     12 (2.7E-16) 1.3E-05  1.1079911E+02   120 6.0E+01
+    12      1  1.0E+00     13 (2.7E-16) 3.3E-06  1.1079911E+02   120 6.0E+01   R
+    13      1  1.0E+00     14 (2.7E-16) 2.3E-06  1.1079911E+02   120 6.0E+01 s
+    14      1  1.0E+00     15 (2.7E-16)(1.8E-06) 1.1079911E+02   120 6.0E+01
+ 
+ SNOPTC EXIT   0 -- finished successfully
+ SNOPTC INFO   1 -- optimality conditions satisfied
+
+ Problem name                 snopt CU
+ No. of iterations                 134   Objective value      1.1079911210E+02
+ No. of major iterations            14   Linear objective     0.0000000000E+00
+ Penalty parameter           6.001E+01   Nonlinear objective  1.1079911210E+02
+ No. of calls to funobj             16   No. of calls to funcon             16
+ No. of superbasics                120   No. of basic nonlinears           100
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                     212 4.5E+00   Max pi                     45 5.8E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            79 1.2E-05
+ Nonlinear constraint violn    6.2E-15
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       1.04 seconds
+ Time for solution output                       0.01 seconds
+ Time for constraint functions                  0.97 seconds
+ Time for objective function                    0.00 seconds

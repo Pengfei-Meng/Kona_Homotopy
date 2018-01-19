@@ -1,0 +1,55 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints     100     Linear constraints       0
+ Nonlinear variables       220     Linear variables         0
+ Jacobian  variables       220     Objective variables    220
+ Total constraints         100     Total variables        220
+ 
+
+ 
+ The user has defined   22000   out of   22000   constraint gradients.
+ The user has defined     220   out of     220   objective  gradients.
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     99               1  1.0E+00  4.5E-01  1.1000000E+02    99           r  T
+     1     22  4.8E-02      2  4.8E-01  4.3E-01  3.3650048E+02   120 4.8E+01 n rl
+     2      1  4.9E-02      3  3.0E-01  4.1E-01  3.2058330E+02   120 4.8E+01 s  l
+     3      0  3.1E-01      4  6.9E-02  2.8E-01  2.4832283E+02   120 4.8E+01    l
+     4      0  1.0E+00      5 (1.7E-16)(1.9E-15) 1.8423941E+02   120 4.8E+01
+ 
+ SNOPTC EXIT   0 -- finished successfully
+ SNOPTC INFO   1 -- optimality conditions satisfied
+
+ Problem name                 snopt CU
+ No. of iterations                 122   Objective value      1.8423941258E+02
+ No. of major iterations             4   Linear objective     0.0000000000E+00
+ Penalty parameter           4.837E+01   Nonlinear objective  1.8423941258E+02
+ No. of calls to funobj              6   No. of calls to funcon              6
+ No. of superbasics                120   No. of basic nonlinears           100
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                     192 4.0E+00   Max pi                     56 7.9E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas           166 1.7E-14
+ Nonlinear constraint violn    3.8E-15
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       0.31 seconds
+ Time for solution output                       0.01 seconds
+ Time for constraint functions                  0.34 seconds
+ Time for objective function                    0.00 seconds

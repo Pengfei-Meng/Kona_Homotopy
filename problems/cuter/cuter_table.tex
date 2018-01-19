@@ -5,24 +5,28 @@
 
 \begin{document}
 
-\begin{tabular}{SS} \toprule
-name   &                 n,  l,  m           &     Origin / Features    &  f^{\star}   &  f^{\text{snopt}}   &  f^{\text{ipopt}}    \\ 
-'AUG2D'    &      220, 100, 200   &    2-D Laplace's Equation  &  110.799    &  110.799   
-'AUG2DQP'   &
-'AUG2DC'  &
-'AUG3D'  &
-'AUG3DC'  &
-'AVGASB'  &
-'ALLINQP'  &
-'AVGASA'  &
-
-'BLOCKQP2'  &
-'BLOCKQP3'  &
-'BLOCKQP4'  &
-'BLOCKQP5'  &  
+\begin{tabular}{l | l | l | c | c | c } \toprule
+name   &                 n,   m       &  n,  $m_{\text{eq}}$,  $m_{\text{ineq}}$        &     Origin / Features              & $ f^{\text{kona}} $   & $ f^{\text{snopt}} $    \\ 
+AUG2D    &           24,  9         &  24,   9,  18       &    2-D Laplace's Equation    &  0.124999           &     0.1250                      \\
+AUG2D    &          220, 100   & 220, 100, 200  &                                 &   110.7987          &    110.7991                 \\
+AUG2DC  &       24, 9      &   24, 9, 18       &       &       2.973213                & 2.973214    \\
+AUG2DC  &      220, 100   &  220, 100, 200   &     & 184.2388    &   184.2394   \\
+AUG3D  &      156, 27    & 156, 27, 54   & 3-D Laplace's Equation  & 0.08333   &   0.083333   \\
+AUG3DC  &  156, 27  &  156, 27, 54   &    &   35.84226   &   35.84276   \\
+AVGASA  &       8, 10   &   8, 0, 26   &            LP problem avgas               &           -4.63092    &    -4.79278   \\
+AVGASB  &    8, 10  &   8, 0, 26   &   LP problem avgas         &   -4.482206   &   -4.6663506   \\
+ALLINQP  & 10, 5   &  10, 1, 21   & A banded QP with all sorts of constraint and variable bounds  & 0.3466666  & -0.1832558 \\ \midrule
+AUG2DQP  &   24, 9      &  24,  9,  42     &                                   &    0.41685              &      0.12500      \\
+AUG2DQP  &   220, 100  & 220, 100,  420  &                    &   137.6701     &   110.79911   \\
 \bottomrule
 \end{tabular}   % \midrule
 
 
 Nick Gould problem collection
 \end{document}
+
+
+%BLOCKQP2  &
+%BLOCKQP3  &
+%BLOCKQP4  &
+%BLOCKQP5  &  

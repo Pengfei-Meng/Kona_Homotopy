@@ -8,7 +8,10 @@ from pyoptsparse import Optimization, OPT
 from kona_cuter import KONA_CUTER
 import cutermgr
 
-name_list = ['AUG2D',    'AUG2DQP', 'AUG2DC',   'AUG3D',  'AUG3DC',   'AVGASB', 'ALLINQP', 'AVGASA',          # 8
+name_list = ['AUG2D',  'AUG2DQP',  'AUG2DC',      
+    'AUG3D',  'AUG3DC', 
+    'AVGASA',   'AVGASB',
+    'ALLINQP',                 # 8
     'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4', 'BLOCKQP5', 'BDRY2', 'BIGGSC4',
     'CVXQP1', 'CVXQP2', 'NCVXQP9', 'NCVXQP8', 'NCVXQP1', 'NCVXQP7', 'NCVXQP5', 'NCVXQP6', 
     'DEGENQPC', 'DEGTRIDL', 'DTOC3', 'DEGENQP', 'FERRISDC', 
@@ -23,7 +26,7 @@ name_list = ['AUG2D',    'AUG2DQP', 'AUG2DC',   'AUG3D',  'AUG3DC',   'AVGASB', 
 
 
 def kona_optimize(args, pc_name, prob_name):
-    global f_optns, solver
+    global f_optns, solver, outdir
 
     # k = args.k
     V1 = args.V1
@@ -33,14 +36,14 @@ def kona_optimize(args, pc_name, prob_name):
     
     solver = KONA_CUTER(prob_name, V1, V2, V3)
 
-    print 'num_design, num_state, num_eq, num_ineq', \
-        solver.num_design, solver.num_state, solver.num_eq, solver.num_ineq
+    print  prob_name
+    kona_nlm = 'num_design,  num_eq, num_ineq : ' + \
+        str(solver.num_design) + ', ' + str(solver.num_eq) + ', ' + str(solver.num_ineq)
+    print kona_nlm
 
     if any(x>1000 for x in [solver.num_design, solver.num_eq, solver.num_ineq]):
         print 'Size Too Large, Lenovo Laptop cannot handle it! Exiting...'
         exit()
-
-    outdir = args.output + '/' + prob_name 
 
     if pc_name == 'Eye': 
         
@@ -62,10 +65,10 @@ def kona_optimize(args, pc_name, prob_name):
             print 'num_ineq = 0, equality only case, not considered yet'
             exit() 
         elif solver.num_eq == 0:
-            print 'num_eq = 0, Inequality only case'
+            # print 'num_eq = 0, Inequality only case'
             pc = 'svd_pc_cmu'      
         else: 
-            print 'Contains both equality and inequality constraints '
+            # print 'Contains both equality and inequality constraints '
             pc = 'svd_pc5'
 
     if not os.path.isdir(outdir):
@@ -73,8 +76,8 @@ def kona_optimize(args, pc_name, prob_name):
 
     optns = {
         'max_iter' : 300,
-        'opt_tol' : 1e-6,
-        'feas_tol' : 1e-6, 
+        'opt_tol' : 1e-7,
+        'feas_tol' : 1e-7, 
         'info_file' : f_info,
         'hist_file' : f_hist,
 
@@ -117,13 +120,13 @@ def kona_optimize(args, pc_name, prob_name):
     duration = timeit.default_timer() - startTime
     solution = solver.eval_obj(solver.curr_design, solver.curr_state)
 
+    cuter_nm = ' n, m : ' + str(solver.num_design) + ', ' + str(solver.info['m'])
+    print cuter_nm 
     print 'Kona Objective : ', solution
     print 'Time Elapse: ', duration
 
-    cuter_nm = ' n, m : ' + str(solver.num_design) + ', ' + str(solver.info['m'])
-    cuter_dimension = 'num_design, num_state, num_eq, num_ineq : ' + \
+    cuter_dimension = 'num_design, num_eq, num_ineq : ' + \
             str(solver.num_design) + '  '  + \
-            str(solver.num_state) + '  '  + \
             str(solver.num_eq)  + '  '  + \
             str(solver.num_ineq) \
 
@@ -168,10 +171,10 @@ def sens(xdict, funcs):
 
 
 def snopt_optimize(args, optName, optOptions): 
-    global solver, f_optns
+    global solver, f_optns, outdir
 
     prob_name = solver.prob_name    # name_list[args.k] 
-    outdir = args.output + '/' + prob_name 
+    # outdir = args.output + '/' + prob_name 
 
     info = solver.prob.getinfo()
 
@@ -232,11 +235,12 @@ if __name__ == '__main__':
 
     out_put = args.output
 
-    for k in range(2): 
+    for k in range(0,1): 
+        k = 7
         prob_name = name_list[k]       
 
         # -------------- Writing to f_optns --------------
-        outdir = out_put + '/' + prob_name 
+        outdir = out_put + '/' + prob_name   # + '_' + str(args.V1)
 
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
@@ -255,8 +259,8 @@ if __name__ == '__main__':
         # sequence cannot be changed!! 
 
 
-        optOptions = {'Print file': out_put + '/' + prob_name  + '/SNOPT_print.out',
-                      'Summary file': out_put + '/' + prob_name  + '/SNOPT_summary.out',
+        optOptions = {'Print file': outdir  + '/SNOPT_print.out',
+                      'Summary file': outdir  + '/SNOPT_summary.out',
                       'Problem Type':'Minimize',
                       }
 

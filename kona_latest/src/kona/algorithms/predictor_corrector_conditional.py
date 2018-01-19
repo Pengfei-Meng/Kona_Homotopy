@@ -104,7 +104,7 @@ class PredictorCorrectorCnstrCond(OptimizationAlgorithm):
             self.fstopo = get_opt(self.optns, False, 'svd', 'fstopo')        
 
         elif self.precond is 'svd_pc5': 
-            print 'svd_pc5 for both equality and inequality is used! '
+            # print 'svd_pc5 for both equality and inequality is used! '
             svd_optns = {
                 'bfgs_max_stored' : get_opt(self.optns, 10, 'svd', 'bfgs_max_stored'),
                 'lanczos_size'    : get_opt(self.optns, 20, 'svd', 'lanczos_size'),
