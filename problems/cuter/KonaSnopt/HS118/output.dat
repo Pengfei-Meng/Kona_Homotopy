@@ -1,0 +1,45 @@
+'HS118'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': 17,
+ 'n': 15,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+{'feas_tol': 1e-07,
+ 'hist_file': './KonaSnopt/HS118/kona_eye_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.05,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.08726646259971647,
+              'nominal_dist': 50.0},
+ 'info_file': './KonaSnopt/HS118/kona_eye_info.dat',
+ 'max_iter': 150,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './KonaSnopt/HS118/kona_eye_krylov.dat',
+          'precond': None,
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 3,
+         'mu_min': 0.0001}}
+'num_design,  num_eq, num_ineq : 15, 0, 59'
+' n, m : 15, 17'
+'==========================='
+'Kona final objective value with PC Eye : 664.52459888'
+'Kona runtime, 7.12912392616'
+'==========================='
+'==========================='
+'Kona final objective value with PC pc : 664.820463889'
+'Kona runtime, 7.5702009201'
+'==========================='
+'========== SNOPT ==========='
+'SNOPT objective value at its solution, -1748.63758998'
+'SNOPT runtime : 0.0250551700592'

@@ -12,13 +12,13 @@ name_list = ['AUG2D',  'AUG2DQP',  'AUG2DC',
     'AUG3D',  'AUG3DC', 
     'AVGASA',   'AVGASB',
     'ALLINQP',                 # 8
-    'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4', 'BLOCKQP5', 'BDRY2', 'BIGGSC4',
-    'CVXQP1', 'CVXQP2', 'NCVXQP9', 'NCVXQP8', 'NCVXQP1', 'NCVXQP7', 'NCVXQP5', 'NCVXQP6', 
-    'DEGENQPC', 'DEGTRIDL', 'DTOC3', 'DEGENQP', 'FERRISDC', 
+    'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4',  'BDRY2', 'BIGGSC4',
+    'CVXQP1', 'CVXQP2', 'NCVXQP1','NCVXQP5', 'NCVXQP6', 'NCVXQP7',  'NCVXQP8',  'NCVXQP9', 
+    'DEGENQP', 'DEGENQPC', 'DEGTRIDL', 'DTOC3',  'FERRISDC', 
     'GOULDQP1', 'GENHS28', 'GMNCASE4', 'GMNCASE1',
-    'HS268','HS76I','HS51','HS53','HS52','HS44','HS76','HS35I','HS21','HS35','HS118','HS35MOD','HATFLDH','HS44NEW', 
-    'LOTSCHD', 'MOSARQP2', 'MOSARQP1', 'NASH',
-    'PORTSQP', 'POWELL20', 'QPBAND',
+    'HS21','HS35', 'HS35I','HS44','HS44NEW','HS51','HS52','HS53','HS76','HS76I', 'HS118','HS268','HATFLDH', 
+    'LOTSCHD', 'MOSARQP2', 'MOSARQP1', 
+    'POWELL20', 'QPBAND',
     'RDW2D52F','RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U', 
     'STNQP1', 'STNQP2', 'STCQP1',  'STCQP2', 'SOSQP1', 'SOSQP2', 'S268',
     'TWOD',  'TAME', 'YAO', 'ZECEVIC2',
@@ -75,7 +75,7 @@ def kona_optimize(args, pc_name, prob_name):
         os.makedirs(outdir)
 
     optns = {
-        'max_iter' : 300,
+        'max_iter' : 150,
         'opt_tol' : 1e-7,
         'feas_tol' : 1e-7, 
         'info_file' : f_info,
@@ -94,7 +94,7 @@ def kona_optimize(args, pc_name, prob_name):
         }, 
 
         'svd' : {
-            'lanczos_size'    : 30,  # max(int(solver.num_design*0.2), solver.num_design-1), 
+            'lanczos_size'    : args.svd,  # max(int(solver.num_design*0.2), solver.num_design-1), 
             'bfgs_max_stored' : 10, 
             'beta'         : 1.0, 
             'mu_min'       : 1e-4,
@@ -125,10 +125,10 @@ def kona_optimize(args, pc_name, prob_name):
     print 'Kona Objective : ', solution
     print 'Time Elapse: ', duration
 
-    cuter_dimension = 'num_design, num_eq, num_ineq : ' + \
-            str(solver.num_design) + '  '  + \
-            str(solver.num_eq)  + '  '  + \
-            str(solver.num_ineq) \
+    # cuter_dimension = 'num_design, num_eq, num_ineq : ' + \
+    #         str(solver.num_design) + '  '  + \
+    #         str(solver.num_eq)  + '  '  + \
+    #         str(solver.num_ineq) \
 
     kona_obj = 'Kona final objective value with PC ' + pc_name + ' : ' + str(solution)
     kona_time = 'Kona runtime, ' + str(duration)
@@ -136,7 +136,7 @@ def kona_optimize(args, pc_name, prob_name):
     with open(f_optns, 'a') as file:
         if pc_name == 'Eye':
             pprint.pprint(optns, file)
-            pprint.pprint(cuter_dimension, file)
+            pprint.pprint(kona_nlm, file)
             pprint.pprint(cuter_nm, file)
 
         pprint.pprint('===========================', file)
@@ -231,37 +231,54 @@ if __name__ == '__main__':
     parser.add_argument("--V2", help='2nd Parameter', type=int, default=0)
     parser.add_argument("--V3", help='3rd Parameter', type=float, default=0)
     parser.add_argument("--output", help='Ouput Directory', type=str, default='./KonaSnopt')
+    parser.add_argument("--svd", help='Lanczos SVD rank', type=int, default=2)
+    parser.add_argument("--k", help='k-th problem', type=int, default=0)
     args = parser.parse_args()
 
     out_put = args.output
 
-    for k in range(0,1): 
-        k = 7
-        prob_name = name_list[k]       
+    # for k in range(8,9): 
+    k = args.k
+    prob_name = name_list[k]       
 
-        # -------------- Writing to f_optns --------------
-        outdir = out_put + '/' + prob_name   # + '_' + str(args.V1)
+    # -------------- Writing to f_optns --------------
+    outdir = out_put + '/' + prob_name  # + '_' + str(args.V1)   # + '_' + str(args.V2)
 
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
 
-        f_optns = outdir+'/output.dat'
+    f_optns = outdir+'/output.dat'
 
-        cutermgr.updateClassifications() 
-        feature = cutermgr.problemProperties(prob_name)
+    cutermgr.updateClassifications() 
+    feature = cutermgr.problemProperties(prob_name)
 
-        with open(f_optns, 'w') as file:
-            pprint.pprint(prob_name, file)  
-            pprint.pprint(feature, file)        
+    with open(f_optns, 'w') as file:
+        pprint.pprint(prob_name, file)  
+        pprint.pprint(feature, file)        
 
-        kona_optimize(args, 'Eye', prob_name)
-        kona_optimize(args, 'pc', prob_name)   
-        # sequence cannot be changed!! 
+    kona_optimize(args, 'Eye', prob_name)
+    # kona_optimize(args, 'pc', prob_name)   
+    # sequence cannot be changed!! 
 
+    optOptions = {'Print file': outdir  + '/SNOPT_print.out',
+                  'Summary file': outdir  + '/SNOPT_summary.out',
+                  'Problem Type':'Minimize',
+                  }
 
-        optOptions = {'Print file': outdir  + '/SNOPT_print.out',
-                      'Summary file': outdir  + '/SNOPT_summary.out',
-                      'Problem Type':'Minimize',
-                      }
+    snopt_optimize(args, 'snopt', optOptions)
 
-        snopt_optimize(args, 'snopt', optOptions)
+#     'AUG2D',  'AUG2DQP',  'AUG2DC',      
+#     'AUG3D',  'AUG3DC', 
+#     'AVGASA',   'AVGASB',
+#     'ALLINQP',                 # 7
+#     'BLOCKQP2',  'BLOCKQP3', 'BLOCKQP4',  'BDRY2', 'BIGGSC4', 
+#     'CVXQP1', 'CVXQP2', 'NCVXQP1','NCVXQP5', 'NCVXQP6', 'NCVXQP7',  'NCVXQP8',  'NCVXQP9',     # 20  
+#     'DEGENQP', 'DEGENQPC', 'DEGTRIDL', 'DTOC3',  'FERRISDC',                                   # 25                     
+#     'GOULDQP1', 'GENHS28', 'GMNCASE4', 'GMNCASE1',                                             # 29
+#     'HS21','HS35', 'HS35I', 'HS44','HS44NEW','HS51','HS52','HS53','HS76','HS76I', 'HS118','HS268','HATFLDH',  # 42
+#     'LOTSCHD', 'MOSARQP2', 'MOSARQP1',    # 45
+#     'PORTSQP', 'POWELL20', 'QPBAND',
+#     'RDW2D52F','RDW2D52B', 'RDW2D52U', 'RDW2D51F',  'RDW2D51U',   # 52
+#     'STNQP1', 'STNQP2', 'STCQP1',  'STCQP2', 'SOSQP1', 'SOSQP2', 'S268',
+#     'TWOD',  'TAME', 'YAO', 'ZECEVIC2',
+

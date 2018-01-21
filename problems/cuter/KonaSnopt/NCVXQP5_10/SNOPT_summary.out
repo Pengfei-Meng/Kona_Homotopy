@@ -1,0 +1,68 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints       2     Linear constraints       0
+ Nonlinear variables        10     Linear variables         0
+ Jacobian  variables        10     Objective variables     10
+ Total constraints           2     Total variables         10
+ 
+
+ 
+ The user has defined      20   out of      20   constraint gradients.
+ The user has defined      10   out of      10   objective  gradients.
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      8               1  1.2E+00  2.7E+00 -2.8125000E+01     8           r
+     1      1  4.8E-01      2  4.7E-01  2.4E+00 -1.1025373E+02     8         n rl
+     2      1  4.7E-01      4  2.1E-01  2.4E+00 -2.2883115E+02     8         n rl
+     3      1  2.8E+00      7  1.3E-01  3.3E+00 -2.2611563E+03     8         n rl
+     4      1  2.2E+00     10  5.1E-02  5.4E+00 -2.0784944E+04     8         n rl
+     5      1  1.9E+00     13  1.5E-02  5.6E+00 -2.2831312E+05     8         n rl
+     6      1  2.2E+00     16  6.2E-03  7.8E+00 -2.6545111E+06     8         n rl
+     7      1  1.9E+00     19  1.8E-03  7.7E+00 -2.8442306E+07     8         n rl
+     8      1  2.1E+00     22  6.7E-04  6.6E+00 -2.8421259E+08     8         n rl
+     9      1  2.0E+00     25  2.3E-04  6.0E+00 -2.7675302E+09     8         n rl
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  2.1E+00     28  8.3E-05  5.8E+00 -2.6319911E+10     8         n rl
+    11      1  2.0E+00     31  2.9E-05  5.6E+00 -2.4588597E+11     8         n rl
+    12      1  2.0E+00     34  1.0E-05  5.5E+00 -2.2684691E+12     8         n rl
+    13      1  2.0E+00     37  3.4E-06  5.4E+00 -2.0727962E+13     8         n rl
+    14      1  2.0E+00     40  1.1E-06  5.4E+00 -1.8784774E+14     8         n rl
+    15      1  2.0E+00     43 (3.8E-07) 5.4E+00 -1.6965374E+15     8         n rl
+ 
+ SNOPTC EXIT  20 -- the problem appears to be unbounded
+ SNOPTC INFO  21 -- unbounded objective
+
+ Problem name                 snopt CU
+ No. of iterations                  23   Objective value     -1.6965373638E+15
+ No. of major iterations            15   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective -1.6965373638E+15
+ No. of calls to funobj             45   No. of calls to funcon             45
+ No. of superbasics                  8   No. of basic nonlinears             2
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                       8 6.0E+06   Max pi                      2 5.4E+07
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             8 2.9E+08
+ Nonlinear constraint violn    2.3E+00
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       0.04 seconds
+ Time for solution output                       0.00 seconds
+ Time for constraint functions                  0.04 seconds
+ Time for objective function                    0.00 seconds

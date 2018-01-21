@@ -1,0 +1,45 @@
+@ Predictor 
+@ Outer Iter 0 
+@ Inner Iter 0 
+@ self.mu 1.000000e+00 
+# FGMRES residual history
+# residual tolerance target = 1.000000e-02
+# initial residual norm     = 1.766607e+01
+# iters            rel. res.
+      0            1.000000e+00
+      1            4.353006e-01
+      2            8.152565e-17
+# FGMRES final (true) residual : |res|/|res0| = 4.440599e-16
+@ Corrector 
+@ Outer Iter 1 
+@ Inner Iter 0 
+@ self.mu 9.971742e-01 
+# FGMRES residual history
+# residual tolerance target = 1.000000e-02
+# initial residual norm     = 1.436813e-03
+# iters            rel. res.
+      0            1.000000e+00
+      1            4.241704e-04
+# FGMRES final (true) residual : |res|/|res0| = 4.241704e-04
+@ Predictor 
+@ Outer Iter 1 
+@ Inner Iter 1 
+@ self.mu 9.971742e-01 
+# FGMRES residual history
+# residual tolerance target = 1.000000e-02
+# initial residual norm     = 1.771419e+01
+# iters            rel. res.
+      0            1.000000e+00
+      1            6.583375e-04
+# FGMRES final (true) residual : |res|/|res0| = 6.583375e-04
+@ Corrector 
+@ Outer Iter 2 
+@ Inner Iter 0 
+@ self.mu 9.928387e-01 
+# FGMRES residual history
+# residual tolerance target = 1.000000e-02
+# initial residual norm     = 3.407952e-03
+# iters            rel. res.
+      0            1.000000e+00
+      1            7.491183e-04
+# FGMRES final (true) residual : |res|/|res0| = 7.491183e-04

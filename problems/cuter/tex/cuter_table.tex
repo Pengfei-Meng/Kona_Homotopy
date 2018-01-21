@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{array}
+
+\begin{document}
+
+\begin{tabular}{l | l |   >{\footnotesize}p{1.8cm} |  >{\footnotesize}p{2.1cm} | c | c | c  }  \hline      %\toprule      % |  >{\centering}m{3.5cm}
+Name   &                 n,   m       &  n,  $m_{\text{eq}}$,  $m_{\text{ineq}}$        &     Origin              & $ f_{\text{kona}} $   & $ f_{\text{snopt}} $ &$ f^*$    \\ \hline
+AUG2D    &           24,  9         &  24,   9,  18       &    2-D Laplace's Equation    &  0.124999           &     0.1250    &      N/A                \\ \hline
+AUG2D    &          220, 100   & 220, 100, 200  &                                 &   110.7987          &    110.7991      &    N/A           \\ \hline
+AUG2DC  &       24, 9      &   24, 9, 18       &       &       2.973213                & 2.973214    &   N/A     \\ \hline
+AUG2DC  &      220, 100   &  220, 100, 200   &     & 184.2388    &   184.2394     &    N/A      \\ \hline
+AUG3D  &      156, 27    & 156, 27, 54   & 3-D Laplace's Equation  & 0.08333   &   0.083333   &  N/A         \\ \hline
+AUG3DC  &  156, 27  &  156, 27, 54   &    &   35.84226   &   35.84276      & N/A      \\ \hline
+AVGASA  &       8, 10   &   8, 0, 26   &            LP problem avgas               &           -4.63092    &    -4.79278   &   N/A     \\ \hline
+AVGASB  &    8, 10  &   8, 0, 26   &   LP problem avgas         &   -4.482206   &   -4.6663506     &   N/A    \\ \hline
+ALLINQP  & 10, 5   &  10, 1, 21   & A banded QP with constraint and bounds  & 0.3466666  & -0.1832558     &  N/A \\  \hline     %\midrule
+BLOCKQP2   & 25, 11   & 25,  10, 71   &    non-convex quadratic   & -6.201652   & -2.507e+14    &  -6.2017   \\ \hline
+BLOCKQP3   & 25, 11   & 25,  10, 71  &  	   & 2.330508     &  2.330508   &            -2.4987e-1   \\ \hline
+BLOCKQP4  & 25, 11    & 25, 10, 71  &       & -2.9289276   & -5.731e+14   &    -2.4987e-1   \\ \hline
+BDRY2   & 25, 18   & 25, 18, 86   &  AMPL models  & 0.5449324  & 0.5481104  & N/A    \\ \hline   
+BIGGSC4  & 4, 7   & 4, 0, 21   & A test quadratic  & -24.4999   &  -24.375  &    -24.5 \\ \hline 
+CVXQP1  & 10, 5 & 10, 5, 30  & convex quadratic & 181.04005 & 165.87382  & N/A   \\ \hline
+DEGENQP & 10, 1005 & 10,5,2030  & degenerate convex quadratic & 8.8028e-06 & -5.5511e-17  & N/A \\ \hline
+DTOC3   & 29, 18  & 29,18,40 & discrete time optimal control problem &  224.59038 & 8.20189  & 224.59038 \\ \hline 
+GENHS28 & 10, 8  & 10, 8, 16  & W. Hock and K. Schittkowski & 0.9271735  & 0.9271736  & 0.0   \\ \hline
+GMNCASE1 &        & 175, 0, 300  &     quadratically optimized control   &     0.267087  & 0.266973             &    2.66733D-01   \\ \hline
+GMNCASE4 & 175, 350 & 175, 0, 350  &  quadratically optimized control &  5.62732e3 &  5.94688e3 &    5.94685D+03 \\ \hline 
+HS268   & 5,5  & 5, 0, 5  & K. Schittkowski   & 0.0002089   & -3.63797e-12      &    N/A    \\ \hline 
+HS21    &  2,1 & 2,0,5   & W.Hock and K. Schittkowski  & -99.343411  & -99.990000  & -99.96    \\ \hline 
+HS35   &  3,1  & 3,0,4  &                 & 0.11111111  & 0.11111111   &   0.11111111   \\ \hline 
+HS35I   &  3,1  & 3,0,7  &                 & 0.11111111  & 0.11111111   &   0.11111111   \\ \hline 
+HS44   & 4,6   & 4,0,10   &  	       &  -13.000 & -4.0122e+14 & -13.0    \\ \hline
+HS44NEW & 4,6  & 4,0,10  &       & -13     & -3.2048e+14   & -13.0    \\ \hline
+HS51    &  5,3   & 5,3,6    &  & 4.46e-19   & 5.86E-14     & 0.0    \\ \hline
+HS52    &  5,3  & 5,3,6   & & 5.326634   & 5.326647   & 5.326643   \\ \hline
+HS53    &  5,3  & 5,3,16    & & 4.0930232  & 4.0930232  &4.0930231  \\ \hline
+HS118  & 15,17  & 15,0,59  & & 664.82046  & -1748.63759  & 664.82045    \\ \hline
+HS268  & 5,5  & 5,0,5  & & 0.0003839 & -3E-12  & N/A   \\ \hline
+HATFLDH  & 4, 7 &  4, 0, 21  & & -24.5002  & -24.375 & 24.5   \\ \hline
+LOTSCHD  & 12,7  &  12, 7, 26 & economic lot scheduling & 44.2890 & 165.6553  & N/A  \\ \hline
+MOSARQP1 & 36, 10 & 36, 0, 46 &convex quadratic &  -24.143647 & -52.049169 & -24.13768 \\ \hline
+MOSARQP2 &36, 10 & 36, 0, 46 &    & -35.69815  & -55.162343  & -35.6981 \\ \hline
+POWELL20 & 10,10  & 10,0,10 & degenerate convex & 57.8125 & 57.8125  & N/A  \\\hline
+RDW2D52F & 18,1  & 18,1,36 & optimal control problem & 0.0530156 & 0.020779 & N/A \\\hline
+STCQP1  & 17, 8  &  17, 8, 50 & convex quadratic  & 494.4054  & 494.52085  & 4.945209E+02 \\\hline
+SOSQP1 &  20, 11 & 20, 11, 62 & non-convex quadratic & 5.9e-07 & -4E-16   & 0.0 \\\hline
+SOSQP2 & 20,11  &  20, 11, 62 &  	& -3.99779  & -4.045649  & -3.99781    \\\hline
+S268   &   5,5   & 5,0,5  &   &   0.0022737  &  -3.637E-12  & N/A  \\\hline
+YAO   &  22,20  & 22, 0, 25 & & 2.398829  & 0.0037148 & 2.39883  \\\hline
+ZECEVIC2 & 2,2 & 2,0,6  & & -4.1249  & -4.125  & N/A  \\\hline
+\end{tabular}   % \midrule
+
+\end{document}
+
+
+%BLOCKQP2  &
+%BLOCKQP3  &
+%BLOCKQP4  &
+%BLOCKQP5  &  

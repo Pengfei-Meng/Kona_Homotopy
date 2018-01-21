@@ -29,9 +29,9 @@ class LimitedMemoryBFGS(QuasiNewtonApprox):
 
         # if curvature is too small, skip correction
         if curvature < numpy.finfo(float).eps:
-            self.out_file.write(
-                'LimitedMemoryBFGS.add_correction():' +
-                'correction skipped due to curvature condition.\n')
+            # self.out_file.write(
+            #     'LimitedMemoryBFGS.add_correction():' +
+            #     'correction skipped due to curvature condition.\n')
             return
 
         # otherwise we must first free up space for the correction, if needed

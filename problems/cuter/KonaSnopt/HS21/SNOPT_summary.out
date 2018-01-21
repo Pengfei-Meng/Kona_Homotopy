@@ -1,0 +1,56 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints       1     Linear constraints       0
+ Nonlinear variables         2     Linear variables         0
+ Jacobian  variables         2     Objective variables      2
+ Total constraints           1     Total variables          2
+ 
+
+ 
+ The user has defined       2   out of       2   constraint gradients.
+ The user has defined       2   out of       2   objective  gradients.
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  7.9E+00  1.4E+00 -9.8990000E+01     1           r
+     1      1  4.4E-01      2  7.6E+00  6.0E-01 -9.7366346E+01     1 1.9E-02 n rl
+     2      1  7.3E-01      3  1.8E+00  1.1E-01 -9.9562763E+01     1 1.9E-02 s  l
+     3      1  1.0E+00      4 (0.0E+00) 4.6E-02 -9.9987903E+01     1 1.9E-02
+     4      1  1.0E+00      5 (0.0E+00) 1.1E-02 -9.9989878E+01     1 1.9E-02
+     5      0  1.0E+00      6 (0.0E+00)(2.2E-18)-9.9990001E+01     1 1.9E-02
+ 
+ SNOPTC EXIT   0 -- finished successfully
+ SNOPTC INFO   1 -- optimality conditions satisfied
+
+ Problem name                 snopt CU
+ No. of iterations                   5   Objective value     -9.9990001000E+01
+ No. of major iterations             5   Linear objective     0.0000000000E+00
+ Penalty parameter           1.899E-02   Nonlinear objective -9.9990001000E+01
+ No. of calls to funobj              7   No. of calls to funcon              7
+ No. of superbasics                  1   No. of basic nonlinears             1
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                       1 1.0E+00   Max pi                      1 2.0E-03
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             2 4.3E-18
+ Nonlinear constraint violn    0.0E+00
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       0.00 seconds
+ Time for solution output                       0.00 seconds
+ Time for constraint functions                  0.00 seconds
+ Time for objective function                    0.00 seconds

@@ -1,0 +1,79 @@
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.2-5    (May 2007)
+ ==============================
+ 
+ 
+
+ Nonlinear constraints     101     Linear constraints       0
+ Nonlinear variables       205     Linear variables         0
+ Jacobian  variables       205     Objective variables    205
+ Total constraints         101     Total variables        205
+ 
+
+ 
+ The user has defined   20705   out of   20705   constraint gradients.
+ The user has defined     205   out of     205   objective  gradients.
+ 
+
+        Minor   QPmult   nInf   SumInf   rgNorm    QPobjective    nS
+          100  5.1E-01                  2.7E-14 -9.3483977E+00    98
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0    101               1  3.1E-01  2.5E-01  2.5625000E+01    99           r  T
+     1      6  1.4E-01      2  3.0E-01  1.3E-01  1.9517028E+01   104         n rl
+     2      1  1.6E-01      3  2.9E-01  2.0E-01  1.4282326E+01   104         s  l
+     3      1  1.0E+00      4 (1.7E-14) 2.0E-02  2.3896914E+00   104
+     4      1  1.0E+00      6 (2.8E-14) 4.0E-02  2.0295587E+00   104         n
+     5      1  1.0E+00      8 (6.1E-15) 7.0E-02  6.1284480E-01   104         n R
+     6      1  1.0E+00     10 (6.9E-16) 1.4E-01 -5.0297546E+00   104         n R
+     7      1  1.0E+00     12 (6.7E-15) 2.7E-01 -2.7432981E+01   104         n r
+     8      2  2.3E+00     15 (1.9E-14) 9.0E-01 -3.1837283E+02   104         n rl
+     9      1  2.1E+00     18 (6.6E-17) 2.7E+00 -2.9943544E+03   104         n rl
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  2.0E+00     21 (1.6E-15) 8.3E+00 -2.7206714E+04   104         n rl
+    11      2  2.0E+00     24 (2.3E-16) 2.5E+01 -2.4559488E+05   104         n rl
+    12      2  2.0E+00     27 (3.7E-17) 3.8E+01 -2.2125191E+06   104         n rl
+    13      1  2.0E+00     30 (1.1E-16) 4.5E+01 -1.9919130E+07   104         n rl
+    14      1  2.0E+00     33 (1.4E-15) 4.8E+01 -1.7929150E+08   104         n rl
+    15      2  2.0E+00     36 (3.2E-17) 5.0E+01 -1.6136815E+09   104         n rl
+    16      2  2.0E+00     39 (1.0E-15) 5.0E+01 -1.4523307E+10   104         n rl
+    17      2  2.0E+00     42 (7.1E-16) 5.0E+01 -1.3071029E+11   104         n rl
+    18      1  2.0E+00     45 (6.6E-17) 5.0E+01 -1.1763942E+12   104         n rl
+    19      2  2.0E+00     48 (7.6E-17) 5.0E+01 -1.0587552E+13   104         n rl
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    20      2  2.0E+00     51 (5.1E-17) 5.0E+01 -9.5287983E+13   104         n rl
+    21      1  2.0E+00     54 (4.2E-16) 5.0E+01 -8.5759188E+14   104         n rl
+ 
+ SNOPTC EXIT  20 -- the problem appears to be unbounded
+ SNOPTC INFO  21 -- unbounded objective
+
+ Problem name                 snopt CU
+ No. of iterations                 135   Objective value     -8.5759188494E+14
+ No. of major iterations            21   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective -8.5759188494E+14
+ No. of calls to funobj             56   No. of calls to funcon             56
+ No. of superbasics                104   No. of basic nonlinears           101
+ No. of degenerate steps             0   Percentage                       0.00
+ Max x                      35 3.0E+06   Max pi                    101 5.8E+04
+ Max Primal infeas           0 0.0E+00   Max Dual infeas           197 2.9E+06
+ Nonlinear constraint violn    1.7E-08
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       3.48 seconds
+ Time for solution output                       0.01 seconds
+ Time for constraint functions                  3.38 seconds
+ Time for objective function                    0.00 seconds

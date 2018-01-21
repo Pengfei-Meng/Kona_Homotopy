@@ -1,0 +1,41 @@
+'POWELL20'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': None,
+ 'n': None,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+{'feas_tol': 1e-07,
+ 'hist_file': './KonaSnopt/POWELL20/kona_eye_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.05,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.08726646259971647,
+              'nominal_dist': 1.0},
+ 'info_file': './KonaSnopt/POWELL20/kona_eye_info.dat',
+ 'max_iter': 150,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './KonaSnopt/POWELL20/kona_eye_krylov.dat',
+          'precond': None,
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 2,
+         'mu_min': 0.0001}}
+'num_design,  num_eq, num_ineq : 10, 0, 10'
+' n, m : 10, 10'
+'==========================='
+'Kona final objective value with PC Eye : 57.8125000023'
+'Kona runtime, 2.51767110825'
+'==========================='
+'========== SNOPT ==========='
+'SNOPT objective value at its solution, 57.8125'
+'SNOPT runtime : 0.01553606987'

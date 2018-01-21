@@ -1,0 +1,41 @@
+'ZECEVIC2'
+{'constraints': 'L',
+ 'degree': 2,
+ 'internal': False,
+ 'm': 2,
+ 'n': 2,
+ 'objective': 'Q',
+ 'origin': 'A',
+ 'regular': True}
+{'feas_tol': 1e-07,
+ 'hist_file': './KonaSnopt/ZECEVIC2/kona_eye_hist.dat',
+ 'homotopy': {'dmu_max': -0.0005,
+              'dmu_min': -0.9,
+              'init_step': 0.05,
+              'inner_maxiter': 2,
+              'inner_tol': 0.1,
+              'max_factor': 30.0,
+              'min_factor': 0.001,
+              'nominal_angle': 0.08726646259971647,
+              'nominal_dist': 1.0},
+ 'info_file': './KonaSnopt/ZECEVIC2/kona_eye_info.dat',
+ 'max_iter': 150,
+ 'opt_tol': 1e-07,
+ 'rsnk': {'check_res': True,
+          'krylov_file': './KonaSnopt/ZECEVIC2/kona_eye_krylov.dat',
+          'precond': None,
+          'rel_tol': 0.01,
+          'subspace_size': 20},
+ 'svd': {'beta': 1.0,
+         'bfgs_max_stored': 10,
+         'lanczos_size': 2,
+         'mu_min': 0.0001}}
+'num_design,  num_eq, num_ineq : 2, 0, 6'
+' n, m : 2, 2'
+'==========================='
+'Kona final objective value with PC Eye : -4.12497648683'
+'Kona runtime, 1.67845201492'
+'==========================='
+'========== SNOPT ==========='
+'SNOPT objective value at its solution, -4.125'
+'SNOPT runtime : 0.0108020305634'
